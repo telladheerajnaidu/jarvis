@@ -1,0 +1,118 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ConcentricRings, HexBadge } from "../../_components/Rings";
+
+const STEPS = [
+  "> PURGE COMMAND RECEIVED",
+  "> REVOKING SESSION TOKEN.............. OK",
+  "> CLEARING COOKIE // path=/........... OK",
+  "> CLEARING COOKIE // path=/admin...... OK",
+  "> CLEARING COOKIE // path=/suits...... OK",
+  "> CLEARING COOKIE // path=/api........ OK",
+  "> FRIDAY INTEGRITY CHECK ............. NOMINAL",
+  "> MAINFRAME READY FOR NEXT CANDIDATE",
+];
+
+export default function AdminReset() {
+  const [step, setStep] = useState(0);
+  const [done, setDone] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/reset", { method: "POST" });
+        if (!res.ok) throw new Error();
+      } catch {
+        setErr("RESET FAILED // check server logs");
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (step >= STEPS.length) {
+      setDone(true);
+      return;
+    }
+    const t = setTimeout(() => setStep((n) => n + 1), 220);
+    return () => clearTimeout(t);
+  }, [step]);
+
+  return (
+    <main className="min-h-screen hud-grid-fine relative overflow-hidden">
+      <div className="scanline-overlay" />
+
+      <div className="border-b border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-6 py-2">
+          <div className="flex items-center gap-4">
+            <div className="arc-reactor" style={{ width: 32, height: 32 }} />
+            <div className="leading-tight">
+              <div className="text-[10px] tracking-[0.4em] text-jarvis-gold">ADMIN CONSOLE</div>
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/50">
+                MAINFRAME PURGE PROTOCOL
+              </div>
+            </div>
+          </div>
+          <HexBadge>LVL 09</HexBadge>
+        </div>
+      </div>
+
+      <div className="relative grid grid-cols-[1fr_1.2fr_1fr] gap-4 p-6 h-[calc(100vh-50px)]">
+        <div />
+
+        <section className="relative flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-[520px] h-[520px]">
+              <ConcentricRings size={520} />
+            </div>
+          </div>
+
+          <div className="relative z-10 w-[440px]">
+            <div className="hud-panel hud-corners p-6 backdrop-blur-md">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-[10px] tracking-[0.3em] text-jarvis-gold">
+                  // PURGE SEQUENCE
+                </div>
+                {done ? (
+                  <HexBadge>COMPLETE</HexBadge>
+                ) : (
+                  <span className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 flicker">
+                    EXECUTING...
+                  </span>
+                )}
+              </div>
+
+              <div className="font-mono text-[11px] text-jarvis-cyan/90 space-y-1 min-h-[200px]">
+                {STEPS.slice(0, step).map((line, i) => (
+                  <div key={i} className="tracking-wider">{line}</div>
+                ))}
+                {!done && (
+                  <div className="h-3 w-2 bg-jarvis-cyan inline-block animate-pulse ml-1" />
+                )}
+              </div>
+
+              {err && (
+                <div className="mt-3 text-[10px] text-jarvis-red border border-jarvis-red/40 bg-jarvis-red/10 px-3 py-2 tracking-wider">
+                  {err}
+                </div>
+              )}
+
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Link href="/" className="btn-hud text-center">← RETURN TO LOGIN</Link>
+                <Link href="/suits" className="btn-hud btn-gold text-center">TEST GALLERY →</Link>
+              </div>
+
+              <div className="mt-4 text-[9px] text-jarvis-cyan/50 text-center tracking-[0.3em]">
+                ALL BUGS RE-ARMED // READY FOR NEXT RUN
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div />
+      </div>
+    </main>
+  );
+}
