@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { HudShell } from "../_components/HudChrome";
 import { HexBadge } from "../_components/Rings";
+import { SuitSilhouette, paletteFor } from "../_components/SuitSilhouette";
 
 type SuitCard = {
   id: string;
@@ -145,10 +146,10 @@ export default function SuitsPage() {
 
                 <div className="relative aspect-square bg-jarvis-bg/70 border border-jarvis-cyan/20 overflow-hidden">
                   <div className="absolute inset-0 hud-hexpattern opacity-30" />
-                  <img
-                    src={s.image}
-                    alt={s.name}
-                    className="relative w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
+                  <SuitSilhouette
+                    mark={s.mark}
+                    {...paletteFor(s.id)}
+                    className="relative w-full h-full p-4 group-hover:scale-105 transition-transform"
                   />
                   <div className="absolute top-2 left-2 text-[9px] tracking-[0.25em] text-jarvis-cyan/70 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-cyan/30">
                     ID // {s.id.toUpperCase()}

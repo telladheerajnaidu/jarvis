@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { HudShell } from "../../_components/HudChrome";
 import { CircularDial, HexBadge, WaveformBars } from "../../_components/Rings";
+import { SuitSilhouette, paletteFor } from "../../_components/SuitSilhouette";
 
 type Integrity = {
   overall: number;
@@ -191,11 +192,10 @@ export default function SuitDetailPage() {
                 <line x1="5" y1="160" x2="25" y2="160" stroke="#22d3ee" strokeOpacity="0.5" />
                 <line x1="295" y1="160" x2="315" y2="160" stroke="#22d3ee" strokeOpacity="0.5" />
               </svg>
-              <img
-                src={suit.image}
-                alt={suit.name}
-                className="relative z-10 max-h-[380px] max-w-full object-contain"
-                style={{ filter: "drop-shadow(0 0 24px rgba(34,211,238,0.4))" }}
+              <SuitSilhouette
+                mark={suit.mark}
+                {...paletteFor(suit.id)}
+                className="relative z-10 max-h-[380px] max-w-full"
               />
               <div className="absolute top-2 right-2 text-[9px] tracking-[0.25em] text-jarvis-gold border border-jarvis-gold/40 px-2 py-0.5 bg-jarvis-bg/60">
                 STATUS // {suit.status.toUpperCase()}
