@@ -73,6 +73,11 @@ export default function SuitDetailPage() {
     load();
   }, [params.id]);
 
+  async function logout() {
+    await fetch("/api/logout", { method: "POST" });
+    window.location.href = "/";
+  }
+
   async function downloadSpec() {
     if (!suit) return;
     setDownloading(true);
@@ -134,6 +139,7 @@ export default function SuitDetailPage() {
             <button onClick={downloadSpec} className="btn-hud btn-gold" disabled={downloading}>
               {downloading ? "TRANSMITTING..." : "DOWNLOAD SPEC SHEET"}
             </button>
+            <button onClick={logout} className="btn-hud">DISENGAGE</button>
           </div>
         </div>
 
