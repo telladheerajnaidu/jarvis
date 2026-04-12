@@ -24,6 +24,8 @@ export default function SuitsPage() {
   const [markInput, setMarkInput] = useState("");
   const [markApplied, setMarkApplied] = useState("");
   const [lastSync, setLastSync] = useState<string | null>(null);
+  const [heartbeat, setHeartbeat] = useState<number | null>(null);
+  const [renderedMark, setRenderedMark] = useState<number | null>(null);
 
   const CACHE_KEY = "jarvis_suits_cache_v1";
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h — bug M1
@@ -44,7 +46,12 @@ export default function SuitsPage() {
           const cached = JSON.parse(raw) as {
             at: number;
             mark: string;
-            data: { suits: SuitCard[]; server_timestamp: string };
+            data: {
+              suits: SuitCard[];
+              server_timestamp: string;
+              heartbeat?: number;
+              mark_queried?: number | null;
+            };
           };
           if (
             cached.mark === mark &&
@@ -52,6 +59,10 @@ export default function SuitsPage() {
           ) {
             setSuits(cached.data.suits);
             setLastSync(cached.data.server_timestamp);
+            if (typeof cached.data.heartbeat === "number") setHeartbeat(cached.data.heartbeat);
+            setRenderedMark(
+              typeof cached.data.mark_queried === "number" ? cached.data.mark_queried : null,
+            );
             setLoading(false);
             return;
           }
@@ -72,13 +83,22 @@ export default function SuitsPage() {
       if (data.success) {
         setSuits(data.suits);
         if (data.server_timestamp) setLastSync(data.server_timestamp);
+        if (typeof data.heartbeat === "number") setHeartbeat(data.heartbeat);
+        setRenderedMark(
+          typeof data.mark_queried === "number" ? data.mark_queried : null,
+        );
         try {
           window.localStorage.setItem(
             CACHE_KEY,
             JSON.stringify({
               at: Date.now(),
               mark,
-              data: { suits: data.suits, server_timestamp: data.server_timestamp },
+              data: {
+                suits: data.suits,
+                server_timestamp: data.server_timestamp,
+                heartbeat: data.heartbeat,
+                mark_queried: data.mark_queried,
+              },
             }),
           );
         } catch {}
@@ -136,14 +156,40 @@ export default function SuitsPage() {
           </div>
         </header>
 
-        {lastSync && (
-          <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60 mb-3 flex items-center gap-4">
-            <span>LAST SYNC // {new Date(lastSync).toLocaleTimeString()}</span>
-            <span className="text-jarvis-cyan/40">
-              // if this does not advance on RESYNC, inspect Network → cache
-            </span>
+        <div className="hud-panel hud-corners p-3 mb-3 flex items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div>
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">HEARTBEAT</div>
+              <div className="text-3xl tracking-[0.25em] text-jarvis-gold font-mono">
+                {heartbeat != null ? String(heartbeat).padStart(5, "0") : "—"}
+              </div>
+              <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
+                should change on every RESYNC
+              </div>
+            </div>
+            <div className="h-12 w-px bg-jarvis-cyan/20" />
+            <div>
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">SHOWING</div>
+              <div className="text-3xl tracking-[0.25em] text-jarvis-cyan font-mono">
+                {renderedMark != null ? `MARK ${renderedMark}` : "ALL MARKS"}
+              </div>
+              <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
+                mark number currently rendered
+              </div>
+            </div>
           </div>
-        )}
+          {lastSync && (
+            <div className="text-right">
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">LAST SYNC</div>
+              <div className="text-sm tracking-[0.25em] text-jarvis-cyan font-mono">
+                {new Date(lastSync).toLocaleTimeString()}
+              </div>
+              <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
+                // if this does not advance on RESYNC, inspect Network → cache
+              </div>
+            </div>
+          )}
+        </div>
 
         <form onSubmit={applyFilter} className="flex items-end gap-3 mb-4 hud-panel hud-corners p-3">
           <div className="flex-1 max-w-xs">

@@ -50,6 +50,7 @@ export async function GET(req: Request) {
       success: true,
       count: results.length,
       server_timestamp: new Date().toISOString(),
+      heartbeat: Math.floor(Math.random() * 100000),
       mark_queried: parsedMark,
       suits: results,
     },
