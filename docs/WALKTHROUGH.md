@@ -19,6 +19,7 @@ Every screenshot below is captured from the live deploy. Every JSON blob is a re
 | `GET`  | `/api/suits/[id]` | Single suit detail by id (e.g. `mk50`) | Cookie required | none on backend — **S4** is in the frontend component |
 | `GET`  | `/api/suits/[id]/spec` | CSV spec sheet download | Cookie required | **S1** missing `Content-Disposition` header |
 | `POST` | `/api/admin/reset` | Purge `jarvis_session` cookie across paths | — | none (interviewer tool) |
+| `POST` | `/api/admin/grant` | Bypass L1+L3: issue a valid session cookie at `Path=/` for `tony@stark.com` | — | none (interviewer tool) |
 
 **Page routes (candidate-visible):**
 
@@ -339,6 +340,29 @@ https://jarvis-nine-coral.vercel.app/admin/reset
 ```
 
 The page runs a short Jarvis purge animation, clears cookies via `POST /api/admin/reset`, and gives you two buttons: return to login or jump straight to the gallery.
+
+### Bypassing L1 + L3 mid-session (interviewer shortcut)
+
+If you've already validated L1/L3 and want to continue testing S5 / S4 / S1 without editing the cookie manually or redeploying a fix, open:
+
+```
+https://jarvis-nine-coral.vercel.app/api/admin/grant
+```
+
+That endpoint:
+1. Clears the broken `Path=/admin` cookie
+2. Issues a fresh valid `jarvis_session` at `Path=/` for `tony@stark.com`
+3. Returns JSON confirming the grant
+
+After hitting it, navigate to `/suits` — gallery loads, and the rest of the bug chain is reachable.
+
+**Session matrix for interviewers:**
+
+| Goal | Endpoint |
+|---|---|
+| Reset everything, re-arm all bugs | `/admin/reset` |
+| Test L1 + L3 | Normal login at `/` |
+| Skip L1 + L3 to test S5 / S4 / S1 | `/api/admin/grant` |
 
 ---
 
