@@ -194,8 +194,10 @@ export default function SuitDetailPage() {
               </svg>
               <SuitSilhouette
                 mark={suit.mark}
+                codename={suit.codename}
+                status={suit.status}
                 {...paletteFor(suit.id)}
-                className="relative z-10 max-h-[380px] max-w-full"
+                className="relative z-10 w-full h-full min-h-[380px]"
               />
               <div className="absolute top-2 right-2 text-[9px] tracking-[0.25em] text-jarvis-gold border border-jarvis-gold/40 px-2 py-0.5 bg-jarvis-bg/60">
                 STATUS // {suit.status.toUpperCase()}

@@ -148,8 +148,9 @@ export default function SuitsPage() {
                   <div className="absolute inset-0 hud-hexpattern opacity-30" />
                   <SuitSilhouette
                     mark={s.mark}
+                    codename={s.codename}
                     {...paletteFor(s.id)}
-                    className="relative w-full h-full p-4 group-hover:scale-105 transition-transform"
+                    className="relative w-full h-full group-hover:scale-105 transition-transform"
                   />
                   <div className="absolute top-2 left-2 text-[9px] tracking-[0.25em] text-jarvis-cyan/70 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-cyan/30">
                     ID // {s.id.toUpperCase()}

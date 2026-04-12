@@ -2,6 +2,8 @@ type Props = {
   mark: number;
   primary: string;
   accent: string;
+  codename?: string;
+  status?: string;
   className?: string;
 };
 
@@ -19,82 +21,126 @@ export function paletteFor(id: string) {
   return PALETTES[id] || { primary: "#b91c1c", accent: "#f59e0b" };
 }
 
-export function SuitSilhouette({ mark, primary, accent, className }: Props) {
+function toRoman(n: number): string {
+  const map: [number, string][] = [
+    [100, "C"], [90, "XC"], [50, "L"], [40, "XL"],
+    [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"],
+  ];
+  let r = "";
+  for (const [v, s] of map) {
+    while (n >= v) { r += s; n -= v; }
+  }
+  return r;
+}
+
+export function SuitSilhouette({ mark, primary, accent, codename, status, className }: Props) {
+  const roman = toRoman(mark);
   return (
-    <svg
-      viewBox="0 0 300 300"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <linearGradient id={`body-${mark}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={primary} stopOpacity="0.85" />
-          <stop offset="100%" stopColor={primary} stopOpacity="0.4" />
-        </linearGradient>
-        <radialGradient id={`reactor-${mark}`} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="30%" stopColor="#67e8f9" />
-          <stop offset="100%" stopColor="#0891b2" stopOpacity="0" />
-        </radialGradient>
-      </defs>
+    <div className={`relative flex flex-col items-center justify-center ${className || ""}`}>
+      {/* concentric rings backdrop */}
+      <svg viewBox="0 0 300 300" className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id={`glow-${mark}`} cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.35" />
+            <stop offset="60%" stopColor="#0891b2" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#0891b2" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={`reactor-${mark}`} cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="25%" stopColor="#e0f2fe" />
+            <stop offset="60%" stopColor="#67e8f9" />
+            <stop offset="100%" stopColor="#0891b2" stopOpacity="0" />
+          </radialGradient>
+        </defs>
 
-      {/* background hex hint */}
-      <g opacity="0.08" stroke="#22d3ee" strokeWidth="0.5" fill="none">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <circle key={i} cx="150" cy="150" r={40 + i * 18} />
-        ))}
-      </g>
+        <circle cx="150" cy="150" r="140" fill={`url(#glow-${mark})`} />
 
-      {/* helmet dome */}
-      <path
-        d="M 95 70 Q 95 35 150 35 Q 205 35 205 70 L 205 120 Q 205 135 195 140 L 105 140 Q 95 135 95 120 Z"
-        fill={`url(#body-${mark})`}
-        stroke={accent}
-        strokeWidth="2"
-      />
-      {/* faceplate split */}
-      <line x1="150" y1="40" x2="150" y2="138" stroke={accent} strokeOpacity="0.5" strokeWidth="1" />
-      {/* eye slits */}
-      <path
-        d="M 115 95 Q 130 88 145 95 L 145 102 Q 130 98 115 102 Z"
-        fill={accent}
-      />
-      <path
-        d="M 155 95 Q 170 88 185 95 L 185 102 Q 170 98 155 102 Z"
-        fill={accent}
-      />
+        <g stroke="#22d3ee" strokeOpacity="0.25" fill="none">
+          <circle cx="150" cy="150" r="135" strokeDasharray="2 6" />
+          <circle cx="150" cy="150" r="110" strokeDasharray="4 4" />
+          <circle cx="150" cy="150" r="85" strokeDasharray="1 3" />
+        </g>
+        <g stroke={accent} strokeOpacity="0.35" fill="none">
+          <circle cx="150" cy="150" r="125" strokeDasharray="1 9" />
+        </g>
 
-      {/* neck */}
-      <rect x="130" y="140" width="40" height="15" fill={primary} fillOpacity="0.6" />
+        {/* crosshair ticks */}
+        <g stroke="#22d3ee" strokeOpacity="0.5">
+          <line x1="150" y1="10" x2="150" y2="24" />
+          <line x1="150" y1="276" x2="150" y2="290" />
+          <line x1="10" y1="150" x2="24" y2="150" />
+          <line x1="276" y1="150" x2="290" y2="150" />
+        </g>
 
-      {/* shoulders + chest */}
-      <path
-        d="M 55 165 Q 75 150 100 155 L 200 155 Q 225 150 245 165 L 240 210 Q 225 220 210 215 L 210 250 Q 150 260 90 250 L 90 215 Q 75 220 60 210 Z"
-        fill={`url(#body-${mark})`}
-        stroke={accent}
-        strokeWidth="2"
-      />
-      {/* armor plates */}
-      <line x1="100" y1="175" x2="200" y2="175" stroke={accent} strokeOpacity="0.4" />
-      <line x1="120" y1="195" x2="180" y2="195" stroke={accent} strokeOpacity="0.4" />
+        {/* corner brackets */}
+        <g stroke={accent} strokeOpacity="0.5" strokeWidth="1.5" fill="none">
+          <path d="M 20 35 L 20 20 L 35 20" />
+          <path d="M 265 20 L 280 20 L 280 35" />
+          <path d="M 280 265 L 280 280 L 265 280" />
+          <path d="M 35 280 L 20 280 L 20 265" />
+        </g>
 
-      {/* arc reactor */}
-      <circle cx="150" cy="195" r="14" fill={`url(#reactor-${mark})`} />
-      <circle cx="150" cy="195" r="10" fill="#bef264" fillOpacity="0.9" />
-      <circle cx="150" cy="195" r="5" fill="#fef9c3" />
+        {/* arc reactor glow */}
+        <circle cx="150" cy="150" r="50" fill={`url(#reactor-${mark})`} opacity="0.6" />
 
-      {/* mark label */}
-      <text
-        x="150"
-        y="285"
-        textAnchor="middle"
-        fontFamily="monospace"
-        fontSize="14"
-        fill={accent}
-        letterSpacing="4"
-      >
-        MK {mark}
-      </text>
-    </svg>
+        {/* arc reactor core */}
+        <g>
+          <circle cx="150" cy="150" r="28" fill="none" stroke="#0891b2" strokeOpacity="0.6" />
+          <circle cx="150" cy="150" r="22" fill="none" stroke="#22d3ee" strokeOpacity="0.8" />
+          <circle cx="150" cy="150" r="16" fill="#06b6d4" fillOpacity="0.25" />
+          <circle cx="150" cy="150" r="10" fill="#bef264" fillOpacity="0.9">
+            <animate attributeName="r" values="9;11;9" dur="2.4s" repeatCount="indefinite" />
+            <animate attributeName="fill-opacity" values="0.85;1;0.85" dur="2.4s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="150" cy="150" r="5" fill="#fef9c3" />
+          {/* radial coils */}
+          {Array.from({ length: 8 }).map((_, i) => {
+            const a = (i / 8) * Math.PI * 2;
+            const x1 = 150 + Math.cos(a) * 16;
+            const y1 = 150 + Math.sin(a) * 16;
+            const x2 = 150 + Math.cos(a) * 24;
+            const y2 = 150 + Math.sin(a) * 24;
+            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={accent} strokeOpacity="0.7" strokeWidth="1.5" />;
+          })}
+        </g>
+      </svg>
+
+      {/* text overlay */}
+      <div className="relative z-10 flex flex-col items-center justify-center select-none">
+        <div
+          className="text-[10px] tracking-[0.45em] font-mono"
+          style={{ color: accent, opacity: 0.9 }}
+        >
+          // MARK {mark}
+        </div>
+        <div
+          className="font-mono leading-none mt-2"
+          style={{
+            fontSize: "clamp(3.5rem, 9vw, 5.5rem)",
+            color: primary,
+            textShadow: `0 0 18px ${primary}66, 0 0 4px ${accent}`,
+            letterSpacing: "0.08em",
+          }}
+        >
+          {roman}
+        </div>
+        {codename && (
+          <div
+            className="text-[10px] tracking-[0.4em] mt-3 font-mono"
+            style={{ color: "#22d3ee", opacity: 0.85 }}
+          >
+            &quot;{codename.toUpperCase()}&quot;
+          </div>
+        )}
+        {status && (
+          <div
+            className="text-[9px] tracking-[0.3em] mt-2 font-mono px-2 py-0.5 border"
+            style={{ color: accent, borderColor: `${accent}55` }}
+          >
+            {status.toUpperCase()}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
