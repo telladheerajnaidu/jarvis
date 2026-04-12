@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { HudShell } from "../_components/HudChrome";
+import { HexBadge } from "../_components/Rings";
 
-type Suit = {
+type SuitCard = {
   id: string;
   mark: number;
   name: string;
@@ -11,10 +13,11 @@ type Suit = {
   status: string;
   year: number;
   image: string;
+  classification: string;
 };
 
 export default function SuitsPage() {
-  const [suits, setSuits] = useState<Suit[]>([]);
+  const [suits, setSuits] = useState<SuitCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [markInput, setMarkInput] = useState("");
@@ -26,18 +29,15 @@ export default function SuitsPage() {
     try {
       const res = await fetch(`/api/suits?mark=${markApplied}`);
       if (res.status === 401) {
-        setError("UNAUTHORIZED // session token not accepted by /api/suits");
+        setError("UNAUTHORIZED // SESSION TOKEN REJECTED BY /api/suits");
         setSuits([]);
         return;
       }
       const data = await res.json();
-      if (data.success) {
-        setSuits(data.suits);
-      } else {
-        setError(data.error || "Unknown error");
-      }
-    } catch (e) {
-      setError("Network error");
+      if (data.success) setSuits(data.suits);
+      else setError(data.error || "UNKNOWN ERROR");
+    } catch {
+      setError("NETWORK ERROR // CHECK UPLINK");
     } finally {
       setLoading(false);
     }
@@ -58,101 +58,121 @@ export default function SuitsPage() {
   }
 
   const statusColor: Record<string, string> = {
-    online: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
-    offline: "text-slate-400 border-slate-400/40 bg-slate-400/10",
-    damaged: "text-jarvis-gold border-jarvis-gold/40 bg-jarvis-gold/10",
-    archived: "text-jarvis-cyan border-jarvis-cyan/40 bg-jarvis-cyan/10",
+    online: "text-emerald-400 border-emerald-400/50 bg-emerald-400/10",
+    offline: "text-slate-400 border-slate-400/50 bg-slate-400/10",
+    damaged: "text-jarvis-gold border-jarvis-gold/50 bg-jarvis-gold/10",
+    archived: "text-jarvis-cyan border-jarvis-cyan/50 bg-jarvis-cyan/10",
   };
 
   return (
-    <main className="min-h-screen p-6 md:p-10">
-      <header className="flex items-center justify-between mb-10">
-        <div className="flex items-center gap-4">
-          <div className="arc-reactor" style={{ width: 48, height: 48 }} />
+    <HudShell session="MARK REGISTRY">
+      <div className="h-full flex flex-col">
+        <header className="mb-4 flex items-center justify-between">
           <div>
-            <div className="text-xl tracking-[0.3em] text-jarvis-cyan">SUIT REGISTRY</div>
-            <div className="text-[10px] text-jarvis-cyan/60 tracking-widest">
-              HALL OF ARMOR // MALIBU VAULT
+            <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan/60">
+              // HALL OF ARMOR // MALIBU VAULT
+            </div>
+            <h1 className="text-2xl tracking-[0.3em] text-jarvis-cyan flicker">SUIT REGISTRY</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <HexBadge>{suits.length} UNITS</HexBadge>
+            <button className="btn-hud" onClick={logout}>DISENGAGE</button>
+          </div>
+        </header>
+
+        <form onSubmit={applyFilter} className="flex items-end gap-3 mb-4 hud-panel hud-corners p-3">
+          <div className="flex-1 max-w-xs">
+            <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">
+              FILTER BY MARK NUMBER
+            </label>
+            <input
+              className="input-hud mt-1"
+              type="number"
+              placeholder="e.g. 42"
+              value={markInput}
+              onChange={(e) => setMarkInput(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="btn-hud">APPLY</button>
+          <button
+            type="button"
+            className="btn-hud"
+            onClick={() => {
+              setMarkInput("");
+              setMarkApplied("");
+              setTimeout(loadSuits, 0);
+            }}
+          >
+            CLEAR
+          </button>
+          <div className="flex-1 text-right text-[9px] text-jarvis-cyan/50 tracking-widest">
+            STATUS // {loading ? "QUERYING..." : "READY"}
+          </div>
+        </form>
+
+        {error && (
+          <div className="hud-panel hud-corners p-5 mb-4 text-jarvis-red bg-jarvis-red/5">
+            <div className="tracking-widest text-[10px] mb-2">// SYSTEM ERROR</div>
+            <div className="text-xs">{error}</div>
+            <div className="text-[9px] mt-3 text-jarvis-red/60 tracking-wider">
+              Inspect Network + Application tabs for diagnostics.
             </div>
           </div>
-        </div>
-        <button onClick={logout} className="btn">DISENGAGE</button>
-      </header>
+        )}
 
-      <form onSubmit={applyFilter} className="flex gap-3 mb-8 items-end">
-        <div className="flex-1 max-w-xs">
-          <label className="text-[10px] text-jarvis-cyan/70 tracking-widest">
-            FILTER BY MARK NUMBER
-          </label>
-          <input
-            className="input mt-1"
-            type="number"
-            placeholder="e.g. 42"
-            value={markInput}
-            onChange={(e) => setMarkInput(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="btn">APPLY</button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => {
-            setMarkInput("");
-            setMarkApplied("");
-            setTimeout(loadSuits, 0);
-          }}
-        >
-          CLEAR
-        </button>
-      </form>
-
-      {error && (
-        <div className="hud-border p-6 text-jarvis-red bg-jarvis-red/5 mb-6">
-          <div className="tracking-widest text-xs mb-2">// SYSTEM ERROR</div>
-          <div className="text-sm">{error}</div>
-          <div className="text-[10px] mt-3 text-jarvis-red/60">
-            Inspect Network + Application tabs for diagnostics.
-          </div>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="text-jarvis-cyan tracking-widest">LOADING...</div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {suits.map((s) => (
-            <Link
-              key={s.id}
-              href={`/suits/${s.id}`}
-              className="hud-border bg-jarvis-panel/60 p-5 hover:shadow-hud transition-all group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="text-[10px] text-jarvis-cyan/60 tracking-widest">
-                    MARK {s.mark} // {s.year}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex-1 overflow-y-auto pr-1">
+            {suits.map((s) => (
+              <Link
+                key={s.id}
+                href={`/suits/${s.id}`}
+                className="hud-panel hud-corners p-4 group hover:bg-jarvis-cyan/5 transition-all"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">
+                      MARK {s.mark} // {s.year}
+                    </div>
+                    <div className="text-base tracking-[0.2em] text-jarvis-cyan mt-1">{s.name}</div>
+                    <div className="text-[10px] italic text-slate-400">"{s.codename}"</div>
                   </div>
-                  <div className="text-lg text-jarvis-cyan mt-1 tracking-wider">{s.name}</div>
-                  <div className="text-xs text-slate-400 italic">{s.codename}</div>
+                  <span
+                    className={`text-[9px] tracking-[0.25em] border px-2 py-1 ${statusColor[s.status] || ""}`}
+                  >
+                    {s.status.toUpperCase()}
+                  </span>
                 </div>
-                <span
-                  className={`text-[9px] tracking-widest border px-2 py-1 ${
-                    statusColor[s.status] || ""
-                  }`}
-                >
-                  {s.status.toUpperCase()}
-                </span>
-              </div>
-              <div className="aspect-square bg-jarvis-bg/50 border border-jarvis-cyan/20 flex items-center justify-center overflow-hidden">
-                <img
-                  src={s.image}
-                  alt={s.name}
-                  className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform"
-                />
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </main>
+
+                <div className="relative aspect-square bg-jarvis-bg/70 border border-jarvis-cyan/20 overflow-hidden">
+                  <div className="absolute inset-0 hud-hexpattern opacity-30" />
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    className="relative w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
+                  />
+                  <div className="absolute top-2 left-2 text-[9px] tracking-[0.25em] text-jarvis-cyan/70 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-cyan/30">
+                    ID // {s.id.toUpperCase()}
+                  </div>
+                  <div className="absolute bottom-2 right-2 text-[9px] tracking-[0.25em] text-jarvis-gold/80 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-gold/30">
+                    {s.classification}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-3 text-[9px] tracking-[0.25em] text-jarvis-cyan/60">
+                  <span>↳ VIEW HUD BRIEFING</span>
+                  <span className="text-jarvis-cyan">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex-1 flex items-center justify-center text-jarvis-cyan tracking-[0.4em] flicker">
+            QUERYING VAULT...
+          </div>
+        )}
+      </div>
+    </HudShell>
   );
 }
