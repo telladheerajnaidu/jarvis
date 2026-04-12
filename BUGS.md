@@ -43,8 +43,8 @@ Three tiers. Full walkthrough + rubrics in `docs/WALKTHROUGH.md`. This file is t
 
 ## Bug 3 — Filter race condition
 
-**Trigger:** On `/suits`, APPLY `mark=3`, then within ~1s APPLY `mark=85`. `SHOWING MARK` header briefly reads `MARK 85` then flips back to `MARK 3` (wrong).
-**DevTools tell:** Network waterfall shows `?mark=3` takes ~2.5s while `?mark=85` takes ~200ms. The late response overwrites state. Backend plants this latency intentionally via inverse-mark delay in `app/api/suits/route.ts`.
+**Trigger:** On `/suits`, type `3` → APPLY. Request hangs (~15s, feels dead). Tell candidate to try `85` instead. Mark 85 returns fast → `SHOWING MARK 85` shows. Seconds later mark=3 response lands and `SHOWING MARK` flips back to `MARK 3` (wrong).
+**DevTools tell:** Network waterfall shows `?mark=3` pending for ~14s while `?mark=85` completes in ~100ms. The late response overwrites state. Backend plants this latency intentionally via quadratic inverse-mark delay in `app/api/suits/route.ts`.
 **Fix:**
 ```diff
   useEffect(() => {

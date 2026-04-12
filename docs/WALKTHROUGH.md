@@ -236,10 +236,10 @@ You should see `{ at, mark, data: { suits, server_timestamp } }`. Click RESYNC a
 ## Bug 3 — HARD — Race condition on filter
 
 ### Trigger
-On `/suits`, type a **small** mark number in the filter (`3`) and click **APPLY**. Before the results come back, clear the input, type a **large** mark number (`85`), click APPLY again.
+On `/suits`, type `3` in the filter and click **APPLY**. The request hangs (~15s — feels dead). While it's still hanging, clear the input, type `85`, click **APPLY**. The mark=85 response returns in ~100ms and `SHOWING MARK 85` renders. A few seconds later the mark=3 response finally returns and clobbers state — UI flips back to `SHOWING MARK 3`.
 
 ### Symptom
-The prominent `SHOWING MARK N` readout in the header briefly changes to `MARK 85` → then a moment later **flips back to `MARK 3`**. The gallery content flips too. Final rendered result does not match the last APPLY. Repeat rapidly and the UI is non-deterministic.
+The prominent `SHOWING MARK N` readout in the header shows `MARK 85` for a few seconds → then **flips back to `MARK 3`** without the candidate touching anything. Final rendered result does not match the last APPLY.
 
 Mid-flight (after first APPLY has been issued, before its response arrives):
 
@@ -252,21 +252,22 @@ Final state (the slower earlier request has arrived and overwritten the newer Ma
 ### Live latency proof from the deploy
 
 ```json
-{ "mark3_ms": 2518, "mark85_ms": 295 }
+{ "mark3_ms": 14320, "mark85_ms": 110 }
 ```
 
-The Mark 3 request is ~8–10× slower than Mark 85. Gap is ~2.2 seconds — enough for the race to fire reliably, tight enough that the interview doesn't drag.
+Mark 3 is ~130× slower than Mark 85. The curve is quadratic on `(91 - clamped) / 90`, so small marks hang for ~15s while big marks respond in ~100ms. The long mark=3 wait is the whole point: it gives the interviewer time to say "try a different mark" and guarantees the race fires.
 
 ### Reproducing reliably
-1. Type `3` in the filter → click **APPLY**. `SHOWING MARK 3` appears once response lands.
-2. **Within ~1 second** (before Mark 3 finishes), clear the input, type `85`, click **APPLY**.
-3. Watch: UI shows `SHOWING MARK 85` briefly, then visibly flips back to `SHOWING MARK 3` a second or two later. That flip is the bug.
+1. Say: "filter by Mark 3, click APPLY." Candidate does. Spinner shows, nothing happens for ~15s.
+2. After ~3s of hang, say: "that's taking forever, try Mark 85 instead." Candidate clears the input, types `85`, clicks APPLY.
+3. Mark 85 returns in ~100ms → `SHOWING MARK 85` renders with one suit in the gallery.
+4. Another ~10s later, the stranded Mark 3 response lands → `SHOWING` flips back to `MARK 3`, gallery changes. That flip is the bug.
 
 ### What a candidate should find
 Open **Network tab → Fetch/XHR**, repeat the reproduction. Two requests show up:
 
-- `suits?mark=3` — **~2.5s** total time
-- `suits?mark=85` — **~200ms** total time
+- `suits?mark=3` — **~14s** total time (pending while mark=85 completes)
+- `suits?mark=85` — **~110ms** total time
 
 Look at the **Waterfall** column. The 85 request returns almost instantly (the user sees Mark 85 briefly). The 3 request returns ~2 seconds later — and its response is written to state last, overwriting Mark 85.
 
@@ -313,11 +314,11 @@ Alternative fix: a response-time monotonic counter (increment on each call, igno
 
 ### Verify via curl (shows the latency gradient)
 ```bash
-# Should take ~2.5s
+# Should take ~14s
 time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
   "https://jarvis-nine-coral.vercel.app/api/suits?mark=3"
 
-# Should take ~200ms
+# Should take ~100ms
 time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
   "https://jarvis-nine-coral.vercel.app/api/suits?mark=85"
 ```

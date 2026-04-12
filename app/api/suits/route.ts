@@ -3,20 +3,24 @@ import { SUITS } from "@/lib/suits";
 import { verify, COOKIE_NAME } from "@/lib/auth";
 import { cookies } from "next/headers";
 
+export const maxDuration = 30;
+
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-// Bug H1 — variable per-mark latency. Small mark numbers are intentionally
-// slow (~2.5s), large mark numbers respond fast (~150ms). Combined with
-// the frontend filter (which has no AbortController), rapid APPLY clicks
-// produce out-of-order responses: the final response to arrive wins, even
-// if the user's last query was different.
+// Bug H1 — variable per-mark latency on a quadratic curve. Small mark
+// numbers hang for ~15s (feels like a dead request), large mark numbers
+// return in ~100ms. Combined with the frontend filter (no AbortController),
+// the interviewer's flow is: "type 3 and APPLY" → hangs → "ok try 85
+// instead" → mark=85 returns fast and renders, then ~10s later the stale
+// mark=3 response lands and clobbers state.
 function delayForMark(mark: number | null): number {
   if (mark == null || Number.isNaN(mark)) return 0;
   const clamped = Math.max(1, Math.min(90, mark));
-  // Mark 3  -> ~2500ms, Mark 85 -> ~200ms
-  return Math.round(2600 - (clamped / 90) * 2450);
+  const frac = (91 - clamped) / 90;
+  // Mark 3 -> ~14300ms, Mark 85 -> ~70ms
+  return Math.round(15000 * frac * frac);
 }
 
 export async function GET(req: Request) {
