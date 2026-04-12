@@ -23,20 +23,24 @@ export default function SuitsPage() {
   const [error, setError] = useState<string | null>(null);
   const [markInput, setMarkInput] = useState("");
   const [markApplied, setMarkApplied] = useState("");
+  const [lastSync, setLastSync] = useState<string | null>(null);
 
-  async function loadSuits() {
+  async function loadSuits(markOverride?: string) {
+    const mark = markOverride ?? markApplied;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/suits?mark=${markApplied}`);
+      const res = await fetch(`/api/suits?mark=${mark}`);
       if (res.status === 401) {
         setError("UNAUTHORIZED // SESSION TOKEN REJECTED BY /api/suits");
         setSuits([]);
         return;
       }
       const data = await res.json();
-      if (data.success) setSuits(data.suits);
-      else setError(data.error || "UNKNOWN ERROR");
+      if (data.success) {
+        setSuits(data.suits);
+        if (data.server_timestamp) setLastSync(data.server_timestamp);
+      } else setError(data.error || "UNKNOWN ERROR");
     } catch {
       setError("NETWORK ERROR // CHECK UPLINK");
     } finally {
@@ -45,12 +49,20 @@ export default function SuitsPage() {
   }
 
   useEffect(() => {
-    loadSuits();
-  }, []);
+    loadSuits(markApplied);
+    // intentionally no AbortController — rapid APPLY clicks race (bug H1)
+  }, [markApplied]);
 
   function applyFilter(e: React.FormEvent) {
     e.preventDefault();
-    loadSuits();
+    setMarkApplied(markInput);
+  }
+
+  async function resync() {
+    // Forces a fresh fetch — but the browser may serve /api/suits from its
+    // immutable cache so the LAST SYNC timestamp visibly won't advance.
+    // This is bug M1.
+    await loadSuits(markApplied);
   }
 
   async function logout() {
@@ -77,9 +89,19 @@ export default function SuitsPage() {
           </div>
           <div className="flex items-center gap-3">
             <HexBadge>{suits.length} UNITS</HexBadge>
+            <button className="btn-hud btn-gold" onClick={resync}>RESYNC TELEMETRY</button>
             <button className="btn-hud" onClick={logout}>DISENGAGE</button>
           </div>
         </header>
+
+        {lastSync && (
+          <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60 mb-3 flex items-center gap-4">
+            <span>LAST SYNC // {new Date(lastSync).toLocaleTimeString()}</span>
+            <span className="text-jarvis-cyan/40">
+              // if this does not advance on RESYNC, inspect Network → cache
+            </span>
+          </div>
+        )}
 
         <form onSubmit={applyFilter} className="flex items-end gap-3 mb-4 hud-panel hud-corners p-3">
           <div className="flex-1 max-w-xs">
@@ -101,7 +123,6 @@ export default function SuitsPage() {
             onClick={() => {
               setMarkInput("");
               setMarkApplied("");
-              setTimeout(loadSuits, 0);
             }}
           >
             CLEAR

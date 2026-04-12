@@ -1,99 +1,82 @@
-# Interview Walkthrough — Live Debugging Session
+# Jarvis Debug Lab — Interview Walkthrough
 
-This doc walks through the entire interview flow with real screenshots captured against the production Vercel deploy.
+Three planted bugs, tiered by difficulty. All are real — no mocks. The backend lives on Vercel, the bugs trigger identically whether the candidate runs it locally or against the production URL.
 
 **Target URL:** https://jarvis-nine-coral.vercel.app
-**Credentials:** `tony@stark.com` / `jarvis` (case matters — see Bug L1)
+**Credentials:** `tony@stark.com` / `jarvis` (case matters — see Bug 1)
 
-Every screenshot below is captured from the live deploy. Every JSON blob is a real response body or request trace from a headless Chrome session. Nothing is mocked.
+The goal is to observe the candidate's diagnostic path, not whether they patch the code. Reward narration over result: which DevTools tab did they open, what did they look for, how did they form a hypothesis.
+
+---
+
+## Difficulty tiers
+
+| # | Tier | Bug | Surface | Primary DevTools skill |
+|---|---|---|---|---|
+| 1 | **Easy** | Case-sensitive email on login | `/` | Network tab — reading response body past a 200 OK |
+| 2 | **Medium** | Gallery shows stale data after RESYNC | `/suits` | Network tab — Size column `(disk cache)` + `Cache-Control` response header |
+| 3 | **Hard** | Filter returns wrong results on rapid APPLY | `/suits` | Network tab — waterfall ordering + knowing about in-flight request cancellation |
+
+No hints are printed to the Console. All signals live in **Network**, **Application**, or the visible UI state. The candidate has to choose which tab to open.
 
 ---
 
 ## API endpoints reference
 
-| Method | Path | Purpose | Auth | Bug planted |
-|---|---|---|---|---|
-| `POST` | `/api/login` | Authenticate user, set session cookie | — | **L1** case-sensitive email, **L3** wrong cookie path |
-| `POST` | `/api/logout` | Clear session cookie | — | none |
-| `GET`  | `/api/suits` | List all suits (optional `?mark=N` filter) | Cookie required (401 otherwise) | none on backend — **S5** is in the frontend call site |
-| `GET`  | `/api/suits/[id]` | Single suit detail by id (e.g. `mk50`) | Cookie required | none on backend — **S4** is in the frontend component |
-| `GET`  | `/api/suits/[id]/spec` | CSV spec sheet download | Cookie required | **S1** missing `Content-Disposition` header |
-| `POST` | `/api/admin/reset` | Purge `jarvis_session` cookie across paths | — | none (interviewer tool) |
-| `POST` | `/api/admin/grant` | Bypass L1+L3: issue a valid session cookie at `Path=/` for `tony@stark.com` | — | none (interviewer tool) |
+| Method | Path | Purpose | Auth |
+|---|---|---|---|
+| `POST` | `/api/login` | Authenticate, set `jarvis_session` cookie (HttpOnly, Path=/) | — |
+| `POST` | `/api/logout` | Clear session cookie | — |
+| `GET`  | `/api/suits` | List suits, optional `?mark=N` filter | Cookie required (401 otherwise) |
+| `GET`  | `/api/suits/[id]` | Single suit detail | Cookie required |
+| `GET`  | `/api/suits/[id]/spec` | CSV spec download (Content-Disposition set) | Cookie required |
+| `POST` | `/api/admin/reset` | Purge `jarvis_session` cookie across paths | — |
+| `POST` | `/api/admin/grant` | Bypass login: issue a valid session for `tony@stark.com` | — |
+| `POST` | `/api/admin/flush-cache` | Resolve Bug 2: returns `Clear-Site-Data: "cache"` | — |
 
-**Page routes (candidate-visible):**
+### Interviewer shortcuts
 
-| Path | What it is |
+| Goal | URL to open in browser |
 |---|---|
-| `/` | J.A.R.V.I.S. boot + login HUD |
-| `/suits` | Suit registry / gallery |
-| `/suits/[id]` | Mark-level HUD with dials, integrity, weapons, specs |
-| `/admin/reset` | Purge console (share only with yourself) |
+| Full reset, re-arm all bugs | `https://jarvis-nine-coral.vercel.app/admin/reset` |
+| Skip the login bug, land straight in `/suits` | `https://jarvis-nine-coral.vercel.app/api/admin/grant` then navigate to `/suits` |
+| Resolve Bug 2 mid-session without code changes | `https://jarvis-nine-coral.vercel.app/api/admin/flush-cache` |
 
-**Sample curls for quick verification:**
-
-```bash
-URL=https://jarvis-nine-coral.vercel.app
-
-# L1 — capital T returns 200 + EMAIL_CASE_MISMATCH
-curl -s -X POST $URL/api/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"Tony@stark.com","password":"jarvis"}'
-
-# L3 — check Set-Cookie has Path=/admin
-curl -s -i -X POST $URL/api/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"tony@stark.com","password":"jarvis"}' \
-  | grep -i set-cookie
-
-# S1 — HEAD request shows no Content-Disposition (must be authed first)
-COOKIE=$(curl -s -i -X POST $URL/api/login -H "Content-Type: application/json" \
-  -d '{"email":"tony@stark.com","password":"jarvis"}' \
-  | grep -i set-cookie | sed 's/.*jarvis_session=\([^;]*\).*/\1/')
-curl -s -I -H "Cookie: jarvis_session=$COOKIE" $URL/api/suits/mk50/spec
-```
+`POST /api/admin/grant` and `/api/admin/flush-cache` also accept `GET` for convenience — just paste the URL into the address bar.
 
 ---
 
-## Step 1 — Landing page
+## Bug 1 — EASY — Case-sensitive login
 
-Candidate visits the URL. After a short J.A.R.V.I.S. boot animation, the login HUD loads: arc reactor, concentric rings, telemetry stream (left), diagnostics bars (right), ticker (top), waveform (bottom).
+### Trigger
+Candidate types `Tony@stark.com` (capital T) with the correct password.
 
-![Login page](./screenshots/01_login_page.png)
+### Symptom
+UI shows a red terminal error: `AUTHENTICATION REJECTED // SEE TERMINAL`. Generic — no direct hint about case.
 
-Give the candidate the URL and credentials. Do not tell them emails are case-sensitive. Stay silent while they try.
-
----
-
-## Step 2 — Bug L1 triggers (case-sensitive email)
-
-Candidate types `Tony@stark.com` (capital T). Login fails with a generic UI error:
-
-![L1 UI error](./screenshots/02_L1_case_error_ui.png)
-
-### What DevTools shows
-
-Open Network tab, find `POST /api/login`, look at the Response. Status is **200 OK** — a trap. The body reveals the real failure:
+### What a candidate should find
+Open **Network tab → `POST /api/login`**. Status is **200 OK**, not 4xx. That's the trap: HTTP 200 does not imply business success. They have to open the **Response** panel:
 
 ```json
 {
-  "status": 200,
-  "body": {
-    "success": false,
-    "error": "INVALID_CREDENTIALS",
-    "detail": "EMAIL_CASE_MISMATCH: email comparison is case-sensitive on the server"
-  }
+  "success": false,
+  "error": "INVALID_CREDENTIALS",
+  "detail": "EMAIL_CASE_MISMATCH: email comparison is case-sensitive on the server"
 }
 ```
 
-### Expected candidate behavior
-- Opens Network tab immediately. **Strong signal.**
-- Inspects response body after seeing 200. **Staff-level signal.**
-- Only looks at Console tab. **Weak.**
-- Says "wrong password" and retries. **Red flag.**
+The `detail` field spells it out — only visible if they bother reading the body.
 
-### The fix (backend — `app/api/login/route.ts`)
+### Where it lives
+`app/api/login/route.ts`:
 
+```ts
+const user = USERS.find((u) => u.email === email && u.password === password);
+```
+
+### Resolution
+
+**Candidate fix (code):**
 ```diff
 - const user = USERS.find((u) => u.email === email && u.password === password);
 + const user = USERS.find(
@@ -102,289 +85,220 @@ Open Network tab, find `POST /api/login`, look at the Response. Status is **200 
 + );
 ```
 
+**Interviewer shortcut (no redeploy):**
+```
+https://jarvis-nine-coral.vercel.app/api/admin/grant
+```
+That issues a clean session for `tony@stark.com`. Then navigate to `/suits`.
+
+### Signal rubric
+
+| Behavior | Read |
+|---|---|
+| Opens Network tab within 15s of the failure | **Strong** |
+| Reads the response body after seeing 200 | **Staff-level** |
+| Stops at the Console tab (empty) | **Weak** |
+| Retries "wrong password" variants | **Red flag** |
+
+### Verify via curl
+```bash
+curl -s -X POST https://jarvis-nine-coral.vercel.app/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"Tony@stark.com","password":"jarvis"}'
+```
+You should see `"success":false` with the `EMAIL_CASE_MISMATCH` detail, status 200.
+
 ---
 
-## Step 3 — Lowercase login succeeds; Bug L3 triggers
+## Bug 2 — MEDIUM — Stale gallery after RESYNC
 
-Candidate retries with `tony@stark.com`. Login succeeds, redirects to `/suits`. But the gallery shows:
+### Trigger
+Candidate logs in successfully, lands on `/suits`. A timestamp in the header shows `LAST SYNC // HH:MM:SS`. They click **RESYNC TELEMETRY** in the top bar.
 
-![L3 unauthorized](./screenshots/03_L3_suits_unauthorized.png)
+### Symptom
+The `LAST SYNC` value does **not** advance, no matter how many times RESYNC is clicked. `(Hard refresh — Cmd+Shift+R — does bump it. A soft refresh does not.)`
 
-> UNAUTHORIZED // SESSION TOKEN REJECTED BY /api/suits
+### What a candidate should find
+Open **Network tab**, filter by `Fetch/XHR`, click RESYNC again. Two things stand out:
 
-They just logged in. Why is the gallery 401?
+1. The `suits` request row has a **Size** column value of **`(disk cache)`** or **`(memory cache)`** — not a byte count. The browser is serving the old response without hitting the server.
+2. Click the row → **Headers → Response Headers**:
+   ```
+   cache-control: public, max-age=86400, immutable
+   ```
+   `immutable` tells the browser it can skip revalidation entirely for 24 hours. The data is dynamic, so this is wrong.
 
-### What DevTools shows
+The hint in the UI footer reads: *"if this does not advance on RESYNC, inspect Network → cache"* — subtle, not a console log.
 
-**Application tab → Cookies**:
+### Where it lives
+`app/api/suits/route.ts`:
 
-```json
-{
-  "name": "jarvis_session",
-  "value": "eyJlbWFpbCI6InRvbnlAc3RhcmsuY29tIiwibmFtZSI6IlRvbnkgU3RhcmsifQ....",
-  "domain": "jarvis-nine-coral.vercel.app",
-  "path": "/admin",          ← THE BUG
-  "httpOnly": true,
-  "sameSite": "Lax"
-}
+```ts
+return new NextResponse(JSON.stringify(body), {
+  status: 200,
+  headers: {
+    "Content-Type": "application/json",
+    "Cache-Control": "public, max-age=86400, immutable",
+  },
+});
 ```
 
-The cookie is set with **Path=`/admin`**. Browsers only attach a cookie to a request if the URL begins with that path. `/api/suits` doesn't start with `/admin`, so the browser silently drops the cookie. Server sees no auth.
+### Resolution
 
-**Network tab → `GET /api/suits` → Request Headers**: there's no `Cookie` header. Confirms the diagnosis.
-
-### Expected candidate behavior
-- Opens Network, sees 401, then opens Application → Cookies. **Good.**
-- Notices the Path column. **Strong signal.**
-- Understands cookie scoping (Path, SameSite, Secure). **Staff-level.**
-- Blames the server without checking cookie attributes. **Red flag.**
-
-### The fix (backend — `app/api/login/route.ts`)
-
+**Candidate fix (code):**
 ```diff
-  res.cookies.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
--   path: "/admin",
-+   path: "/",
-    maxAge: 60 * 60 * 8,
-  });
+  headers: {
+    "Content-Type": "application/json",
+-   "Cache-Control": "public, max-age=86400, immutable",
++   "Cache-Control": "no-store",
+  },
 ```
 
-### Unblock live (without editing code)
+**Interviewer shortcut (no redeploy):** hit this URL in a new tab
+```
+https://jarvis-nine-coral.vercel.app/api/admin/flush-cache
+```
+It returns `Clear-Site-Data: "cache"` which purges the browser cache for the origin. Go back to `/suits`, click RESYNC — timestamp advances.
 
-DevTools → Application → Cookies → right-click `jarvis_session` → Edit → change Path from `/admin` to `/` → refresh. Candidate can continue to the gallery. Great for proving they actually understood the bug.
+**Candidate escape route:** Cmd+Shift+R (hard reload) bypasses cache and confirms the diagnosis. That alone is worth credit.
+
+### Signal rubric
+
+| Behavior | Read |
+|---|---|
+| Opens Network tab, sees `(disk cache)` size | **Good** |
+| Opens Response Headers, names `Cache-Control` / `immutable` | **Strong** |
+| Articulates why `immutable` is wrong for this endpoint | **Staff-level** |
+| Tries a hard refresh and connects it to caching | **Strong** |
+| Clicks RESYNC repeatedly without inspecting Network | **Weak** |
+| Blames React / state without checking headers | **Red flag** |
+
+### Verify via curl
+```bash
+curl -s -D- -o /dev/null https://jarvis-nine-coral.vercel.app/api/suits \
+  -H "Cookie: jarvis_session=<paste from login Set-Cookie>" | grep -i cache-control
+# cache-control: public, max-age=86400, immutable
+```
 
 ---
 
-## Step 4 — Gallery loads (cookie manually fixed)
+## Bug 3 — HARD — Race condition on filter
 
-Once the cookie path is corrected, `GET /api/suits` carries the cookie, auth passes, and the full suit registry loads:
+### Trigger
+On `/suits`, type a **small** mark number in the filter (`3`) and click **APPLY**. Before the results come back, clear the input, type a **large** mark number (`85`), click APPLY again.
 
-![Gallery](./screenshots/05_gallery_working.png)
+### Symptom
+Gallery briefly shows Mark 85 → then a moment later **flips back to Mark 3**. Final rendered result does not match the last APPLY. Repeat rapidly and the UI is non-deterministic.
 
-Seven suits: Mark III, VII, XLII, XLIII, XLVI, L, LXXXV. Each card shows mark number, year, name, codename, classification, and status (online/offline/damaged/archived).
+### What a candidate should find
+Open **Network tab → Fetch/XHR**, repeat the reproduction. Two requests show up:
 
----
+- `suits?mark=3` — **~2.4s** total time
+- `suits?mark=85` — **~60ms** total time
 
-## Step 5 — Bug S5 triggers (filter does nothing)
+Look at the **Waterfall** column. The 85 request returns almost instantly (the user sees Mark 85 briefly). The 3 request returns ~2 seconds later — and its response is written to state last, overwriting Mark 85.
 
-Candidate types `42` into the FILTER BY MARK NUMBER input and clicks APPLY. All seven suits still show:
+Subtle clue in the backend: `/api/suits` applies a per-mark latency that is **inverse** to the mark number. Smaller mark = slower. The candidate doesn't need to find this to diagnose — the waterfall is enough — but explaining it is a staff signal.
 
-![S5 filter not working](./screenshots/06_S5_filter_applied_but_all_suits_shown.png)
+Core insight the candidate must name: **there is no request cancellation**. The in-flight fetch for Mark 3 is never aborted when Mark 85 is requested, so its late response clobbers state.
 
-### What DevTools shows
-
-Network tab captures the request:
-
-```json
-{
-  "urls": ["/api/suits?mark="],
-  "note": "URL sent by filter button — note the empty mark value"
-}
-```
-
-The query param is **empty**, not `42`. The filter never sent the typed value.
-
-### Why
-In `app/suits/page.tsx`:
+### Where it lives
+`app/suits/page.tsx`:
 
 ```tsx
-const [markInput, setMarkInput] = useState("");       // updates on keystroke
-const [markApplied, setMarkApplied] = useState("");   // meant to update on Apply
-
-function applyFilter(e: React.FormEvent) {
-  e.preventDefault();
-  loadSuits();   // ← never calls setMarkApplied(markInput)
-}
+useEffect(() => {
+  loadSuits(markApplied);
+  // intentionally no AbortController
+}, [markApplied]);
 ```
 
-`markInput` updates correctly on every keystroke. But `markApplied` (the one used to build the fetch URL) is never updated. Classic React state sync bug.
+### Resolution
 
-### Expected candidate behavior
-- Opens Network, sees `mark=` empty. **Good.**
-- Opens React DevTools, inspects state, spots `markApplied` never changes. **Strong.**
-- Reads the `applyFilter` function in Sources. **Strong.**
-- Concludes "backend filter is broken." **Red flag.**
-
-### The fix (frontend — `app/suits/page.tsx`)
-
+**Candidate fix (code):**
 ```diff
-  function applyFilter(e: React.FormEvent) {
-    e.preventDefault();
--   loadSuits();
-+   setMarkApplied(markInput);
-  }
-+
-+ useEffect(() => {
-+   loadSuits();
-+ }, [markApplied]);
+  useEffect(() => {
+-   loadSuits(markApplied);
++   const controller = new AbortController();
++   loadSuits(markApplied, controller.signal);
++   return () => controller.abort();
+  }, [markApplied]);
 ```
+Plus thread the `signal` into `fetch(...)` inside `loadSuits`.
 
-The `useEffect` is needed because React batches state updates — calling `loadSuits()` inline right after `setMarkApplied(...)` would read the old value.
+Alternative fix: a response-time monotonic counter (increment on each call, ignore responses whose counter is not the latest).
 
----
+**No session-level bypass endpoint.** The race condition is the test — there is no `/api/admin/linearize` by design. If the candidate gets stuck and time is short, reload the page to reset state, or skip to the summary.
 
-## Step 6 — Bug S4 triggers (snake_case vs camelCase)
+### Signal rubric
 
-Candidate clicks any suit card (e.g. Mark L). Detail page loads with a full HUD: integrity per body part, live telemetry dials, weapons loadout, battle log, core specs:
+| Behavior | Read |
+|---|---|
+| Opens Network and compares timings / waterfall | **Good** |
+| Names "race condition" or "last-response-wins" | **Strong** |
+| Proposes AbortController or a request-id guard | **Staff-level** |
+| Notices response timing inversely correlates with mark | **Exceptional** |
+| Concludes "the backend is flaky" | **Red flag** |
 
-![S4 detail page](./screenshots/07_S4_detail_page_missing_fields.png)
+### Verify via curl (shows the latency gradient)
+```bash
+# Should take ~2.4s
+time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
+  "https://jarvis-nine-coral.vercel.app/api/suits?mark=3"
 
-But in the **CORE SPECS** panel (bottom left), two rows are blank:
-- **POWER OUTPUT** → (empty)
-- **TOP SPEED** → (empty)
-
-All other fields render fine. Narrow, specific failure.
-
-### What DevTools shows
-
-Network tab → `GET /api/suits/mk50` → Response Preview:
-
-```json
-{
-  "success": true,
-  "suit": {
-    "id": "mk50",
-    "mark": 50,
-    "name": "Mark L",
-    "power_output": "9.2 GW",      ← snake_case
-    "top_speed": "Mach 4.0",       ← snake_case
-    "armor": "Nanotech (Self-Assembling)",
-    "ai_core": "FRIDAY Core — 2nd Gen",
-    ...
-  }
-}
-```
-
-API payload uses **snake_case**. But the React component at `app/suits/[id]/page.tsx` reads:
-
-```tsx
-<SpecRow label="POWER OUTPUT" value={suit.powerOutput ?? "—"} />
-<SpecRow label="TOP SPEED" value={suit.topSpeed ?? "—"} />
-```
-
-`suit.powerOutput` is `undefined` because the API never sends `powerOutput` (only `power_output`). The `?? "—"` fallback hides the bug with an em-dash.
-
-### Expected candidate behavior
-- Compares API payload shape (Network tab) with what UI displays. **Strong.**
-- Notices snake_case vs camelCase mismatch. **Staff-level.**
-- Only checks UI code, doesn't verify API payload. **Weak.**
-
-### The fix (frontend — `app/suits/[id]/page.tsx`)
-
-```diff
-- <SpecRow label="POWER OUTPUT" value={suit.powerOutput ?? "—"} />
-- <SpecRow label="TOP SPEED" value={suit.topSpeed ?? "—"} />
-+ <SpecRow label="POWER OUTPUT" value={suit.power_output} />
-+ <SpecRow label="TOP SPEED" value={suit.top_speed} />
-```
-
-Also remove the fake `powerOutput` / `topSpeed` fields from the `SuitView` TypeScript type at the top.
-
----
-
-## Step 7 — Bug S1 triggers (download missing Content-Disposition)
-
-On the detail page, candidate clicks **DOWNLOAD SPEC SHEET** (top right). Browser behavior:
-- Chrome: file downloaded but named like `<uuid>`, no `.csv` extension
-- Firefox: opens CSV as text inline in the tab
-- Safari: tries to display inline
-
-### What DevTools shows
-
-Network tab → `GET /api/suits/mk50/spec` → Response Headers:
-
-```json
-{
-  "status": 200,
-  "headers": {
-    "content-type": "text/csv",
-    "cache-control": "public, max-age=0, must-revalidate",
-    "date": "...",
-    "server": "Vercel",
-    "x-vercel-id": "..."
-  }
-}
-```
-
-**No `Content-Disposition` header.** The CSV content is sent correctly but the browser has no instruction to save it as an attachment with a filename.
-
-### Expected candidate behavior
-- Opens Network, inspects response headers. **Good.**
-- Knows `Content-Disposition: attachment; filename="..."` is required for downloads. **Staff-level.**
-- Tries different browsers without checking headers. **Weak.**
-
-### The fix (backend — `app/api/suits/[id]/spec/route.ts`)
-
-```diff
-  return new Response(csv, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/csv",
-+     "Content-Disposition": `attachment; filename="mk${suit.mark}_${suit.id}_spec.csv"`,
-    },
-  });
+# Should take ~60ms
+time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
+  "https://jarvis-nine-coral.vercel.app/api/suits?mark=85"
 ```
 
 ---
 
-## Step 8 — Resetting between candidates
+## Interviewer flow (30 min)
 
-Visit `/admin/reset` to purge the session cookie across all paths. Re-arms all bugs instantly. No code changes needed.
+| t | Action | Expected candidate move |
+|---|---|---|
+| 0:00 | Share URL + credentials. "Log in, explore, narrate as you go." | — |
+| 0:00–0:05 | Watch them type `Tony@stark.com` → Bug 1 triggers | Network tab → response body |
+| 0:05–0:07 | If stuck, nudge: "what does the server actually say?" | They read the `detail` field |
+| 0:07 | They log in successfully and land on `/suits` | Timestamp visible in header |
+| 0:08 | Ask: "click RESYNC a few times — does the timestamp update?" → Bug 2 | Network tab → `(disk cache)` → response headers |
+| 0:12 | If stuck: "what does the browser do if you hard-refresh?" | They make the cache connection |
+| 0:15 | Ask: "filter by Mark 3, then quickly filter by Mark 85" → Bug 3 | Network tab → waterfall → race condition |
+| 0:22 | If they nail it early, ask: "how would you fix it?" | AbortController / request-id guard |
+| 0:27 | Wrap: "which would you prioritize fixing first, and why?" | Judge prioritization |
 
-![Admin reset](./screenshots/09_admin_reset.png)
+### Pass bar
+
+- **Strong:** Diagnoses 2 of 3 bugs cleanly, including Bug 3, and names the correct DevTools artifact for each. Proposes a concrete fix for Bug 2 or 3.
+- **Pass:** Diagnoses Bug 1 and Bug 2 without major prompts.
+- **Fail:** Opens only Console. Blames backend without looking at response body/headers. Refreshes in a loop without reading network activity.
+
+### Red flag phrases
+- "It's a backend issue" (without opening Network).
+- "The cache tab is empty so there's no cache problem" (Application → Cache Storage ≠ HTTP cache).
+- "The response looks the same so the request must be wrong" (on Bug 3 — misses that *order* of responses is what matters, not content).
+
+---
+
+## Reset between candidates
+
+Open in a new tab:
 
 ```
 https://jarvis-nine-coral.vercel.app/admin/reset
 ```
 
-The page runs a short Jarvis purge animation, clears cookies via `POST /api/admin/reset`, and gives you two buttons: return to login or jump straight to the gallery.
-
-### Bypassing L1 + L3 mid-session (interviewer shortcut)
-
-If you've already validated L1/L3 and want to continue testing S5 / S4 / S1 without editing the cookie manually or redeploying a fix, open:
-
-```
-https://jarvis-nine-coral.vercel.app/api/admin/grant
-```
-
-That endpoint:
-1. Clears the broken `Path=/admin` cookie
-2. Issues a fresh valid `jarvis_session` at `Path=/` for `tony@stark.com`
-3. Returns JSON confirming the grant
-
-After hitting it, navigate to `/suits` — gallery loads, and the rest of the bug chain is reachable.
-
-**Session matrix for interviewers:**
-
-| Goal | Endpoint |
-|---|---|
-| Reset everything, re-arm all bugs | `/admin/reset` |
-| Test L1 + L3 | Normal login at `/` |
-| Skip L1 + L3 to test S5 / S4 / S1 | `/api/admin/grant` |
+That purges the session cookie and flushes the browser cache (via the reset page's own Clear-Site-Data header). All three bugs re-arm immediately.
 
 ---
 
-## Interviewer summary table
+## Local dev (optional)
 
-| Step | Bug | Candidate action | DevTools signal | Fix layer |
-|---|---|---|---|---|
-| 2 | L1 | Types `Tony@stark.com` | Network tab, 200 OK response body `EMAIL_CASE_MISMATCH` | Backend — `lowerCase()` both sides |
-| 3 | L3 | Successful login, /suits 401 | Application → Cookies → Path `/admin` | Backend — `path: "/"` |
-| 5 | S5 | Apply filter, nothing happens | Network, request URL `?mark=` empty | Frontend — `setMarkApplied` + `useEffect` |
-| 6 | S4 | Detail page shows `—` for two fields | Network payload has `power_output`, UI reads `powerOutput` | Frontend — read correct keys |
-| 7 | S1 | Download produces unnamed file / inline render | Network response headers missing `Content-Disposition` | Backend — add header |
+```bash
+git clone https://github.com/telladheerajnaidu/jarvis
+cd jarvis
+npm install
+npm run dev
+# http://localhost:3000
+```
 
-### Pass bar for R1 (30-min interview)
-
-- **Strong:** Catches 3+ bugs with correct diagnosis, narrates their thinking, names the exact DevTools tab they're using.
-- **Pass:** Catches 2 bugs cleanly. Understands Network tab.
-- **Fail:** Opens only Console. Blames backend for frontend bugs without checking Network. Can't read a response body past the status code.
-
-### Red flag moves
-
-- Refreshes instead of reading response body (misses L1).
-- Doesn't know the Application tab exists (misses L3).
-- Concludes "must be a backend issue" on S4/S5 without inspecting the payload shape.
-- Says "the download just works for me" on Chrome — not knowing what happens when Content-Disposition is missing.
+Bugs behave identically on localhost.

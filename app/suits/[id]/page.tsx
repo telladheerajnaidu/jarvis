@@ -43,12 +43,7 @@ type SuitApi = {
   integrity: Integrity;
 };
 
-// NOTE: The view type intentionally exposes camelCase fields that do NOT exist
-// on the API payload (power_output / top_speed are snake_case). This is bug S4.
-type SuitView = SuitApi & {
-  powerOutput?: string;
-  topSpeed?: string;
-};
+type SuitView = SuitApi;
 
 export default function SuitDetailPage() {
   const params = useParams<{ id: string }>();
@@ -242,8 +237,8 @@ export default function SuitDetailPage() {
           <div className="hud-panel hud-corners p-4">
             <SectionTitle>CORE SPECS</SectionTitle>
             <div className="mt-3 space-y-2 text-[11px]">
-              <SpecRow label="POWER OUTPUT" value={suit.powerOutput ?? "—"} />
-              <SpecRow label="TOP SPEED" value={suit.topSpeed ?? "—"} />
+              <SpecRow label="POWER OUTPUT" value={suit.power_output} />
+              <SpecRow label="TOP SPEED" value={suit.top_speed} />
               <SpecRow label="ARMOR" value={suit.armor} />
               <SpecRow label="AI CORE" value={suit.ai_core} />
               <SpecRow label="HUD" value={suit.hud_version} />

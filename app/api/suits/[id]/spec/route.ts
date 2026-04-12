@@ -31,6 +31,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     status: 200,
     headers: {
       "Content-Type": "text/csv",
+      "Content-Disposition": `attachment; filename="mk${suit.mark}_${suit.id}_spec.csv"`,
     },
   });
 }
