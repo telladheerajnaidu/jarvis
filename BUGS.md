@@ -26,10 +26,10 @@ Three tiers. Full walkthrough + rubrics in `docs/WALKTHROUGH.md`. This file is t
 
 ---
 
-## Bug 2 — Stale gallery (localStorage cache)
+## Bug 2 — Frozen HEARTBEAT (localStorage cache)
 
-**Trigger:** Log in, click `RESYNC TELEMETRY` on `/suits`. `LAST SYNC` timestamp does not advance and no network request fires.
-**DevTools tell:** Network → Fetch/XHR stays **empty** on click. Application → Local Storage → `jarvis_suits_cache_v1` contains a stale entry with a fixed `at` timestamp.
+**Trigger:** Log in, click `RESYNC TELEMETRY` on `/suits`. The big `HEARTBEAT` number does not change, `LAST SYNC` timestamp does not advance, no network request fires. **Persists across logout/login** — only `/api/admin/flush-cache` clears it.
+**DevTools tell:** Network → Fetch/XHR stays **empty** on click. Application → Local Storage → `jarvis_suits_cache_v1` contains a stale entry with fixed `at`, `heartbeat`, and `server_timestamp`.
 **Fix:**
 ```diff
   async function resync() {
@@ -43,8 +43,8 @@ Three tiers. Full walkthrough + rubrics in `docs/WALKTHROUGH.md`. This file is t
 
 ## Bug 3 — Filter race condition
 
-**Trigger:** On `/suits`, APPLY `mark=3`, then immediately APPLY `mark=85`. UI ends up showing Mark 3 (wrong).
-**DevTools tell:** Network waterfall shows `?mark=3` takes ~4.4s while `?mark=85` takes ~180ms. The late response overwrites state. Backend plants this latency intentionally via inverse-mark delay in `app/api/suits/route.ts`.
+**Trigger:** On `/suits`, APPLY `mark=3`, then within ~1s APPLY `mark=85`. `SHOWING MARK` header briefly reads `MARK 85` then flips back to `MARK 3` (wrong).
+**DevTools tell:** Network waterfall shows `?mark=3` takes ~2.5s while `?mark=85` takes ~200ms. The late response overwrites state. Backend plants this latency intentionally via inverse-mark delay in `app/api/suits/route.ts`.
 **Fix:**
 ```diff
   useEffect(() => {

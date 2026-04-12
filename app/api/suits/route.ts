@@ -8,15 +8,15 @@ function sleep(ms: number) {
 }
 
 // Bug H1 — variable per-mark latency. Small mark numbers are intentionally
-// very slow (~4.5s), large mark numbers respond fast (~120ms). Combined
-// with the frontend filter (which has no AbortController), rapid APPLY
-// clicks produce out-of-order responses: the final response to arrive
-// wins, even if the user's last query was different.
+// slow (~2.5s), large mark numbers respond fast (~150ms). Combined with
+// the frontend filter (which has no AbortController), rapid APPLY clicks
+// produce out-of-order responses: the final response to arrive wins, even
+// if the user's last query was different.
 function delayForMark(mark: number | null): number {
   if (mark == null || Number.isNaN(mark)) return 0;
   const clamped = Math.max(1, Math.min(90, mark));
-  // Mark 3  -> ~4400ms, Mark 85 -> ~170ms
-  return Math.round(4500 - (clamped / 90) * 4400);
+  // Mark 3  -> ~2500ms, Mark 85 -> ~200ms
+  return Math.round(2600 - (clamped / 90) * 2450);
 }
 
 export async function GET(req: Request) {

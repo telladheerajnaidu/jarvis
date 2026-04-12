@@ -14,10 +14,14 @@ The goal is to observe the candidate's diagnostic path, not whether they patch t
 | # | Tier | Bug | Surface | Primary DevTools skill |
 |---|---|---|---|---|
 | 1 | **Easy** | Case-sensitive email on login | `/` | Network tab — reading response body past a 200 OK |
-| 2 | **Medium** | Gallery shows stale data after RESYNC | `/suits` | Application tab — `localStorage` entry + silent Network tab on click |
-| 3 | **Hard** | Filter returns wrong results on rapid APPLY | `/suits` | Network tab — waterfall ordering + knowing about in-flight request cancellation |
+| 2 | **Medium** | `HEARTBEAT` frozen after RESYNC | `/suits` | Application tab — `localStorage` entry + silent Network tab on click |
+| 3 | **Hard** | `SHOWING MARK` flips back on rapid APPLY | `/suits` | Network tab — waterfall ordering + knowing about in-flight request cancellation |
 
 No hints are printed to the Console. All signals live in **Network**, **Application**, or the visible UI state. The candidate has to choose which tab to open.
+
+### Bug persistence model
+
+Bugs are **sticky across logout/login** by design. Clicking `DISENGAGE` only clears the session cookie — `localStorage` persists. When the candidate logs back in, Bug 2 is still live (the cached entry is still there, HEARTBEAT still frozen). The **only** way to clear Bug 2 mid-session is to hit `/api/admin/flush-cache`. Bug 3 needs no reset — it reproduces on every rapid APPLY.
 
 ---
 
@@ -116,19 +120,19 @@ You should see `"success":false` with the `EMAIL_CASE_MISMATCH` detail, status 2
 
 ---
 
-## Bug 2 — MEDIUM — Stale gallery after RESYNC
+## Bug 2 — MEDIUM — Frozen HEARTBEAT after RESYNC
 
 ### Gallery after successful login
 
 ![Gallery loaded](./screenshots/03_gallery_after_login.png)
 
-Note the `LAST SYNC // HH:MM:SS` line under the header with the hint *"if this does not advance on RESYNC, inspect Network → cache"*.
+The header panel shows three prominent readouts: `HEARTBEAT` (5-digit random number — server rerolls on every real fetch), `SHOWING` (mark currently rendered), and `LAST SYNC` (timestamp). Hint under HEARTBEAT: *"should change on every RESYNC"*.
 
 ### Trigger
 Candidate logs in successfully, lands on `/suits`. They click **RESYNC TELEMETRY** in the top bar, then click it again.
 
 ### Symptom
-The `LAST SYNC` value does **not** advance, no matter how many times RESYNC is clicked. `(Hard refresh — Cmd+Shift+R — does bump it. A soft refresh does not.)`
+The `HEARTBEAT` number does **not** change, no matter how many times RESYNC is clicked. `LAST SYNC` timestamp also stays frozen. Hard refresh (Cmd+Shift+R) does **not** fix it either — the bug is in `localStorage`, not the HTTP cache, and survives soft and hard reloads until storage is cleared. **Logout then log back in: the bug is still live** — `localStorage` isn't cleared by logout, so the cached blob (and its frozen heartbeat) is served on the next login too.
 
 ![Bug 2 stale timestamp](./screenshots/04_bug2_resync_stale.png)
 
@@ -136,13 +140,15 @@ Live capture from the deploy, behavior across two RESYNC clicks with a puppeteer
 
 ```json
 {
-  "before": "LAST SYNC // 22:50:03",
-  "after_two_resyncs": "LAST SYNC // 22:50:03",
+  "heartbeat_before": 47281,
+  "heartbeat_after_two_resyncs": 47281,
+  "last_sync_before": "LAST SYNC // 22:50:03",
+  "last_sync_after_two_resyncs": "LAST SYNC // 22:50:03",
   "suits_requests_during_resync": 0
 }
 ```
 
-Zero network requests fired for two clicks. The UI re-renders from the `localStorage` blob each time.
+Zero network requests fired for two clicks. The UI re-renders from the `localStorage` blob each time, so the random heartbeat (server-generated per request) cannot reroll.
 
 ### What a candidate should find
 This is **not** an HTTP cache bug (so DevTools "Disable cache" is irrelevant). The app stores responses in `localStorage` with a 24-hour TTL, and the RESYNC button re-reads from there.
@@ -155,11 +161,16 @@ Open **Application tab → Local Storage → the domain entry → key `jarvis_su
 {
   "at": 1776013985095,
   "mark": "",
-  "data": { "suits": [...], "server_timestamp": "2026-04-12T17:13:05.123Z" }
+  "data": {
+    "suits": [...],
+    "server_timestamp": "2026-04-12T17:13:05.123Z",
+    "heartbeat": 47281,
+    "mark_queried": null
+  }
 }
 ```
 
-The `at` and `server_timestamp` never advance. The UI hint in the footer reads: *"if this does not advance on RESYNC, inspect Network → cache"* — intentionally misdirecting toward HTTP cache; the real answer lives in Application → Storage.
+The `at`, `server_timestamp`, and `heartbeat` never advance. The UI hint reads: *"if this does not advance on RESYNC, inspect Network → cache"* — intentionally misdirecting toward HTTP cache; the real answer lives in Application → Storage. Logout/login cycle does not clear this entry.
 
 ### Where it lives
 `app/suits/page.tsx`, in `loadSuits`:
@@ -228,7 +239,7 @@ You should see `{ at, mark, data: { suits, server_timestamp } }`. Click RESYNC a
 On `/suits`, type a **small** mark number in the filter (`3`) and click **APPLY**. Before the results come back, clear the input, type a **large** mark number (`85`), click APPLY again.
 
 ### Symptom
-Gallery briefly shows Mark 85 → then a moment later **flips back to Mark 3**. Final rendered result does not match the last APPLY. Repeat rapidly and the UI is non-deterministic.
+The prominent `SHOWING MARK N` readout in the header briefly changes to `MARK 85` → then a moment later **flips back to `MARK 3`**. The gallery content flips too. Final rendered result does not match the last APPLY. Repeat rapidly and the UI is non-deterministic.
 
 Mid-flight (after first APPLY has been issued, before its response arrives):
 
@@ -241,21 +252,21 @@ Final state (the slower earlier request has arrived and overwritten the newer Ma
 ### Live latency proof from the deploy
 
 ```json
-{ "mark3_ms": 4424, "mark85_ms": 407 }
+{ "mark3_ms": 2518, "mark85_ms": 295 }
 ```
 
-The Mark 3 request is ~25× slower than Mark 85. That generous gap is the race guarantee: even with casual timing from the candidate, the Mark 3 response returns well after Mark 85 and clobbers it.
+The Mark 3 request is ~8–10× slower than Mark 85. Gap is ~2.2 seconds — enough for the race to fire reliably, tight enough that the interview doesn't drag.
 
 ### Reproducing reliably
-1. Type `3` in the filter → click **APPLY**. UI spinner appears.
-2. **Within ~3 seconds** (before Mark 3 finishes), clear the input, type `85`, click **APPLY**.
-3. Watch: UI shows Mark 85 briefly (~200ms in), then visibly flips back to Mark 3 a couple seconds later. That flip is the bug.
+1. Type `3` in the filter → click **APPLY**. `SHOWING MARK 3` appears once response lands.
+2. **Within ~1 second** (before Mark 3 finishes), clear the input, type `85`, click **APPLY**.
+3. Watch: UI shows `SHOWING MARK 85` briefly, then visibly flips back to `SHOWING MARK 3` a second or two later. That flip is the bug.
 
 ### What a candidate should find
 Open **Network tab → Fetch/XHR**, repeat the reproduction. Two requests show up:
 
-- `suits?mark=3` — **~4.4s** total time
-- `suits?mark=85` — **~180ms** total time
+- `suits?mark=3` — **~2.5s** total time
+- `suits?mark=85` — **~200ms** total time
 
 Look at the **Waterfall** column. The 85 request returns almost instantly (the user sees Mark 85 briefly). The 3 request returns ~2 seconds later — and its response is written to state last, overwriting Mark 85.
 
@@ -302,11 +313,11 @@ Alternative fix: a response-time monotonic counter (increment on each call, igno
 
 ### Verify via curl (shows the latency gradient)
 ```bash
-# Should take ~4.4s
+# Should take ~2.5s
 time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
   "https://jarvis-nine-coral.vercel.app/api/suits?mark=3"
 
-# Should take ~180ms
+# Should take ~200ms
 time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
   "https://jarvis-nine-coral.vercel.app/api/suits?mark=85"
 ```
