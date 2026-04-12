@@ -132,24 +132,17 @@ The `LAST SYNC` value does **not** advance, no matter how many times RESYNC is c
 
 ![Bug 2 stale timestamp](./screenshots/04_bug2_resync_stale.png)
 
-Live capture from the interview deploy, timestamp before/after two RESYNC clicks:
+Live capture from the deploy, behavior across two RESYNC clicks with a puppeteer network listener attached:
 
 ```json
 {
-  "before": "LAST SYNC // 22:37:27",
-  "after_two_resyncs": "LAST SYNC // 22:37:27"
+  "before": "LAST SYNC // 22:50:03",
+  "after_two_resyncs": "LAST SYNC // 22:50:03",
+  "suits_requests_during_resync": 0
 }
 ```
 
-The headers and body returned by `GET /api/suits`:
-
-```json
-{
-  "status": 200,
-  "cacheControl": "public, max-age=86400, immutable",
-  "serverTimestamp": "2026-04-12T22:37:27.845Z"
-}
-```
+Zero network requests fired for two clicks. The UI re-renders from the `localStorage` blob each time.
 
 ### What a candidate should find
 This is **not** an HTTP cache bug (so DevTools "Disable cache" is irrelevant). The app stores responses in `localStorage` with a 24-hour TTL, and the RESYNC button re-reads from there.
@@ -248,7 +241,7 @@ Final state (the slower earlier request has arrived and overwritten the newer Ma
 ### Live latency proof from the deploy
 
 ```json
-{ "mark3_ms": 4421, "mark85_ms": 178 }
+{ "mark3_ms": 4424, "mark85_ms": 407 }
 ```
 
 The Mark 3 request is ~25× slower than Mark 85. That generous gap is the race guarantee: even with casual timing from the candidate, the Mark 3 response returns well after Mark 85 and clobbers it.
