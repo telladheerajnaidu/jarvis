@@ -9,6 +9,51 @@ Every screenshot below is captured from the live deploy. Every JSON blob is a re
 
 ---
 
+## API endpoints reference
+
+| Method | Path | Purpose | Auth | Bug planted |
+|---|---|---|---|---|
+| `POST` | `/api/login` | Authenticate user, set session cookie | — | **L1** case-sensitive email, **L3** wrong cookie path |
+| `POST` | `/api/logout` | Clear session cookie | — | none |
+| `GET`  | `/api/suits` | List all suits (optional `?mark=N` filter) | Cookie required (401 otherwise) | none on backend — **S5** is in the frontend call site |
+| `GET`  | `/api/suits/[id]` | Single suit detail by id (e.g. `mk50`) | Cookie required | none on backend — **S4** is in the frontend component |
+| `GET`  | `/api/suits/[id]/spec` | CSV spec sheet download | Cookie required | **S1** missing `Content-Disposition` header |
+| `POST` | `/api/admin/reset` | Purge `jarvis_session` cookie across paths | — | none (interviewer tool) |
+
+**Page routes (candidate-visible):**
+
+| Path | What it is |
+|---|---|
+| `/` | J.A.R.V.I.S. boot + login HUD |
+| `/suits` | Suit registry / gallery |
+| `/suits/[id]` | Mark-level HUD with dials, integrity, weapons, specs |
+| `/admin/reset` | Purge console (share only with yourself) |
+
+**Sample curls for quick verification:**
+
+```bash
+URL=https://jarvis-nine-coral.vercel.app
+
+# L1 — capital T returns 200 + EMAIL_CASE_MISMATCH
+curl -s -X POST $URL/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"Tony@stark.com","password":"jarvis"}'
+
+# L3 — check Set-Cookie has Path=/admin
+curl -s -i -X POST $URL/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"tony@stark.com","password":"jarvis"}' \
+  | grep -i set-cookie
+
+# S1 — HEAD request shows no Content-Disposition (must be authed first)
+COOKIE=$(curl -s -i -X POST $URL/api/login -H "Content-Type: application/json" \
+  -d '{"email":"tony@stark.com","password":"jarvis"}' \
+  | grep -i set-cookie | sed 's/.*jarvis_session=\([^;]*\).*/\1/')
+curl -s -I -H "Cookie: jarvis_session=$COOKIE" $URL/api/suits/mk50/spec
+```
+
+---
+
 ## Step 1 — Landing page
 
 Candidate visits the URL. After a short J.A.R.V.I.S. boot animation, the login HUD loads: arc reactor, concentric rings, telemetry stream (left), diagnostics bars (right), ticker (top), waveform (bottom).
