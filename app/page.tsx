@@ -145,7 +145,7 @@ export default function LoginPage() {
                   <input
                     type="text"
                     className="input-hud mt-1"
-                    placeholder="tony@stark.com"
+                    placeholder="enter user id"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="username"
