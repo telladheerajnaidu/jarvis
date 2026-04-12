@@ -7,7 +7,7 @@ export async function POST() {
     res.cookies.set(COOKIE_NAME, "", { path, maxAge: 0 });
   }
   // Re-arm Bug 2 for the next candidate by clearing any cached /api/suits entry
-  res.headers.set("Clear-Site-Data", '"cache", "cookies"');
+  res.headers.set("Clear-Site-Data", '"cache", "cookies", "storage"');
   return res;
 }
 

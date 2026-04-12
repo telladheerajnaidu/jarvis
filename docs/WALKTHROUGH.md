@@ -14,7 +14,7 @@ The goal is to observe the candidate's diagnostic path, not whether they patch t
 | # | Tier | Bug | Surface | Primary DevTools skill |
 |---|---|---|---|---|
 | 1 | **Easy** | Case-sensitive email on login | `/` | Network tab — reading response body past a 200 OK |
-| 2 | **Medium** | Gallery shows stale data after RESYNC | `/suits` | Network tab — Size column `(disk cache)` + `Cache-Control` response header |
+| 2 | **Medium** | Gallery shows stale data after RESYNC | `/suits` | Application tab — `localStorage` entry + silent Network tab on click |
 | 3 | **Hard** | Filter returns wrong results on rapid APPLY | `/suits` | Network tab — waterfall ordering + knowing about in-flight request cancellation |
 
 No hints are printed to the Console. All signals live in **Network**, **Application**, or the visible UI state. The candidate has to choose which tab to open.
@@ -152,66 +152,80 @@ The headers and body returned by `GET /api/suits`:
 ```
 
 ### What a candidate should find
-Open **Network tab**, filter by `Fetch/XHR`, click RESYNC again. Two things stand out:
+This is **not** an HTTP cache bug (so DevTools "Disable cache" is irrelevant). The app stores responses in `localStorage` with a 24-hour TTL, and the RESYNC button re-reads from there.
 
-1. The `suits` request row has a **Size** column value of **`(disk cache)`** or **`(memory cache)`** — not a byte count. The browser is serving the old response without hitting the server.
-2. Click the row → **Headers → Response Headers**:
-   ```
-   cache-control: public, max-age=86400, immutable
-   ```
-   `immutable` tells the browser it can skip revalidation entirely for 24 hours. The data is dynamic, so this is wrong.
+Open **Network tab**, filter by `Fetch/XHR`, click RESYNC repeatedly. **No request fires.** That's signal #1 — RESYNC isn't talking to the server.
 
-The hint in the UI footer reads: *"if this does not advance on RESYNC, inspect Network → cache"* — subtle, not a console log.
+Open **Application tab → Local Storage → the domain entry → key `jarvis_suits_cache_v1`.** You'll see the cached blob:
+
+```json
+{
+  "at": 1776013985095,
+  "mark": "",
+  "data": { "suits": [...], "server_timestamp": "2026-04-12T17:13:05.123Z" }
+}
+```
+
+The `at` and `server_timestamp` never advance. The UI hint in the footer reads: *"if this does not advance on RESYNC, inspect Network → cache"* — intentionally misdirecting toward HTTP cache; the real answer lives in Application → Storage.
 
 ### Where it lives
-`app/api/suits/route.ts`:
+`app/suits/page.tsx`, in `loadSuits`:
 
-```ts
-return new NextResponse(JSON.stringify(body), {
-  status: 200,
-  headers: {
-    "Content-Type": "application/json",
-    "Cache-Control": "public, max-age=86400, immutable",
-  },
-});
+```tsx
+const raw = window.localStorage.getItem(CACHE_KEY);
+if (raw) {
+  const cached = JSON.parse(raw);
+  if (cached.mark === mark && Date.now() - cached.at < CACHE_TTL_MS) {
+    setSuits(cached.data.suits);
+    setLastSync(cached.data.server_timestamp);
+    return;  // <-- never fetches
+  }
+}
+```
+
+And in `resync`:
+```tsx
+async function resync() {
+  await loadSuits(markApplied);  // forceNetwork not passed
+}
 ```
 
 ### Resolution
 
-**Candidate fix (code):**
+**Candidate fix (code):** either drop the cache check entirely, or make `resync` bypass it.
+
 ```diff
-  headers: {
-    "Content-Type": "application/json",
--   "Cache-Control": "public, max-age=86400, immutable",
-+   "Cache-Control": "no-store",
-  },
+  async function resync() {
+-   await loadSuits(markApplied);
++   await loadSuits(markApplied, { forceNetwork: true });
+  }
 ```
 
-**Interviewer shortcut (no redeploy):** hit this URL in a new tab
+**Interviewer shortcut (no redeploy):** hit this URL
 ```
 https://jarvis-nine-coral.vercel.app/api/admin/flush-cache
 ```
-It returns `Clear-Site-Data: "cache"` which purges the browser cache for the origin. Go back to `/suits`, click RESYNC — timestamp advances.
+It returns `Clear-Site-Data: "cache", "storage"` which purges `localStorage` for the origin. Go back to `/suits`, reload the page once — the cache is gone, a fresh fetch happens, `server_timestamp` advances.
 
-**Candidate escape route:** Cmd+Shift+R (hard reload) bypasses cache and confirms the diagnosis. That alone is worth credit.
+**Candidate escape route without the endpoint:** Application → Local Storage → right-click `jarvis_suits_cache_v1` → Delete. Same effect.
 
 ### Signal rubric
 
 | Behavior | Read |
 |---|---|
-| Opens Network tab, sees `(disk cache)` size | **Good** |
-| Opens Response Headers, names `Cache-Control` / `immutable` | **Strong** |
-| Articulates why `immutable` is wrong for this endpoint | **Staff-level** |
-| Tries a hard refresh and connects it to caching | **Strong** |
-| Clicks RESYNC repeatedly without inspecting Network | **Weak** |
-| Blames React / state without checking headers | **Red flag** |
+| Notices Network tab stays empty on RESYNC | **Good** |
+| Opens Application → Local Storage, finds `jarvis_suits_cache_v1` | **Strong** |
+| Reads the cache entry and spots `at` / `server_timestamp` don't change | **Staff-level** |
+| Reads the component source and finds the TTL / cache-check path | **Staff-level** |
+| Clicks RESYNC repeatedly without opening Network | **Weak** |
+| Assumes server bug and ignores client-side storage | **Red flag** |
 
-### Verify via curl
-```bash
-curl -s -D- -o /dev/null https://jarvis-nine-coral.vercel.app/api/suits \
-  -H "Cookie: jarvis_session=<paste from login Set-Cookie>" | grep -i cache-control
-# cache-control: public, max-age=86400, immutable
+### Verify the cache entry is really in localStorage
+In DevTools Console while on `/suits`:
+```js
+JSON.parse(localStorage.getItem("jarvis_suits_cache_v1"))
 ```
+You should see `{ at, mark, data: { suits, server_timestamp } }`. Click RESYNC a few times, rerun the line — the `at` timestamp is unchanged.
 
 ---
 
@@ -234,16 +248,21 @@ Final state (the slower earlier request has arrived and overwritten the newer Ma
 ### Live latency proof from the deploy
 
 ```json
-{ "mark3_ms": 2475, "mark85_ms": 288 }
+{ "mark3_ms": 4421, "mark85_ms": 178 }
 ```
 
-The Mark 3 request is ~8.5× slower than Mark 85. That's what guarantees the race: even if the candidate clicks APPLY for 85 *after* 3, the 85 response returns first and is immediately clobbered when the 3 response finally arrives.
+The Mark 3 request is ~25× slower than Mark 85. That generous gap is the race guarantee: even with casual timing from the candidate, the Mark 3 response returns well after Mark 85 and clobbers it.
+
+### Reproducing reliably
+1. Type `3` in the filter → click **APPLY**. UI spinner appears.
+2. **Within ~3 seconds** (before Mark 3 finishes), clear the input, type `85`, click **APPLY**.
+3. Watch: UI shows Mark 85 briefly (~200ms in), then visibly flips back to Mark 3 a couple seconds later. That flip is the bug.
 
 ### What a candidate should find
 Open **Network tab → Fetch/XHR**, repeat the reproduction. Two requests show up:
 
-- `suits?mark=3` — **~2.4s** total time
-- `suits?mark=85` — **~60ms** total time
+- `suits?mark=3` — **~4.4s** total time
+- `suits?mark=85` — **~180ms** total time
 
 Look at the **Waterfall** column. The 85 request returns almost instantly (the user sees Mark 85 briefly). The 3 request returns ~2 seconds later — and its response is written to state last, overwriting Mark 85.
 
@@ -290,11 +309,11 @@ Alternative fix: a response-time monotonic counter (increment on each call, igno
 
 ### Verify via curl (shows the latency gradient)
 ```bash
-# Should take ~2.4s
+# Should take ~4.4s
 time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
   "https://jarvis-nine-coral.vercel.app/api/suits?mark=3"
 
-# Should take ~60ms
+# Should take ~180ms
 time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
   "https://jarvis-nine-coral.vercel.app/api/suits?mark=85"
 ```

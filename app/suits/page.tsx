@@ -25,10 +25,42 @@ export default function SuitsPage() {
   const [markApplied, setMarkApplied] = useState("");
   const [lastSync, setLastSync] = useState<string | null>(null);
 
-  async function loadSuits(markOverride?: string) {
+  const CACHE_KEY = "jarvis_suits_cache_v1";
+  const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h — bug M1
+
+  async function loadSuits(markOverride?: string, opts?: { forceNetwork?: boolean }) {
     const mark = markOverride ?? markApplied;
     setLoading(true);
     setError(null);
+
+    // Bug M1 — client-side localStorage cache with a 24h TTL and no way to
+    // invalidate from the UI. The RESYNC button calls loadSuits() which hits
+    // this path first: if the cached entry for the current mark is < 24h old,
+    // it's returned verbatim and no fetch happens. Network tab stays quiet.
+    if (!opts?.forceNetwork && typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem(CACHE_KEY);
+        if (raw) {
+          const cached = JSON.parse(raw) as {
+            at: number;
+            mark: string;
+            data: { suits: SuitCard[]; server_timestamp: string };
+          };
+          if (
+            cached.mark === mark &&
+            Date.now() - cached.at < CACHE_TTL_MS
+          ) {
+            setSuits(cached.data.suits);
+            setLastSync(cached.data.server_timestamp);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore corrupt cache
+      }
+    }
+
     try {
       const res = await fetch(`/api/suits?mark=${mark}`);
       if (res.status === 401) {
@@ -40,6 +72,16 @@ export default function SuitsPage() {
       if (data.success) {
         setSuits(data.suits);
         if (data.server_timestamp) setLastSync(data.server_timestamp);
+        try {
+          window.localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+              at: Date.now(),
+              mark,
+              data: { suits: data.suits, server_timestamp: data.server_timestamp },
+            }),
+          );
+        } catch {}
       } else setError(data.error || "UNKNOWN ERROR");
     } catch {
       setError("NETWORK ERROR // CHECK UPLINK");
@@ -59,8 +101,8 @@ export default function SuitsPage() {
   }
 
   async function resync() {
-    // Forces a fresh fetch — but the browser may serve /api/suits from its
-    // immutable cache so the LAST SYNC timestamp visibly won't advance.
+    // The RESYNC button intentionally does NOT pass forceNetwork — so it
+    // keeps reading from the localStorage cache and LAST SYNC never advances.
     // This is bug M1.
     await loadSuits(markApplied);
   }

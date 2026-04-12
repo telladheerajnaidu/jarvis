@@ -5,7 +5,7 @@ Three tiers. Full walkthrough + rubrics in `docs/WALKTHROUGH.md`. This file is t
 | # | Tier | Surface | File | One-line fix |
 |---|---|---|---|---|
 | 1 | Easy   | `POST /api/login` | `app/api/login/route.ts` | Lowercase both sides of the email comparison |
-| 2 | Medium | `/suits` RESYNC stale | `app/api/suits/route.ts` | Change `Cache-Control` from `public, max-age=86400, immutable` to `no-store` |
+| 2 | Medium | `/suits` RESYNC stale | `app/suits/page.tsx` | Pass `{ forceNetwork: true }` in `resync()`, or drop the localStorage check |
 | 3 | Hard   | `/suits` rapid APPLY race | `app/suits/page.tsx` | Wrap `loadSuits` with `AbortController` in the `useEffect` |
 
 ---
@@ -26,26 +26,25 @@ Three tiers. Full walkthrough + rubrics in `docs/WALKTHROUGH.md`. This file is t
 
 ---
 
-## Bug 2 — Stale gallery (HTTP cache)
+## Bug 2 — Stale gallery (localStorage cache)
 
-**Trigger:** Log in, click `RESYNC TELEMETRY` on `/suits`. `LAST SYNC` timestamp does not advance.
-**DevTools tell:** Network → Fetch/XHR → `suits` row Size column = `(disk cache)`. Response headers show `Cache-Control: public, max-age=86400, immutable`.
+**Trigger:** Log in, click `RESYNC TELEMETRY` on `/suits`. `LAST SYNC` timestamp does not advance and no network request fires.
+**DevTools tell:** Network → Fetch/XHR stays **empty** on click. Application → Local Storage → `jarvis_suits_cache_v1` contains a stale entry with a fixed `at` timestamp.
 **Fix:**
 ```diff
-  headers: {
-    "Content-Type": "application/json",
--   "Cache-Control": "public, max-age=86400, immutable",
-+   "Cache-Control": "no-store",
-  },
+  async function resync() {
+-   await loadSuits(markApplied);
++   await loadSuits(markApplied, { forceNetwork: true });
+  }
 ```
-**Bypass endpoint:** `GET /api/admin/flush-cache` returns `Clear-Site-Data: "cache"`.
+**Bypass endpoint:** `GET /api/admin/flush-cache` returns `Clear-Site-Data: "cache", "storage"` which purges localStorage for the origin.
 
 ---
 
 ## Bug 3 — Filter race condition
 
 **Trigger:** On `/suits`, APPLY `mark=3`, then immediately APPLY `mark=85`. UI ends up showing Mark 3 (wrong).
-**DevTools tell:** Network waterfall shows `?mark=3` takes ~2.4s while `?mark=85` takes ~60ms. The late response overwrites state. Backend plants this latency intentionally via inverse-mark delay in `app/api/suits/route.ts`.
+**DevTools tell:** Network waterfall shows `?mark=3` takes ~4.4s while `?mark=85` takes ~180ms. The late response overwrites state. Backend plants this latency intentionally via inverse-mark delay in `app/api/suits/route.ts`.
 **Fix:**
 ```diff
   useEffect(() => {
