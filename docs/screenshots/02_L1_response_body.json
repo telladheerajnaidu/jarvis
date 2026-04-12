@@ -1,8 +1,0 @@
-{
-  "status": 200,
-  "body": {
-    "success": false,
-    "error": "INVALID_CREDENTIALS",
-    "detail": "EMAIL_CASE_MISMATCH: email comparison is case-sensitive on the server"
-  }
-}

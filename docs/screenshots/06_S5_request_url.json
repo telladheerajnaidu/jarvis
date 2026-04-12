@@ -1,6 +1,0 @@
-{
-  "urls": [
-    "/api/suits?mark="
-  ],
-  "note": "URL sent by filter button — note empty mark value"
-}

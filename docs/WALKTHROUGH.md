@@ -48,11 +48,17 @@ No hints are printed to the Console. All signals live in **Network**, **Applicat
 
 ## Bug 1 — EASY — Case-sensitive login
 
+### Landing page (before trigger)
+
+![Login page](./screenshots/01_login_page.png)
+
 ### Trigger
 Candidate types `Tony@stark.com` (capital T) with the correct password.
 
 ### Symptom
 UI shows a red terminal error: `AUTHENTICATION REJECTED // SEE TERMINAL`. Generic — no direct hint about case.
+
+![Bug 1 UI error](./screenshots/02_bug1_case_error_ui.png)
 
 ### What a candidate should find
 Open **Network tab → `POST /api/login`**. Status is **200 OK**, not 4xx. That's the trap: HTTP 200 does not imply business success. They have to open the **Response** panel:
@@ -112,11 +118,38 @@ You should see `"success":false` with the `EMAIL_CASE_MISMATCH` detail, status 2
 
 ## Bug 2 — MEDIUM — Stale gallery after RESYNC
 
+### Gallery after successful login
+
+![Gallery loaded](./screenshots/03_gallery_after_login.png)
+
+Note the `LAST SYNC // HH:MM:SS` line under the header with the hint *"if this does not advance on RESYNC, inspect Network → cache"*.
+
 ### Trigger
-Candidate logs in successfully, lands on `/suits`. A timestamp in the header shows `LAST SYNC // HH:MM:SS`. They click **RESYNC TELEMETRY** in the top bar.
+Candidate logs in successfully, lands on `/suits`. They click **RESYNC TELEMETRY** in the top bar, then click it again.
 
 ### Symptom
 The `LAST SYNC` value does **not** advance, no matter how many times RESYNC is clicked. `(Hard refresh — Cmd+Shift+R — does bump it. A soft refresh does not.)`
+
+![Bug 2 stale timestamp](./screenshots/04_bug2_resync_stale.png)
+
+Live capture from the interview deploy, timestamp before/after two RESYNC clicks:
+
+```json
+{
+  "before": "LAST SYNC // 22:37:27",
+  "after_two_resyncs": "LAST SYNC // 22:37:27"
+}
+```
+
+The headers and body returned by `GET /api/suits`:
+
+```json
+{
+  "status": 200,
+  "cacheControl": "public, max-age=86400, immutable",
+  "serverTimestamp": "2026-04-12T22:37:27.845Z"
+}
+```
 
 ### What a candidate should find
 Open **Network tab**, filter by `Fetch/XHR`, click RESYNC again. Two things stand out:
@@ -189,6 +222,22 @@ On `/suits`, type a **small** mark number in the filter (`3`) and click **APPLY*
 
 ### Symptom
 Gallery briefly shows Mark 85 → then a moment later **flips back to Mark 3**. Final rendered result does not match the last APPLY. Repeat rapidly and the UI is non-deterministic.
+
+Mid-flight (after first APPLY has been issued, before its response arrives):
+
+![Bug 3 mid-flight](./screenshots/05_bug3_race_midflight.png)
+
+Final state (the slower earlier request has arrived and overwritten the newer Mark 85 result):
+
+![Bug 3 final state](./screenshots/05_bug3_race_final_state.png)
+
+### Live latency proof from the deploy
+
+```json
+{ "mark3_ms": 2475, "mark85_ms": 288 }
+```
+
+The Mark 3 request is ~8.5× slower than Mark 85. That's what guarantees the race: even if the candidate clicks APPLY for 85 *after* 3, the 85 response returns first and is immediately clobbered when the 3 response finally arrives.
 
 ### What a candidate should find
 Open **Network tab → Fetch/XHR**, repeat the reproduction. Two requests show up:
@@ -288,6 +337,8 @@ https://jarvis-nine-coral.vercel.app/admin/reset
 ```
 
 That purges the session cookie and flushes the browser cache (via the reset page's own Clear-Site-Data header). All three bugs re-arm immediately.
+
+![Admin reset page](./screenshots/07_admin_reset.png)
 
 ---
 
