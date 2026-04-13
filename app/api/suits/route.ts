@@ -10,17 +10,16 @@ function sleep(ms: number) {
 }
 
 // Bug H1 — variable per-mark latency on a quadratic curve. Small mark
-// numbers hang for ~15s (feels like a dead request), large mark numbers
-// return in ~100ms. Combined with the frontend filter (no AbortController),
-// the interviewer's flow is: "type 3 and APPLY" → hangs → "ok try 85
-// instead" → mark=85 returns fast and renders, then ~10s later the stale
-// mark=3 response lands and clobbers state.
+// numbers hang for ~5s (long enough to say "try 85 instead"), large mark
+// numbers return in ~200ms. Combined with the frontend filter (no
+// AbortController), the flow is: APPLY 3 → hangs → "try 85" → mark=85
+// renders → ~1-2s later stale mark=3 lands and clobbers state.
 function delayForMark(mark: number | null): number {
   if (mark == null || Number.isNaN(mark)) return 0;
   const clamped = Math.max(1, Math.min(90, mark));
   const frac = (91 - clamped) / 90;
-  // Mark 3 -> ~14300ms, Mark 85 -> ~70ms
-  return Math.round(15000 * frac * frac);
+  // Mark 3 -> ~5000ms, Mark 85 -> ~200ms
+  return Math.round(200 + 5000 * frac * frac);
 }
 
 export async function GET(req: Request) {
