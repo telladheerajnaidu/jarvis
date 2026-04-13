@@ -15,7 +15,7 @@ npm run dev
 
 | User | Email | Password |
 |---|---|---|
-| Tony Stark | `tony@stark.com` | `jarvis` |
+| Steve Rogers | `steve@shield.gov` | `rogers` |
 | Pepper Potts | `pepper@stark.com` | `rescue` |
 | James Rhodes | `rhodey@stark.com` | `warmachine` |
 
@@ -27,7 +27,7 @@ npm run dev
 
 ### L1 — Case-sensitive email comparison
 - **File:** `app/api/login/route.ts`
-- **Symptom:** Login with `Tony@stark.com` fails. UI shows generic "Authentication failed".
+- **Symptom:** Login with `Steve@shield.gov` fails. UI shows generic "Authentication failed".
 - **How to find:** Network tab -> login response is `200 OK` with body `{success: false, error: "INVALID_CREDENTIALS", detail: "EMAIL_CASE_MISMATCH: email comparison is case-sensitive on the server"}`.
 - **DevTools skill:** Inspecting response body (not just status code).
 - **Fix:** Compare `u.email.toLowerCase() === email.toLowerCase()`.
@@ -64,13 +64,13 @@ npm run dev
 
 ## Interview flow (15-20 min for DevTools round)
 
-1. Give candidate the URL and Tony's credentials.
+1. Give candidate the URL and Steve's credentials.
 2. Ask: "Log in and browse the suit registry. Narrate what you see, what you try, what's broken, and how you'd fix it."
 3. Sit quiet. Let them drive.
 4. Score against the rubric in `tanubagel R1.pdf`.
 
 Expected progression:
-- They type `Tony@stark.com` first -> hits L1 -> good candidate opens Network tab.
+- They type `Steve@shield.gov` first -> hits L1 -> good candidate opens Network tab.
 - Once logged in -> hits L3 -> good candidate opens Application -> Cookies.
 - (Reset cookie path for demo if needed: clear cookies and manually set Path=/ in devtools, or ship the "fix" in a branch.)
 - On detail page -> hits S4 (missing fields).

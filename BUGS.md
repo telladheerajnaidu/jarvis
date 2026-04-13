@@ -12,7 +12,7 @@ Three tiers. Full walkthrough + rubrics in `docs/WALKTHROUGH.md`. This file is t
 
 ## Bug 1 — Case-sensitive email
 
-**Trigger:** `Tony@stark.com` / `jarvis`
+**Trigger:** `Steve@shield.gov` / `rogers`
 **DevTools tell:** `POST /api/login` → 200 OK → response body `detail: "EMAIL_CASE_MISMATCH..."`
 **Fix:**
 ```diff

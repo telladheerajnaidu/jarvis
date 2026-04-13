@@ -3,7 +3,7 @@
 Three planted bugs, tiered by difficulty. All are real — no mocks. The backend lives on Vercel, the bugs trigger identically whether the candidate runs it locally or against the production URL.
 
 **Target URL:** https://jarvis-nine-coral.vercel.app
-**Credentials:** `tony@stark.com` / `jarvis` (case matters — see Bug 1)
+**Credentials:** `steve@shield.gov` / `rogers` (case matters — see Bug 1)
 
 The goal is to observe the candidate's diagnostic path, not whether they patch the code. Reward narration over result: which DevTools tab did they open, what did they look for, how did they form a hypothesis.
 
@@ -35,7 +35,7 @@ Bugs are **sticky across logout/login** by design. Clicking `DISENGAGE` only cle
 | `GET`  | `/api/suits/[id]` | Single suit detail | Cookie required |
 | `GET`  | `/api/suits/[id]/spec` | CSV spec download (Content-Disposition set) | Cookie required |
 | `POST` | `/api/admin/reset` | Purge `jarvis_session` cookie across paths | — |
-| `POST` | `/api/admin/grant` | Bypass login: issue a valid session for `tony@stark.com` | — |
+| `POST` | `/api/admin/grant` | Bypass login: issue a valid session for `steve@shield.gov` | — |
 | `POST` | `/api/admin/flush-cache` | Resolve Bug 2: returns `Clear-Site-Data: "cache"` | — |
 
 ### Interviewer shortcuts
@@ -57,7 +57,7 @@ Bugs are **sticky across logout/login** by design. Clicking `DISENGAGE` only cle
 ![Login page](./screenshots/01_login_page.png)
 
 ### Trigger
-Candidate types `Tony@stark.com` (capital T) with the correct password.
+Candidate types `Steve@shield.gov` (capital S) with the correct password.
 
 ### Symptom
 UI shows a red terminal error: `AUTHENTICATION REJECTED // SEE TERMINAL`. Generic — no direct hint about case.
@@ -99,7 +99,7 @@ const user = USERS.find((u) => u.email === email && u.password === password);
 ```
 https://jarvis-nine-coral.vercel.app/api/admin/grant
 ```
-That issues a clean session for `tony@stark.com`. Then navigate to `/suits`.
+That issues a clean session for `steve@shield.gov`. Then navigate to `/suits`.
 
 ### Signal rubric
 
@@ -114,7 +114,7 @@ That issues a clean session for `tony@stark.com`. Then navigate to `/suits`.
 ```bash
 curl -s -X POST https://jarvis-nine-coral.vercel.app/api/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"Tony@stark.com","password":"jarvis"}'
+  -d '{"email":"Steve@shield.gov","password":"rogers"}'
 ```
 You should see `"success":false` with the `EMAIL_CASE_MISMATCH` detail, status 200.
 
@@ -330,7 +330,7 @@ time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
 | t | Action | Expected candidate move |
 |---|---|---|
 | 0:00 | Share URL + credentials. "Log in, explore, narrate as you go." | — |
-| 0:00–0:05 | Watch them type `Tony@stark.com` → Bug 1 triggers | Network tab → response body |
+| 0:00–0:05 | Watch them type `Steve@shield.gov` → Bug 1 triggers | Network tab → response body |
 | 0:05–0:07 | If stuck, nudge: "what does the server actually say?" | They read the `detail` field |
 | 0:07 | They log in successfully and land on `/suits` | Timestamp visible in header |
 | 0:08 | Ask: "click RESYNC a few times — does the timestamp update?" → Bug 2 | Network tab → `(disk cache)` → response headers |
