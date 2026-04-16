@@ -1,0 +1,5 @@
+{
+  "power_output": "9.2 GW",
+  "top_speed": "Mach 4.0",
+  "note": "API returns snake_case but UI reads camelCase (powerOutput/topSpeed)"
+}

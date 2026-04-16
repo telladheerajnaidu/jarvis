@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "motion/react";
 import { HudShell } from "../_components/HudChrome";
 import { HexBadge } from "../_components/Rings";
 import { SuitSilhouette, paletteFor } from "../_components/SuitSilhouette";
+import { AnimatedNumber, TextScramble, FadeIn, BorderBeam, PulseGlow, StaggerGroup, StaggerItem } from "../_components/Animations";
 
 type SuitCard = {
   id: string;
@@ -28,17 +30,13 @@ export default function SuitsPage() {
   const [renderedMark, setRenderedMark] = useState<number | null>(null);
 
   const CACHE_KEY = "jarvis_suits_cache_v1";
-  const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h — bug M1
+  const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
   async function loadSuits(markOverride?: string, opts?: { forceNetwork?: boolean }) {
     const mark = markOverride ?? markApplied;
     setLoading(true);
     setError(null);
 
-    // Bug M1 — client-side localStorage cache with a 24h TTL and no way to
-    // invalidate from the UI. The RESYNC button calls loadSuits() which hits
-    // this path first: if the cached entry for the current mark is < 24h old,
-    // it's returned verbatim and no fetch happens. Network tab stays quiet.
     if (!opts?.forceNetwork && typeof window !== "undefined") {
       try {
         const raw = window.localStorage.getItem(CACHE_KEY);
@@ -112,7 +110,6 @@ export default function SuitsPage() {
 
   useEffect(() => {
     loadSuits(markApplied);
-    // intentionally no AbortController — rapid APPLY clicks race (bug H1)
   }, [markApplied]);
 
   function applyFilter(e: React.FormEvent) {
@@ -121,9 +118,6 @@ export default function SuitsPage() {
   }
 
   async function resync() {
-    // The RESYNC button intentionally does NOT pass forceNetwork — so it
-    // keeps reading from the localStorage cache and LAST SYNC never advances.
-    // This is bug M1.
     await loadSuits(markApplied);
   }
 
@@ -142,145 +136,208 @@ export default function SuitsPage() {
   return (
     <HudShell session="MARK REGISTRY">
       <div className="h-full flex flex-col">
-        <header className="mb-4 flex items-center justify-between">
+        <motion.header
+          className="mb-4 flex items-center justify-between"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <div>
             <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan/60">
               // HALL OF ARMOR // MALIBU VAULT
             </div>
-            <h1 className="text-2xl tracking-[0.3em] text-jarvis-cyan flicker">SUIT REGISTRY</h1>
+            <TextScramble className="text-2xl tracking-[0.3em] text-jarvis-cyan inline-block" duration={0.6}>
+              SUIT REGISTRY
+            </TextScramble>
           </div>
           <div className="flex items-center gap-3">
             <HexBadge>{suits.length} UNITS</HexBadge>
-            <button className="btn-hud btn-gold" onClick={resync}>RESYNC TELEMETRY</button>
-            <button className="btn-hud" onClick={logout}>DISENGAGE</button>
+            <motion.button
+              className="btn-hud btn-gold"
+              onClick={resync}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              RESYNC TELEMETRY
+            </motion.button>
+            <motion.button
+              className="btn-hud"
+              onClick={logout}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              DISENGAGE
+            </motion.button>
           </div>
-        </header>
+        </motion.header>
 
-        <div className="hud-panel hud-corners p-3 mb-3 flex items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div>
-              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">HEARTBEAT</div>
-              <div className="text-3xl tracking-[0.25em] text-jarvis-gold font-mono">
-                {heartbeat != null ? String(heartbeat).padStart(5, "0") : "—"}
+        <FadeIn delay={0.15}>
+          <div className="hud-panel hud-corners p-3 mb-3 flex items-center justify-between gap-6 relative overflow-hidden">
+            <BorderBeam colorFrom="#f59e0b" colorTo="#22d3ee" size={50} duration={8} />
+            <div className="flex items-center gap-6">
+              <div>
+                <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">HEARTBEAT</div>
+                <div className="text-3xl tracking-[0.25em] text-jarvis-gold font-mono">
+                  {heartbeat != null ? (
+                    <AnimatedNumber value={heartbeat} padStart={5} className="text-jarvis-gold" />
+                  ) : "—"}
+                </div>
+                <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
+                  should change on every RESYNC
+                </div>
               </div>
-              <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
-                should change on every RESYNC
+              <div className="h-12 w-px bg-jarvis-cyan/20" />
+              <div>
+                <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">SHOWING</div>
+                <div className="text-3xl tracking-[0.25em] text-jarvis-cyan font-mono">
+                  {renderedMark != null ? (
+                    <TextScramble duration={0.4} characterSet="0123456789MARK ">
+                      {`MARK ${renderedMark}`}
+                    </TextScramble>
+                  ) : (
+                    <TextScramble duration={0.4} characterSet="ALMARKS ">ALL MARKS</TextScramble>
+                  )}
+                </div>
+                <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
+                  mark number currently rendered
+                </div>
               </div>
             </div>
-            <div className="h-12 w-px bg-jarvis-cyan/20" />
-            <div>
-              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">SHOWING</div>
-              <div className="text-3xl tracking-[0.25em] text-jarvis-cyan font-mono">
-                {renderedMark != null ? `MARK ${renderedMark}` : "ALL MARKS"}
+            {lastSync && (
+              <div className="text-right">
+                <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">LAST SYNC</div>
+                <div className="text-sm tracking-[0.25em] text-jarvis-cyan font-mono">
+                  {new Date(lastSync).toLocaleTimeString()}
+                </div>
+                <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
+                  // if this does not advance on RESYNC, inspect Network
+                </div>
               </div>
-              <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
-                mark number currently rendered
-              </div>
-            </div>
+            )}
           </div>
-          {lastSync && (
-            <div className="text-right">
-              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">LAST SYNC</div>
-              <div className="text-sm tracking-[0.25em] text-jarvis-cyan font-mono">
-                {new Date(lastSync).toLocaleTimeString()}
-              </div>
-              <div className="text-[8px] tracking-[0.25em] text-jarvis-cyan/40">
-                // if this does not advance on RESYNC, inspect Network → cache
-              </div>
+        </FadeIn>
+
+        <FadeIn delay={0.25}>
+          <form onSubmit={applyFilter} className="flex items-end gap-3 mb-4 hud-panel hud-corners p-3">
+            <div className="flex-1 max-w-xs">
+              <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">
+                FILTER BY MARK NUMBER
+              </label>
+              <input
+                className="input-hud mt-1"
+                type="number"
+                placeholder="e.g. 42"
+                value={markInput}
+                onChange={(e) => setMarkInput(e.target.value)}
+              />
             </div>
+            <motion.button type="submit" className="btn-hud" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              APPLY
+            </motion.button>
+            <motion.button
+              type="button"
+              className="btn-hud"
+              onClick={() => { setMarkInput(""); setMarkApplied(""); }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              CLEAR
+            </motion.button>
+            <div className="flex-1 text-right text-[9px] text-jarvis-cyan/50 tracking-widest flex items-center justify-end gap-2">
+              {loading && (
+                <motion.span
+                  className="inline-block w-3 h-3 border-2 border-jarvis-cyan/30 border-t-jarvis-cyan rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                />
+              )}
+              STATUS // {loading ? "QUERYING..." : "READY"}
+            </div>
+          </form>
+        </FadeIn>
+
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+              animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              className="hud-panel hud-corners p-5 text-jarvis-red bg-jarvis-red/5 overflow-hidden"
+            >
+              <div className="tracking-widest text-[10px] mb-2">// SYSTEM ERROR</div>
+              <div className="text-xs">{error}</div>
+              <div className="text-[9px] mt-3 text-jarvis-red/60 tracking-wider">
+                Inspect Network + Application tabs for diagnostics.
+              </div>
+            </motion.div>
           )}
-        </div>
-
-        <form onSubmit={applyFilter} className="flex items-end gap-3 mb-4 hud-panel hud-corners p-3">
-          <div className="flex-1 max-w-xs">
-            <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">
-              FILTER BY MARK NUMBER
-            </label>
-            <input
-              className="input-hud mt-1"
-              type="number"
-              placeholder="e.g. 42"
-              value={markInput}
-              onChange={(e) => setMarkInput(e.target.value)}
-            />
-          </div>
-          <button type="submit" className="btn-hud">APPLY</button>
-          <button
-            type="button"
-            className="btn-hud"
-            onClick={() => {
-              setMarkInput("");
-              setMarkApplied("");
-            }}
-          >
-            CLEAR
-          </button>
-          <div className="flex-1 text-right text-[9px] text-jarvis-cyan/50 tracking-widest">
-            STATUS // {loading ? "QUERYING..." : "READY"}
-          </div>
-        </form>
-
-        {error && (
-          <div className="hud-panel hud-corners p-5 mb-4 text-jarvis-red bg-jarvis-red/5">
-            <div className="tracking-widest text-[10px] mb-2">// SYSTEM ERROR</div>
-            <div className="text-xs">{error}</div>
-            <div className="text-[9px] mt-3 text-jarvis-red/60 tracking-wider">
-              Inspect Network + Application tabs for diagnostics.
-            </div>
-          </div>
-        )}
+        </AnimatePresence>
 
         {!loading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex-1 overflow-y-auto pr-1">
+          <StaggerGroup stagger={0.06} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex-1 overflow-y-auto pr-1">
             {suits.map((s) => (
-              <Link
-                key={s.id}
-                href={`/suits/${s.id}`}
-                className="hud-panel hud-corners p-4 group hover:bg-jarvis-cyan/5 transition-all"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">
-                      MARK {s.mark} // {s.year}
+              <StaggerItem key={s.id}>
+                <Link
+                  href={`/suits/${s.id}`}
+                  className="hud-panel hud-corners p-4 group hover:bg-jarvis-cyan/5 transition-all block relative overflow-hidden"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">
+                        MARK {s.mark} // {s.year}
+                      </div>
+                      <div className="text-base tracking-[0.2em] text-jarvis-cyan mt-1">{s.name}</div>
+                      <div className="text-[10px] italic text-slate-400">&quot;{s.codename}&quot;</div>
                     </div>
-                    <div className="text-base tracking-[0.2em] text-jarvis-cyan mt-1">{s.name}</div>
-                    <div className="text-[10px] italic text-slate-400">"{s.codename}"</div>
+                    <span
+                      className={`text-[9px] tracking-[0.25em] border px-2 py-1 ${statusColor[s.status] || ""}`}
+                    >
+                      {s.status.toUpperCase()}
+                    </span>
                   </div>
-                  <span
-                    className={`text-[9px] tracking-[0.25em] border px-2 py-1 ${statusColor[s.status] || ""}`}
-                  >
-                    {s.status.toUpperCase()}
-                  </span>
-                </div>
 
-                <div className="relative aspect-square bg-jarvis-bg/70 border border-jarvis-cyan/20 overflow-hidden">
-                  <div className="absolute inset-0 hud-hexpattern opacity-30" />
-                  <SuitSilhouette
-                    mark={s.mark}
-                    codename={s.codename}
-                    {...paletteFor(s.id)}
-                    className="relative w-full h-full group-hover:scale-105 transition-transform"
-                  />
-                  <div className="absolute top-2 left-2 text-[9px] tracking-[0.25em] text-jarvis-cyan/70 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-cyan/30">
-                    ID // {s.id.toUpperCase()}
+                  <div className="relative aspect-square bg-jarvis-bg/70 border border-jarvis-cyan/20 overflow-hidden">
+                    <div className="absolute inset-0 hud-hexpattern opacity-30" />
+                    <SuitSilhouette
+                      mark={s.mark}
+                      codename={s.codename}
+                      {...paletteFor(s.id)}
+                      className="relative w-full h-full group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-2 left-2 text-[9px] tracking-[0.25em] text-jarvis-cyan/70 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-cyan/30">
+                      ID // {s.id.toUpperCase()}
+                    </div>
+                    <div className="absolute bottom-2 right-2 text-[9px] tracking-[0.25em] text-jarvis-gold/80 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-gold/30">
+                      {s.classification}
+                    </div>
                   </div>
-                  <div className="absolute bottom-2 right-2 text-[9px] tracking-[0.25em] text-jarvis-gold/80 bg-jarvis-bg/60 px-2 py-0.5 border border-jarvis-gold/30">
-                    {s.classification}
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between mt-3 text-[9px] tracking-[0.25em] text-jarvis-cyan/60">
-                  <span>↳ VIEW HUD BRIEFING</span>
-                  <span className="text-jarvis-cyan">→</span>
-                </div>
-              </Link>
+                  <div className="flex items-center justify-between mt-3 text-[9px] tracking-[0.25em] text-jarvis-cyan/60">
+                    <span>VIEW HUD BRIEFING</span>
+                    <motion.span
+                      className="text-jarvis-cyan"
+                      initial={{ x: 0 }}
+                      whileHover={{ x: 4 }}
+                    >
+                      &rarr;
+                    </motion.span>
+                  </div>
+                </Link>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGroup>
         )}
 
         {loading && (
-          <div className="flex-1 flex items-center justify-center text-jarvis-cyan tracking-[0.4em] flicker">
-            QUERYING VAULT...
+          <div className="flex-1 flex flex-col items-center justify-center gap-4">
+            <motion.div
+              className="w-12 h-12 border-2 border-jarvis-cyan/20 border-t-jarvis-cyan rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+            />
+            <TextScramble className="text-jarvis-cyan tracking-[0.4em] text-sm" duration={1.5}>
+              QUERYING VAULT...
+            </TextScramble>
           </div>
         )}
       </div>

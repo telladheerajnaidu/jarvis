@@ -4,9 +4,9 @@ const SECRET = process.env.JARVIS_SECRET || "stark-mainframe-dev-secret";
 export const COOKIE_NAME = "jarvis_session";
 
 export const USERS: { email: string; password: string; name: string }[] = [
-  { email: "steve@shield.gov", password: "rogers", name: "Steve Rogers" },
-  { email: "pepper@stark.com", password: "rescue", name: "Pepper Potts" },
-  { email: "rhodey@stark.com", password: "warmachine", name: "James Rhodes" },
+  { email: "hitesh@q2software.com", password: "logeasy", name: "Hitesh Singh Solanki" },
+  { email: "vikram@q2software.com", password: "fintech", name: "Vikram Mehta" },
+  { email: "priya@q2software.com", password: "banking", name: "Priya Sharma" },
 ];
 
 export function sign(payload: object): string {

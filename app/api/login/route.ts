@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    path: "/",
+    path: "/admin",
     maxAge: 60 * 60 * 8,
   });
   return res;

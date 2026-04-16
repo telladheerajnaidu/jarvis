@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
 import { ConcentricRings, TelemetryStream, WaveformBars, HexBadge } from "./_components/Rings";
+import { TextScramble, TypingText, FadeIn, Particles, PulseGlow, BorderBeam, NumberTicker } from "./_components/Animations";
 
 const BOOT_LINES = [
   "> INITIALIZING J.A.R.V.I.S. v8.4.1",
@@ -23,6 +25,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nowIso, setNowIso] = useState("--:--:--");
+  const [formReady, setFormReady] = useState(false);
 
   useEffect(() => {
     const tick = () => setNowIso(new Date().toISOString().slice(11, 19));
@@ -39,6 +42,13 @@ export default function LoginPage() {
     const t = setTimeout(() => setVisibleLines((n) => n + 1), 240);
     return () => clearTimeout(t);
   }, [visibleLines]);
+
+  useEffect(() => {
+    if (booted) {
+      const t = setTimeout(() => setFormReady(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [booted]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -65,13 +75,26 @@ export default function LoginPage() {
 
   if (!booted) {
     return (
-      <main className="min-h-screen hud-grid-fine relative flex items-center justify-center">
+      <main className="min-h-screen hud-grid-fine relative flex items-center justify-center overflow-hidden">
         <div className="scanline-overlay" />
-        <div className="max-w-2xl w-full p-8 font-mono text-jarvis-cyan text-xs flicker">
+        <Particles className="absolute inset-0" quantity={40} color="#22d3ee" size={0.3} />
+        <div className="max-w-2xl w-full p-8 font-mono text-jarvis-cyan text-xs">
           {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
-            <div key={i} className="py-1 tracking-wider">{line}</div>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="py-1 tracking-wider"
+            >
+              <TextScramble duration={0.4} speed={0.03}>{line}</TextScramble>
+            </motion.div>
           ))}
-          <div className="h-3 w-2 bg-jarvis-cyan inline-block animate-pulse ml-1" />
+          <motion.div
+            className="h-3 w-2 bg-jarvis-cyan inline-block ml-1"
+            animate={{ opacity: [1, 0, 1] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+          />
         </div>
       </main>
     );
@@ -80,14 +103,28 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen hud-grid-fine relative overflow-hidden">
       <div className="scanline-overlay" />
+      <Particles className="absolute inset-0 z-0" quantity={60} color="#22d3ee" size={0.3} />
 
       {/* Top bar */}
-      <div className="border-b border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm">
+      <motion.div
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="border-b border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm relative z-10"
+      >
         <div className="flex items-center justify-between px-6 py-2">
           <div className="flex items-center gap-4">
-            <div className="arc-reactor" style={{ width: 32, height: 32 }} />
+            <motion.div
+              className="arc-reactor"
+              style={{ width: 32, height: 32 }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+            />
             <div className="leading-tight">
-              <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan">J.A.R.V.I.S.</div>
+              <TextScramble className="text-[10px] tracking-[0.4em] text-jarvis-cyan" duration={0.6}>
+                J.A.R.V.I.S.
+              </TextScramble>
               <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/50">SECURE TERMINAL // MAINFRAME v8.4.1</div>
             </div>
           </div>
@@ -95,162 +132,267 @@ export default function LoginPage() {
             <span>UTC {nowIso}</span>
             <span className="text-jarvis-cyan/40">|</span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full pulse-dot" />
-              UPLINK NOMINAL
+              <PulseGlow color="#34d399" size={6} />
+              <span className="ml-1">UPLINK NOMINAL</span>
             </span>
             <span className="text-jarvis-cyan/40">|</span>
             <HexBadge>SESSION 04</HexBadge>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 3-column HUD */}
-      <div className="grid grid-cols-[260px_1fr_260px] gap-4 p-4 h-[calc(100vh-90px)]">
-        {/* Left — telemetry */}
-        <div className="hud-panel hud-corners p-4 overflow-hidden">
-          <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-3 border-b border-jarvis-cyan/20 pb-2">
-            // BOOT TELEMETRY
+      <div className="grid grid-cols-[260px_1fr_260px] gap-4 p-4 h-[calc(100vh-90px)] relative z-10">
+        {/* Left -- telemetry */}
+        <FadeIn delay={0.2} direction="left">
+          <div className="hud-panel hud-corners p-4 overflow-hidden h-full relative">
+            <BorderBeam colorFrom="#22d3ee" colorTo="#0891b2" size={40} duration={8} />
+            <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-3 border-b border-jarvis-cyan/20 pb-2">
+              // BOOT TELEMETRY
+            </div>
+            <TelemetryStream />
           </div>
-          <TelemetryStream />
-        </div>
+        </FadeIn>
 
-        {/* Center — big ring + login */}
+        {/* Center -- big ring + login */}
         <section className="relative flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center justify-center">
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+          >
             <div className="relative w-[560px] h-[560px]">
               <ConcentricRings size={560} />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="relative z-10 w-[360px]">
-            <div className="flex flex-col items-center mb-5">
-              <div className="arc-reactor mb-4" />
-              <div className="text-xl tracking-[0.5em] text-jarvis-cyan flicker">J.A.R.V.I.S.</div>
-              <div className="text-[9px] text-jarvis-cyan/60 mt-1 tracking-[0.3em]">
-                JUST A RATHER VERY INTELLIGENT SYSTEM
-              </div>
-            </div>
-
-            <div className="hud-panel hud-corners p-5 backdrop-blur-md">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-[10px] text-jarvis-cyan/80 tracking-[0.3em]">
-                  // AUTH REQUIRED
-                </div>
-                <HexBadge>LV 04</HexBadge>
-              </div>
-
-              <form onSubmit={handleLogin} className="space-y-3">
-                <div>
-                  <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">USER ID</label>
-                  <input
-                    type="text"
-                    className="input-hud mt-1"
-                    placeholder="enter user id"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="username"
-                    required
+          <AnimatePresence>
+            {formReady && (
+              <motion.div
+                className="relative z-10 w-[360px]"
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <div className="flex flex-col items-center mb-5">
+                  <motion.div
+                    className="arc-reactor mb-4"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.1, type: "spring", stiffness: 150 }}
                   />
+                  <TextScramble
+                    className="text-xl tracking-[0.5em] text-jarvis-cyan"
+                    duration={0.8}
+                    characterSet="ABCDEFGHIJKLMNOPQRSTUVWXYZ.0123456789"
+                  >
+                    J.A.R.V.I.S.
+                  </TextScramble>
+                  <motion.div
+                    className="text-[9px] text-jarvis-cyan/60 mt-1 tracking-[0.3em]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    JUST A RATHER VERY INTELLIGENT SYSTEM
+                  </motion.div>
                 </div>
-                <div>
-                  <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">ACCESS CODE</label>
-                  <input
-                    type="password"
-                    className="input-hud mt-1"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
-                {error && (
-                  <div className="text-[10px] text-jarvis-red border border-jarvis-red/40 bg-jarvis-red/10 px-3 py-2 tracking-wider">
-                    {error}
+
+                <div className="hud-panel hud-corners p-5 backdrop-blur-md relative overflow-hidden">
+                  <BorderBeam colorFrom="#22d3ee" colorTo="#f59e0b" size={60} duration={6} />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-[10px] text-jarvis-cyan/80 tracking-[0.3em]">
+                      // AUTH REQUIRED
+                    </div>
+                    <HexBadge>LV 04</HexBadge>
                   </div>
-                )}
-                <button type="submit" className="btn-hud w-full mt-2" disabled={loading}>
-                  {loading ? "AUTHENTICATING..." : "ENGAGE"}
-                </button>
-              </form>
 
-              <div className="mt-4 grid grid-cols-3 gap-2 text-[8px] text-jarvis-cyan/50 tracking-widest">
-                <div className="hud-panel px-2 py-1 text-center">ENC AES-256</div>
-                <div className="hud-panel px-2 py-1 text-center">TLS 1.3</div>
-                <div className="hud-panel px-2 py-1 text-center">FIPS-OK</div>
-              </div>
-            </div>
+                  <form onSubmit={handleLogin} className="space-y-3">
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">USER ID</label>
+                      <input
+                        type="text"
+                        className="input-hud mt-1"
+                        placeholder="enter user id"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="username"
+                        required
+                      />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.35 }}
+                    >
+                      <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">ACCESS CODE</label>
+                      <input
+                        type="password"
+                        className="input-hud mt-1"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                        required
+                      />
+                    </motion.div>
+                    <AnimatePresence>
+                      {error && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="text-[10px] text-jarvis-red border border-jarvis-red/40 bg-jarvis-red/10 px-3 py-2 tracking-wider overflow-hidden"
+                        >
+                          {error}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <motion.button
+                      type="submit"
+                      className="btn-hud w-full mt-2"
+                      disabled={loading}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <motion.span
+                            className="inline-block w-3 h-3 border-2 border-jarvis-cyan/40 border-t-jarvis-cyan rounded-full"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                          />
+                          AUTHENTICATING...
+                        </span>
+                      ) : (
+                        "ENGAGE"
+                      )}
+                    </motion.button>
+                  </form>
 
-            <div className="text-[9px] text-jarvis-cyan/40 text-center mt-4 tracking-[0.3em]">
-              STARK INDUSTRIES // MALIBU DATACENTER
-            </div>
-          </div>
+                  <div className="mt-4 grid grid-cols-3 gap-2 text-[8px] text-jarvis-cyan/50 tracking-widest">
+                    {["ENC AES-256", "TLS 1.3", "FIPS-OK"].map((label, i) => (
+                      <motion.div
+                        key={label}
+                        className="hud-panel px-2 py-1 text-center"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 + i * 0.1 }}
+                      >
+                        {label}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                <motion.div
+                  className="text-[9px] text-jarvis-cyan/40 text-center mt-4 tracking-[0.3em]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.9 }}
+                >
+                  STARK INDUSTRIES // MALIBU DATACENTER
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
-        {/* Right — diagnostics */}
-        <div className="space-y-4">
-          <div className="hud-panel hud-corners p-4">
-            <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-3 border-b border-jarvis-cyan/20 pb-2">
-              // DIAGNOSTICS
+        {/* Right -- diagnostics */}
+        <FadeIn delay={0.2} direction="right">
+          <div className="space-y-4 h-full flex flex-col">
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
+              <BorderBeam colorFrom="#f59e0b" colorTo="#22d3ee" size={35} duration={10} delay={3} />
+              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-3 border-b border-jarvis-cyan/20 pb-2">
+                // DIAGNOSTICS
+              </div>
+              <div className="space-y-3 text-[10px] tracking-wider">
+                <AnimatedBar label="ARC REACTOR" value={98} delay={0.3} />
+                <AnimatedBar label="UPLINK" value={92} delay={0.45} />
+                <AnimatedBar label="SENSOR SUITE" value={86} delay={0.6} />
+                <AnimatedBar label="AUX POWER" value={74} delay={0.75} />
+                <AnimatedBar label="SECURITY CORE" value={100} delay={0.9} />
+              </div>
             </div>
-            <div className="space-y-3 text-[10px] tracking-wider">
-              <Bar label="ARC REACTOR" value={98} />
-              <Bar label="UPLINK" value={92} />
-              <Bar label="SENSOR SUITE" value={86} />
-              <Bar label="AUX POWER" value={74} />
-              <Bar label="SECURITY CORE" value={100} />
-            </div>
-          </div>
 
-          <div className="hud-panel hud-corners p-4">
-            <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-2">
-              // SYSTEM MESSAGE
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
+              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-2">
+                // SYSTEM MESSAGE
+              </div>
+              <div className="text-[10px] leading-5 text-jarvis-cyan/80 italic">
+                <TypingText
+                  text={`"Welcome back, Sir. Shall I warm up the hangar?"`}
+                  speed={35}
+                  delay={1200}
+                />
+              </div>
+              <motion.div
+                className="mt-3 text-[9px] tracking-widest text-jarvis-cyan/50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 3 }}
+              >
+                — F.R.I.D.A.Y.
+              </motion.div>
             </div>
-            <div className="text-[10px] leading-5 text-jarvis-cyan/80 italic">
-              "Welcome back, Sir. Shall I warm up the hangar?"
-            </div>
-            <div className="mt-3 text-[9px] tracking-widest text-jarvis-cyan/50">
-              — F.R.I.D.A.Y.
-            </div>
-          </div>
 
-          <div className="hud-panel hud-corners p-3">
-            <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60 mb-2">// AUDIO</div>
-            <WaveformBars count={32} />
+            <div className="hud-panel hud-corners p-3">
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60 mb-2">// AUDIO</div>
+              <WaveformBars count={32} />
+            </div>
           </div>
-        </div>
+        </FadeIn>
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm px-6 py-2 flex items-center justify-between">
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="border-t border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm px-6 py-2 flex items-center justify-between relative z-10"
+      >
         <div className="flex items-center gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/70">
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full pulse-dot" />
-            SYSTEMS NOMINAL
+            <PulseGlow color="#34d399" size={6} />
+            <span className="ml-1">SYSTEMS NOMINAL</span>
           </span>
           <span className="text-jarvis-cyan/40">|</span>
-          <span>CPU 12%</span>
-          <span>MEM 38%</span>
-          <span>GPU 24%</span>
+          <span>CPU <NumberTicker value={12} className="text-jarvis-cyan/70" />%</span>
+          <span>MEM <NumberTicker value={38} className="text-jarvis-cyan/70" />%</span>
+          <span>GPU <NumberTicker value={24} className="text-jarvis-cyan/70" />%</span>
         </div>
         <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/50">
-          PROPRIETARY // STARK INDUSTRIES © 2025
+          PROPRIETARY // STARK INDUSTRIES &copy; 2025
         </div>
-      </div>
+      </motion.div>
     </main>
   );
 }
 
-function Bar({ label, value }: { label: string; value: number }) {
+function AnimatedBar({ label, value, delay = 0 }: { label: string; value: number; delay?: number }) {
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.4, delay }}
+    >
       <div className="flex justify-between mb-1 text-jarvis-cyan/80">
         <span>{label}</span>
-        <span>{value}%</span>
+        <span><NumberTicker value={value} className="text-jarvis-cyan/80 text-[10px]" delay={delay} />%</span>
       </div>
       <div className="bar-track">
-        <div className="bar-fill" style={{ width: `${value}%` }} />
+        <motion.div
+          className="bar-fill"
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.8, delay: delay + 0.2, ease: "easeOut" }}
+        />
       </div>
-    </div>
+    </motion.div>
   );
 }

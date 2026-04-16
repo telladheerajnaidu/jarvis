@@ -15,9 +15,9 @@ npm run dev
 
 | User | Email | Password |
 |---|---|---|
-| Steve Rogers | `steve@shield.gov` | `rogers` |
-| Pepper Potts | `pepper@stark.com` | `rescue` |
-| James Rhodes | `rhodey@stark.com` | `warmachine` |
+| Hitesh Singh Solanki | `Hitesh@q2software.com` | `logeasy` |
+| Vikram Mehta | `vikram@q2software.com` | `fintech` |
+| Priya Sharma | `priya@q2software.com` | `banking` |
 
 **Hint to withhold:** emails are lowercase. (That's bug L1.)
 
@@ -27,7 +27,7 @@ npm run dev
 
 ### L1 — Case-sensitive email comparison
 - **File:** `app/api/login/route.ts`
-- **Symptom:** Login with `Steve@shield.gov` fails. UI shows generic "Authentication failed".
+- **Symptom:** Login with `Hitesh@q2software.com` fails. UI shows generic "Authentication failed".
 - **How to find:** Network tab -> login response is `200 OK` with body `{success: false, error: "INVALID_CREDENTIALS", detail: "EMAIL_CASE_MISMATCH: email comparison is case-sensitive on the server"}`.
 - **DevTools skill:** Inspecting response body (not just status code).
 - **Fix:** Compare `u.email.toLowerCase() === email.toLowerCase()`.
@@ -39,13 +39,6 @@ npm run dev
 - **DevTools skill:** Application/Storage tab, cookie attributes (Path, SameSite, Secure).
 - **Fix:** Change `path: "/admin"` to `path: "/"`.
 
-### S1 — Download missing Content-Disposition
-- **File:** `app/api/suits/[id]/spec/route.ts`
-- **Symptom:** "Download Spec Sheet" button triggers a download named `<uuid>` with no extension, or browser renders raw CSV text (depends on browser).
-- **How to find:** Network tab -> `/spec` response headers lack `Content-Disposition: attachment; filename="..."`.
-- **DevTools skill:** Reading response headers.
-- **Fix:** Add header `"Content-Disposition": 'attachment; filename="mk<N>_spec.csv"'`.
-
 ### S4 — snake_case vs camelCase field mismatch
 - **File:** `app/suits/[id]/page.tsx`
 - **Symptom:** Suit detail page shows "—" for `POWER OUTPUT` and `TOP SPEED` fields.
@@ -53,42 +46,54 @@ npm run dev
 - **DevTools skill:** Comparing API payload vs DOM, Elements/React.
 - **Fix:** Read `suit.power_output` / `suit.top_speed` (or map in the API layer).
 
-### S5 — Stale filter state, empty query param
+### M1 — Frozen HEARTBEAT (localStorage cache)
 - **File:** `app/suits/page.tsx`
-- **Symptom:** Typing a Mark number + Apply does nothing. All suits still show.
-- **How to find:** Network tab -> `/api/suits?mark=` is sent with empty value regardless of input. React devtools / Sources: `markApplied` is never updated; `setMarkApplied(markInput)` is missing from `applyFilter`.
-- **DevTools skill:** Request payload/params inspection, React state debugging.
-- **Fix:** In `applyFilter`, call `setMarkApplied(markInput)` and re-run `loadSuits` with the new value (or use a `useEffect` on `markApplied`).
+- **Symptom:** On `/suits`, click RESYNC TELEMETRY. The big HEARTBEAT number does not change, LAST SYNC timestamp does not advance, no network request fires. Persists across logout/login.
+- **How to find:** Network -> Fetch/XHR stays empty on click. Application -> Local Storage -> `jarvis_suits_cache_v1` contains a stale entry.
+- **DevTools skill:** Network tab + Application/Storage tab, understanding client-side caching.
+- **Fix:** Pass `{ forceNetwork: true }` in `resync()`.
+
+### H1 — Filter race condition
+- **File:** `app/suits/page.tsx`
+- **Symptom:** On `/suits`, type `3` -> APPLY. Request hangs ~5s. After ~2s, try `85` instead. Mark 85 renders, then ~1-2s later stale mark=3 response clobbers it.
+- **How to find:** Network waterfall shows `?mark=3` pending ~5s while `?mark=85` completes in ~200ms. The late response overwrites state.
+- **DevTools skill:** Network waterfall analysis, understanding race conditions.
+- **Fix:** Wrap `loadSuits` with `AbortController` in the `useEffect`.
 
 ---
 
 ## Interview flow (15-20 min for DevTools round)
 
-1. Give candidate the URL and Steve's credentials.
+1. Give candidate the URL and Hitesh's credentials.
 2. Ask: "Log in and browse the suit registry. Narrate what you see, what you try, what's broken, and how you'd fix it."
 3. Sit quiet. Let them drive.
-4. Score against the rubric in `tanubagel R1.pdf`.
+4. Score against the rubric.
 
 Expected progression:
-- They type `Steve@shield.gov` first -> hits L1 -> good candidate opens Network tab.
+- They type `Hitesh@q2software.com` first -> hits L1 -> good candidate opens Network tab.
 - Once logged in -> hits L3 -> good candidate opens Application -> Cookies.
-- (Reset cookie path for demo if needed: clear cookies and manually set Path=/ in devtools, or ship the "fix" in a branch.)
 - On detail page -> hits S4 (missing fields).
-- Clicks Download -> hits S1 (wrong filename / inline rendering).
-- Tries filter -> hits S5 (empty query param).
+- Tries filter -> might notice M1 or H1.
 
 You don't need them to hit all 5. Two clean catches + correct diagnosis is a strong signal.
+
+---
+
+## Reset between candidates
+
+```
+https://jarvis-nine-coral.vercel.app/admin/reset
+```
+Clears cookies + browser cache (`Clear-Site-Data: "cache", "cookies"`). All five bugs re-arm.
 
 ---
 
 ## Deploy to Vercel
 
 ```bash
-# in ~/Desktop/jarvis-debug-lab
 git init
 git add .
 git commit -m "chore: initial jarvis debug lab"
-# create repo on GitHub, then:
 git remote add origin git@github.com:<you>/jarvis-debug-lab.git
 git push -u origin main
 ```
@@ -98,11 +103,3 @@ git push -u origin main
 3. Framework preset: Next.js (auto-detected)
 4. Env var (optional): `JARVIS_SECRET` = any random string. If omitted, a dev secret is used.
 5. Deploy
-
-For the interview, share the Vercel URL + credentials.
-
----
-
-## Swap in Supabase later (optional)
-
-Replace `lib/auth.ts` USERS array with Supabase auth (`@supabase/ssr` + `createServerClient`). Same cookie shape, same bugs still apply.

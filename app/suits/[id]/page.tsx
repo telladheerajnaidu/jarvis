@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
 import { HudShell } from "../../_components/HudChrome";
 import { CircularDial, HexBadge, WaveformBars } from "../../_components/Rings";
 import { SuitSilhouette, paletteFor } from "../../_components/SuitSilhouette";
+import { TextScramble, FadeIn, BorderBeam, NumberTicker, PulseGlow, StaggerGroup, StaggerItem } from "../../_components/Animations";
 
 type Integrity = {
   overall: number;
@@ -93,11 +95,14 @@ export default function SuitDetailPage() {
   if (error) {
     return (
       <HudShell session="ERROR">
-        <div className="hud-panel hud-corners p-6 text-jarvis-red bg-jarvis-red/5 max-w-xl">
-          <div className="tracking-widest text-[10px] mb-2">// SYSTEM ERROR</div>
-          <div className="text-sm">{error}</div>
-          <Link href="/suits" className="btn-hud inline-block mt-4">← REGISTRY</Link>
-        </div>
+        <FadeIn>
+          <div className="hud-panel hud-corners p-6 text-jarvis-red bg-jarvis-red/5 max-w-xl relative overflow-hidden">
+            <BorderBeam colorFrom="#ef4444" colorTo="#f59e0b" size={40} duration={4} />
+            <div className="tracking-widest text-[10px] mb-2">// SYSTEM ERROR</div>
+            <div className="text-sm">{error}</div>
+            <Link href="/suits" className="btn-hud inline-block mt-4">&larr; REGISTRY</Link>
+          </div>
+        </FadeIn>
       </HudShell>
     );
   }
@@ -105,8 +110,15 @@ export default function SuitDetailPage() {
   if (!suit) {
     return (
       <HudShell session="LOADING">
-        <div className="h-full flex items-center justify-center text-jarvis-cyan tracking-[0.4em] flicker">
-          LOADING TELEMETRY...
+        <div className="h-full flex flex-col items-center justify-center gap-4">
+          <motion.div
+            className="w-16 h-16 border-2 border-jarvis-cyan/20 border-t-jarvis-cyan rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+          />
+          <TextScramble className="text-jarvis-cyan tracking-[0.4em]" duration={1.5}>
+            LOADING TELEMETRY...
+          </TextScramble>
         </div>
       </HudShell>
     );
@@ -119,62 +131,91 @@ export default function SuitDetailPage() {
     <HudShell session={`MK ${suit.mark}`}>
       <div className="h-full flex flex-col overflow-y-auto pr-1">
         {/* Header row */}
-        <div className="flex items-start justify-between mb-4 gap-4">
+        <motion.div
+          className="flex items-start justify-between mb-4 gap-4"
+          initial={{ opacity: 0, y: -15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="flex items-center gap-4">
-            <Link href="/suits" className="btn-hud">← REGISTRY</Link>
+            <Link href="/suits" className="btn-hud">&larr; REGISTRY</Link>
             <div>
               <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan/60">
                 {suit.classification} // {suit.year} // {suit.status.toUpperCase()}
               </div>
-              <h1 className="text-2xl tracking-[0.3em] text-jarvis-cyan flicker">{suit.name}</h1>
-              <div className="text-[11px] italic text-slate-400">"{suit.codename}" HUD</div>
+              <TextScramble className="text-2xl tracking-[0.3em] text-jarvis-cyan inline-block" duration={0.6}>
+                {suit.name}
+              </TextScramble>
+              <div className="text-[11px] italic text-slate-400">&quot;{suit.codename}&quot; HUD</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <HexBadge>{suit.hud_version}</HexBadge>
-            <button onClick={downloadSpec} className="btn-hud btn-gold" disabled={downloading}>
+            <motion.button
+              onClick={downloadSpec}
+              className="btn-hud btn-gold"
+              disabled={downloading}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
               {downloading ? "TRANSMITTING..." : "DOWNLOAD SPEC SHEET"}
-            </button>
-            <button onClick={logout} className="btn-hud">DISENGAGE</button>
+            </motion.button>
+            <motion.button
+              onClick={logout}
+              className="btn-hud"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              DISENGAGE
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Main grid: stats | figure | dials */}
         <div className="grid grid-cols-[1fr_1.2fr_1fr] gap-4 mb-4">
-          {/* Left — suit diagnostics */}
-          <div className="space-y-4">
-            <div className="hud-panel hud-corners p-4">
-              <SectionTitle>SUIT DIAGNOSTICS</SectionTitle>
-              <div className="space-y-2 text-[10px] tracking-wider mt-3">
-                <IntegrityRow label="HELMET" value={suit.integrity.helmet} />
-                <IntegrityRow label="CHEST PLATE" value={suit.integrity.chest} />
-                <IntegrityRow label="ARM — LEFT" value={suit.integrity.arm_left} />
-                <IntegrityRow label="ARM — RIGHT" value={suit.integrity.arm_right} />
-                <IntegrityRow label="LEG — LEFT" value={suit.integrity.leg_left} />
-                <IntegrityRow label="LEG — RIGHT" value={suit.integrity.leg_right} />
-                <IntegrityRow label="REACTOR" value={suit.integrity.reactor} emphasize />
+          {/* Left -- suit diagnostics */}
+          <FadeIn delay={0.1} direction="left">
+            <div className="space-y-4">
+              <div className="hud-panel hud-corners p-4 relative overflow-hidden">
+                <BorderBeam colorFrom="#22d3ee" colorTo="#0891b2" size={35} duration={10} />
+                <SectionTitle>SUIT DIAGNOSTICS</SectionTitle>
+                <StaggerGroup stagger={0.06} className="space-y-2 text-[10px] tracking-wider mt-3">
+                  <StaggerItem><IntegrityRow label="HELMET" value={suit.integrity.helmet} /></StaggerItem>
+                  <StaggerItem><IntegrityRow label="CHEST PLATE" value={suit.integrity.chest} /></StaggerItem>
+                  <StaggerItem><IntegrityRow label="ARM — LEFT" value={suit.integrity.arm_left} /></StaggerItem>
+                  <StaggerItem><IntegrityRow label="ARM — RIGHT" value={suit.integrity.arm_right} /></StaggerItem>
+                  <StaggerItem><IntegrityRow label="LEG — LEFT" value={suit.integrity.leg_left} /></StaggerItem>
+                  <StaggerItem><IntegrityRow label="LEG — RIGHT" value={suit.integrity.leg_right} /></StaggerItem>
+                  <StaggerItem><IntegrityRow label="REACTOR" value={suit.integrity.reactor} emphasize /></StaggerItem>
+                </StaggerGroup>
+              </div>
+
+              <div className="hud-panel hud-corners p-4">
+                <SectionTitle>BATTLE LOG</SectionTitle>
+                <StaggerGroup stagger={0.1} className="space-y-1.5 mt-3 text-[10px] tracking-wider text-jarvis-cyan/80">
+                  {suit.battles.map((b) => (
+                    <StaggerItem key={b}>
+                      <div className="flex items-center gap-2">
+                        <PulseGlow color="#22d3ee" size={4} />
+                        <span className="ml-1">{b}</span>
+                      </div>
+                    </StaggerItem>
+                  ))}
+                </StaggerGroup>
               </div>
             </div>
+          </FadeIn>
 
-            <div className="hud-panel hud-corners p-4">
-              <SectionTitle>BATTLE LOG</SectionTitle>
-              <ul className="space-y-1.5 mt-3 text-[10px] tracking-wider text-jarvis-cyan/80">
-                {suit.battles.map((b) => (
-                  <li key={b} className="flex items-center gap-2">
-                    <span className="w-1 h-1 bg-jarvis-cyan pulse-dot" />
-                    {b}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Center — suit figure */}
-          <div className="hud-panel hud-corners p-4 relative overflow-hidden flex flex-col">
+          {/* Center -- suit figure */}
+          <motion.div
+            className="hud-panel hud-corners p-4 relative overflow-hidden flex flex-col"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
             <SectionTitle>SUIT PROFILE // MK {suit.mark}</SectionTitle>
             <div className="relative flex-1 min-h-[380px] flex items-center justify-center">
               <div className="absolute inset-0 hud-hexpattern opacity-20" />
-              {/* Radial targeting overlay */}
               <svg className="absolute inset-0 m-auto" width="320" height="320" viewBox="0 0 320 320" style={{ opacity: 0.75 }}>
                 <g className="ring-rotate-slow" style={{ transformOrigin: "160px 160px" }}>
                   <circle cx="160" cy="160" r="150" fill="none" stroke="#22d3ee" strokeOpacity="0.3" strokeDasharray="4 6" />
@@ -206,78 +247,94 @@ export default function SuitDetailPage() {
               <MiniStat label="WEIGHT" value={suit.weight} />
               <MiniStat label="CEILING" value={suit.flight_ceiling} />
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right — dials */}
-          <div className="space-y-4">
-            <div className="hud-panel hud-corners p-4">
-              <SectionTitle>LIVE TELEMETRY</SectionTitle>
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                <CircularDial label="INTEGRITY" value={suit.integrity.overall} unit="%" color={integrityColor} />
-                <CircularDial label="THRUSTERS" value={suit.thruster_efficiency} unit="%" />
-                <CircularDial label="REACTOR" value={suit.integrity.reactor} unit="%" color="#f59e0b" />
-                <CircularDial label="SHIELDS" value={Math.max(10, suit.integrity.chest)} unit="%" />
+          {/* Right -- dials */}
+          <FadeIn delay={0.2} direction="right">
+            <div className="space-y-4">
+              <div className="hud-panel hud-corners p-4 relative overflow-hidden">
+                <BorderBeam colorFrom="#22d3ee" colorTo="#f59e0b" size={35} duration={10} delay={2} />
+                <SectionTitle>LIVE TELEMETRY</SectionTitle>
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <CircularDial label="INTEGRITY" value={suit.integrity.overall} unit="%" color={integrityColor} />
+                  <CircularDial label="THRUSTERS" value={suit.thruster_efficiency} unit="%" />
+                  <CircularDial label="REACTOR" value={suit.integrity.reactor} unit="%" color="#f59e0b" />
+                  <CircularDial label="SHIELDS" value={Math.max(10, suit.integrity.chest)} unit="%" />
+                </div>
+              </div>
+
+              <div className="hud-panel hud-corners p-4">
+                <SectionTitle>AUDIO FEED</SectionTitle>
+                <div className="mt-3">
+                  <WaveformBars count={44} />
+                </div>
+                <div className="text-[10px] italic text-jarvis-cyan/70 mt-2">
+                  &quot;{suit.ai_core} initialized. Run-up sequence complete.&quot;
+                </div>
               </div>
             </div>
-
-            <div className="hud-panel hud-corners p-4">
-              <SectionTitle>AUDIO FEED</SectionTitle>
-              <div className="mt-3">
-                <WaveformBars count={44} />
-              </div>
-              <div className="text-[10px] italic text-jarvis-cyan/70 mt-2">
-                "{suit.ai_core} initialized. Run-up sequence complete."
-              </div>
-            </div>
-          </div>
+          </FadeIn>
         </div>
 
         {/* Bottom grid: specs | weapons | description */}
         <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className="hud-panel hud-corners p-4">
-            <SectionTitle>CORE SPECS</SectionTitle>
-            <div className="mt-3 space-y-2 text-[11px]">
-              <SpecRow label="POWER OUTPUT" value={suit.power_output} />
-              <SpecRow label="TOP SPEED" value={suit.top_speed} />
-              <SpecRow label="ARMOR" value={suit.armor} />
-              <SpecRow label="AI CORE" value={suit.ai_core} />
-              <SpecRow label="HUD" value={suit.hud_version} />
-              <SpecRow label="FIRST DEPLOYED" value={suit.first_deployed} />
+          <FadeIn delay={0.3} direction="up">
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
+              <SectionTitle>CORE SPECS</SectionTitle>
+              <div className="mt-3 space-y-2 text-[11px]">
+                <SpecRow label="POWER OUTPUT" value={(suit as any).powerOutput ?? "\u2014"} />
+                <SpecRow label="TOP SPEED" value={(suit as any).topSpeed ?? "\u2014"} />
+                <SpecRow label="ARMOR" value={suit.armor} />
+                <SpecRow label="AI CORE" value={suit.ai_core} />
+                <SpecRow label="HUD" value={suit.hud_version} />
+                <SpecRow label="FIRST DEPLOYED" value={suit.first_deployed} />
+              </div>
             </div>
-          </div>
+          </FadeIn>
 
-          <div className="hud-panel hud-corners p-4">
-            <SectionTitle>WEAPONS LOADOUT</SectionTitle>
-            <div className="mt-3 space-y-3">
-              {suit.weapons.map((w) => (
-                <div key={w.name}>
-                  <div className="flex items-center justify-between text-[11px] tracking-wider">
-                    <span className="text-jarvis-cyan">{w.name}</span>
-                    <span className="text-jarvis-cyan/60">{w.charge}%</span>
-                  </div>
-                  <div className="bar-track mt-1">
-                    <div
-                      className={w.charge < 40 ? "bar-fill bar-fill-red" : w.charge < 75 ? "bar-fill bar-fill-gold" : "bar-fill"}
-                      style={{ width: `${w.charge}%` }}
-                    />
-                  </div>
-                  {w.notes && (
-                    <div className="text-[9px] tracking-widest text-jarvis-cyan/50 mt-0.5 italic">
-                      {w.notes}
+          <FadeIn delay={0.4} direction="up">
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
+              <BorderBeam colorFrom="#ef4444" colorTo="#f59e0b" size={30} duration={12} delay={4} />
+              <SectionTitle>WEAPONS LOADOUT</SectionTitle>
+              <StaggerGroup stagger={0.1} className="mt-3 space-y-3">
+                {suit.weapons.map((w) => (
+                  <StaggerItem key={w.name}>
+                    <div>
+                      <div className="flex items-center justify-between text-[11px] tracking-wider">
+                        <span className="text-jarvis-cyan">{w.name}</span>
+                        <span className="text-jarvis-cyan/60">
+                          <NumberTicker value={w.charge} className="text-jarvis-cyan/60 text-[11px]" />%
+                        </span>
+                      </div>
+                      <div className="bar-track mt-1">
+                        <motion.div
+                          className={w.charge < 40 ? "bar-fill bar-fill-red" : w.charge < 75 ? "bar-fill bar-fill-gold" : "bar-fill"}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${w.charge}%` }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                        />
+                      </div>
+                      {w.notes && (
+                        <div className="text-[9px] tracking-widest text-jarvis-cyan/50 mt-0.5 italic">
+                          {w.notes}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  </StaggerItem>
+                ))}
+              </StaggerGroup>
             </div>
-          </div>
+          </FadeIn>
 
-          <div className="hud-panel hud-corners p-4">
-            <SectionTitle>FIELD BRIEFING</SectionTitle>
-            <p className="text-[12px] leading-6 text-slate-300 mt-3">{suit.description}</p>
-            <div className="mt-3 border-t border-jarvis-cyan/20 pt-3 text-[10px] tracking-widest text-jarvis-cyan/60">
-              CLASSIFICATION // {suit.classification}
+          <FadeIn delay={0.5} direction="up">
+            <div className="hud-panel hud-corners p-4">
+              <SectionTitle>FIELD BRIEFING</SectionTitle>
+              <p className="text-[12px] leading-6 text-slate-300 mt-3">{suit.description}</p>
+              <div className="mt-3 border-t border-jarvis-cyan/20 pt-3 text-[10px] tracking-widest text-jarvis-cyan/60">
+                CLASSIFICATION // {suit.classification}
+              </div>
             </div>
-          </div>
+          </FadeIn>
         </div>
       </div>
     </HudShell>
@@ -289,7 +346,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <div className="flex items-center justify-between border-b border-jarvis-cyan/20 pb-2">
       <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70">// {children}</div>
       <div className="flex gap-1">
-        <span className="w-1 h-1 bg-jarvis-cyan rounded-full pulse-dot" />
+        <PulseGlow color="#22d3ee" size={4} />
         <span className="w-1 h-1 bg-jarvis-cyan/50 rounded-full" />
         <span className="w-1 h-1 bg-jarvis-cyan/30 rounded-full" />
       </div>
@@ -326,10 +383,17 @@ function IntegrityRow({ label, value, emphasize }: { label: string; value: numbe
         <span className={`tracking-[0.25em] ${emphasize ? "text-jarvis-gold" : "text-jarvis-cyan/80"}`}>
           {label}
         </span>
-        <span className={textColor}>{value}%</span>
+        <span className={textColor}>
+          <NumberTicker value={value} className={`${textColor} text-[10px]`} />%
+        </span>
       </div>
       <div className="bar-track mt-1">
-        <div className={`bar-fill ${color}`} style={{ width: `${value}%` }} />
+        <motion.div
+          className={`bar-fill ${color}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
       </div>
     </div>
   );
