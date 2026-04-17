@@ -282,42 +282,62 @@ export default function LoginPage() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="col-span-12 lg:col-span-3 flex flex-col gap-5 pt-6"
         >
-          {/* glass auth panel */}
-          <div className="glass p-6 rounded-sm relative overflow-hidden">
-            <div className="flex items-start justify-between mb-4 relative z-10">
-              <div className="text-[10px] tracking-[0.45em] text-jarvis-ivory/80">
-                AUTHORIZATION
+          {/* glass auth panel — elevated primary CTA */}
+          <motion.div
+            className="relative"
+            animate={{ y: [0, -2, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            {/* bracket accents */}
+            <span aria-hidden className="absolute -top-2 -left-2 w-5 h-5 border-t-2 border-l-2 border-jarvis-cyan/80 pointer-events-none" />
+            <span aria-hidden className="absolute -top-2 -right-2 w-5 h-5 border-t-2 border-r-2 border-jarvis-cyan/80 pointer-events-none" />
+            <span aria-hidden className="absolute -bottom-2 -left-2 w-5 h-5 border-b-2 border-l-2 border-jarvis-crimson/80 pointer-events-none" />
+            <span aria-hidden className="absolute -bottom-2 -right-2 w-5 h-5 border-b-2 border-r-2 border-jarvis-crimson/80 pointer-events-none" />
+
+            <div className="glass-primary p-6 pl-7 rounded-sm relative overflow-hidden">
+              <div className="flex items-start justify-between mb-1 relative z-10">
+                <div className="flex items-center gap-2 text-[10px] tracking-[0.45em] text-jarvis-cyan">
+                  <PulseGlow color="#67e8f9" size={6} />
+                  <span className="ml-1">AUTHORIZATION</span>
+                </div>
+                <div className="text-[9px] tracking-[0.3em] text-jarvis-crimson flex items-center gap-1.5">
+                  <span>SECURE</span>
+                </div>
               </div>
-              <div className="text-[9px] tracking-[0.3em] text-jarvis-crimson flex items-center gap-1.5">
-                <PulseGlow color="#f472b6" size={5} />
-                <span className="ml-1">SECURE</span>
+              <div className="relative z-10 mb-4">
+                <div className="text-[15px] tracking-[0.22em] text-jarvis-ivory font-light">
+                  SIGN IN TO CONTINUE
+                </div>
+                <div className="text-[9px] tracking-[0.35em] text-jarvis-ivory/55 mt-1">
+                  Operative credentials required · clearance MK L VIII
+                </div>
               </div>
-            </div>
-            <form onSubmit={handleLogin} className="space-y-5 relative z-10">
-              <div>
-                <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/45 mb-1">OPERATIVE</div>
-                <input
-                  type="text"
-                  className="input-min"
-                  placeholder="user identifier"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="username"
-                  required
-                />
-              </div>
-              <div>
-                <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/45 mb-1">CIPHER</div>
-                <input
-                  type="password"
-                  className="input-min"
-                  placeholder="access code"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
+
+              <form onSubmit={handleLogin} className="space-y-4 relative z-10">
+                <div>
+                  <div className="text-[9px] tracking-[0.4em] text-jarvis-cyan/80 mb-1">OPERATIVE</div>
+                  <input
+                    type="text"
+                    className="input-emph"
+                    placeholder="user identifier"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="username"
+                    required
+                  />
+                </div>
+                <div>
+                  <div className="text-[9px] tracking-[0.4em] text-jarvis-cyan/80 mb-1">CIPHER</div>
+                  <input
+                    type="password"
+                    className="input-emph"
+                    placeholder="access code"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
 
               <AnimatePresence>
                 {error && (
@@ -354,7 +374,8 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
-          </div>
+            </div>
+          </motion.div>
 
           {/* log stream */}
           <div className="glass p-4 rounded-sm">

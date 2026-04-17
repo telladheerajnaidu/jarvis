@@ -639,6 +639,70 @@ body {
     linear-gradient(340deg, rgba(236, 72, 153, 0.08) 0%, transparent 40%);
 }
 
+/* Glass panel — elevated / primary CTA variant (auth) */
+.glass-primary {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(30, 27, 75, 0.62), rgba(10, 10, 30, 0.78));
+  border: 1px solid rgba(103, 232, 249, 0.45);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 1px 0 rgba(103, 232, 249, 0.18) inset,
+    0 0 0 1px rgba(244, 114, 182, 0.08),
+    0 0 42px rgba(103, 232, 249, 0.18),
+    0 0 90px rgba(236, 72, 153, 0.16),
+    0 26px 70px rgba(0, 0, 0, 0.6);
+  animation: glassBreath 4.6s ease-in-out infinite;
+}
+.glass-primary::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 10%; bottom: 10%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, #67e8f9 30%, #f472b6 70%, transparent);
+  box-shadow: 0 0 14px rgba(103, 232, 249, 0.8);
+  animation: railPulse 2.4s ease-in-out infinite;
+}
+.glass-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(160deg, rgba(103, 232, 249, 0.14) 0%, transparent 32%),
+    linear-gradient(340deg, rgba(244, 114, 182, 0.14) 0%, transparent 42%);
+}
+@keyframes glassBreath {
+  0%,100% { box-shadow: 0 1px 0 rgba(103, 232, 249, 0.18) inset, 0 0 0 1px rgba(244, 114, 182, 0.08), 0 0 42px rgba(103, 232, 249, 0.18), 0 0 90px rgba(236, 72, 153, 0.16), 0 26px 70px rgba(0, 0, 0, 0.6); }
+  50%     { box-shadow: 0 1px 0 rgba(103, 232, 249, 0.28) inset, 0 0 0 1px rgba(244, 114, 182, 0.18), 0 0 64px rgba(103, 232, 249, 0.32), 0 0 120px rgba(236, 72, 153, 0.26), 0 26px 70px rgba(0, 0, 0, 0.6); }
+}
+@keyframes railPulse {
+  0%,100% { opacity: 0.7; }
+  50%     { opacity: 1; }
+}
+
+/* Emphasised minimal input — primary auth */
+.input-emph {
+  background: rgba(8, 8, 26, 0.5);
+  border: 0;
+  border-bottom: 1px solid rgba(103, 232, 249, 0.45);
+  color: var(--hud-ivory);
+  padding: 0.75rem 0.6rem 0.65rem;
+  width: 100%;
+  letter-spacing: 0.14em;
+  font-size: 0.98rem;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.input-emph::placeholder { color: rgba(196, 181, 253, 0.45); letter-spacing: 0.18em; font-size: 0.85rem; }
+.input-emph:hover { background: rgba(12, 10, 38, 0.6); border-bottom-color: rgba(103, 232, 249, 0.7); }
+.input-emph:focus {
+  outline: none;
+  background: rgba(16, 14, 46, 0.7);
+  border-bottom-color: #67e8f9;
+  box-shadow: 0 1px 0 0 #67e8f9, 0 10px 24px -10px rgba(103, 232, 249, 0.7);
+}
+
 /* Minimal underline input */
 .input-min {
   background: transparent;
