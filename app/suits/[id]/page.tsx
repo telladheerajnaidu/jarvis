@@ -190,7 +190,7 @@ export default function SuitDetailPage() {
         </motion.div>
 
         {/* Main grid: stats | figure | dials */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_1fr] gap-3 sm:gap-4 mb-4 layer-3d">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_1fr] gap-3 sm:gap-4 mb-4">
           {/* Left -- suit diagnostics */}
           <FadeIn delay={0.1} direction="left">
             <div className="space-y-4">

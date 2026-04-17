@@ -219,17 +219,10 @@ export function HexBadge({ children }: { children: React.ReactNode }) {
 // ============================================================
 
 export function Holosphere({ size = 460 }: { size?: number }) {
-  const ringConfigs = [
-    { axis: "rotateY", deg: 0,   colorVar: "#fde047" },
-    { axis: "rotateY", deg: 30,  colorVar: "#facc15" },
-    { axis: "rotateY", deg: 60,  colorVar: "#f59e0b" },
-    { axis: "rotateY", deg: 90,  colorVar: "#ef4444" },
-    { axis: "rotateY", deg: 120, colorVar: "#facc15" },
-    { axis: "rotateY", deg: 150, colorVar: "#fde047" },
-    { axis: "rotateX", deg: 0,   colorVar: "#fde047", dashed: true },
-    { axis: "rotateX", deg: 45,  colorVar: "#ef4444", dashed: true },
-    { axis: "rotateX", deg: 90,  colorVar: "#facc15" },
-  ];
+  const longitudes = [0, 30, 60, 90, 120, 150];
+  const c = size / 2;
+  const tickR = c - 4;
+  const ticks = Array.from({ length: 72 });
 
   return (
     <div
@@ -237,40 +230,90 @@ export function Holosphere({ size = 460 }: { size?: number }) {
       style={{ width: size, height: size }}
       aria-hidden
     >
-      <div
-        className="holo-sphere"
-        style={{ width: size, height: size }}
-      >
-        {ringConfigs.map((r, i) => (
+      <div className="holo-sphere" style={{ width: size, height: size }}>
+        {/* equatorial disc with 72 ticks */}
+        <div
+          className="absolute"
+          style={{
+            inset: 0,
+            transform: "rotateX(90deg)",
+          }}
+        >
+          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: "visible" }}>
+            <circle cx={c} cy={c} r={c - 4} fill="none" stroke="#fde047" strokeOpacity="0.42" strokeWidth="1" />
+            <circle cx={c} cy={c} r={c - 18} fill="none" stroke="#ef4444" strokeOpacity="0.22" strokeWidth="0.6" strokeDasharray="2 6" />
+            {ticks.map((_, i) => {
+              const angle = (i * 360) / 72;
+              const isMajor = i % 6 === 0;
+              const rad = (angle * Math.PI) / 180;
+              const r1 = tickR;
+              const r2 = tickR - (isMajor ? 14 : 6);
+              return (
+                <line
+                  key={i}
+                  x1={c + r1 * Math.cos(rad)}
+                  y1={c + r1 * Math.sin(rad)}
+                  x2={c + r2 * Math.cos(rad)}
+                  y2={c + r2 * Math.sin(rad)}
+                  stroke={isMajor ? "#fde047" : "#ef4444"}
+                  strokeOpacity={isMajor ? 0.85 : 0.35}
+                  strokeWidth={isMajor ? 1.2 : 0.6}
+                />
+              );
+            })}
+          </svg>
+        </div>
+
+        {/* longitudinal rings — thin gold, evenly spaced */}
+        {longitudes.map((deg, i) => (
           <div
             key={i}
-            className={`holo-ring ${r.dashed ? "dashed" : ""}`}
+            className="holo-ring"
             style={{
-              transform: `${r.axis}(${r.deg}deg)`,
-              borderColor: r.colorVar,
-              boxShadow: `0 0 18px ${r.colorVar}55, inset 0 0 22px ${r.colorVar}33`,
+              transform: `rotateY(${deg}deg)`,
+              borderColor: "rgba(253, 224, 71, 0.55)",
+              borderWidth: "1px",
+              boxShadow: "0 0 12px rgba(253, 224, 71, 0.22)",
             }}
           />
         ))}
-        {/* tick marks on equator */}
+
+        {/* two highlight bands in red */}
         <div
           className="holo-ring"
           style={{
-            transform: "rotateX(90deg)",
-            borderStyle: "dotted",
-            borderColor: "#fde047",
+            transform: "rotateY(90deg) rotateX(22deg)",
+            borderColor: "rgba(239, 68, 68, 0.9)",
+            borderWidth: "1.2px",
+            boxShadow: "0 0 16px rgba(239, 68, 68, 0.55)",
           }}
         />
-        {/* core glow */}
+        <div
+          className="holo-ring dashed"
+          style={{
+            transform: "rotateX(68deg)",
+            borderColor: "rgba(239, 68, 68, 0.55)",
+            borderWidth: "1px",
+          }}
+        />
+
+        {/* core reactor */}
         <div
           className="absolute rounded-full"
           style={{
-            inset: "35%",
+            inset: "40%",
             background:
-              "radial-gradient(circle, #fff7ed 0%, #fde047 30%, #ef4444 65%, transparent 90%)",
-            boxShadow: "0 0 60px #ef4444, 0 0 100px #facc15",
-            transform: "translateZ(0)",
-            filter: "blur(1px)",
+              "radial-gradient(circle, #fff7ed 0%, #fde047 25%, #ef4444 60%, #7f1d1d 82%, transparent 95%)",
+            boxShadow:
+              "0 0 40px #ef4444, 0 0 80px rgba(253, 224, 71, 0.45), inset 0 0 20px rgba(255,255,255,0.35)",
+          }}
+        />
+        <div
+          className="absolute rounded-full"
+          style={{
+            inset: "46%",
+            background: "radial-gradient(circle, #ffffff 0%, #fde047 70%, transparent 100%)",
+            boxShadow: "0 0 18px #ffffff",
           }}
         />
       </div>

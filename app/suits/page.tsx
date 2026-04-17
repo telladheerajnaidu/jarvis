@@ -18,7 +18,6 @@ import {
   Magnetic,
   ShimmerText,
   ShineBorder,
-  Meteors,
 } from "../_components/Animations";
 
 type SuitCard = {
@@ -190,7 +189,7 @@ export default function SuitsPage() {
         </motion.header>
 
         <FadeIn delay={0.15}>
-          <div className="hud-panel hud-corners p-3 mb-3 flex flex-wrap items-center justify-between gap-4 sm:gap-6 relative overflow-hidden float-3d slow">
+          <div className="hud-panel hud-corners p-3 mb-3 flex flex-wrap items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
             <BorderBeam colorFrom="#fde047" colorTo="#ef4444" size={50} duration={8} />
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div>
@@ -292,7 +291,7 @@ export default function SuitsPage() {
         </AnimatePresence>
 
         {!loading && !error && (
-          <StaggerGroup stagger={0.06} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 flex-1 overflow-y-auto pr-1 layer-3d">
+          <StaggerGroup stagger={0.06} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 flex-1 overflow-y-auto pr-1">
             {suits.map((s) => (
               <StaggerItem key={s.id}>
                 <Tilt3D max={8} glare>

@@ -83,8 +83,9 @@ export function TopBar({ session }: { session?: string }) {
 export function SidePanel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <aside className="hud-panel hud-corners p-4 h-full">
-      <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-3 border-b border-jarvis-cyan/20 pb-2">
-        // {title}
+      <div className="text-[10px] tracking-[0.35em] text-jarvis-gold/80 mb-3 border-b border-jarvis-gold/20 pb-2 flex items-center justify-between">
+        <span>// {title}</span>
+        <span className="h-1.5 w-1.5 rounded-full bg-jarvis-red shadow-[0_0_8px_#ef4444]" />
       </div>
       {children}
     </aside>
@@ -121,12 +122,12 @@ export function BottomBar() {
 
 export function HudShell({ children, session }: { children: React.ReactNode; session?: string }) {
   return (
-    <div className="min-h-screen flex flex-col relative scene-3d">
+    <div className="min-h-screen flex flex-col relative">
       <div className="scanline-overlay" />
       <TopBar session={session} />
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] xl:grid-cols-[240px_1fr_240px] gap-3 sm:gap-4 p-3 sm:p-4 relative layer-3d">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] xl:grid-cols-[240px_1fr_240px] gap-3 sm:gap-4 p-3 sm:p-4 relative">
         <motion.div
-          className="hidden lg:block float-3d slow"
+          className="hidden lg:block"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -137,7 +138,7 @@ export function HudShell({ children, session }: { children: React.ReactNode; ses
         </motion.div>
         <main className="relative min-w-0">{children}</main>
         <motion.div
-          className="space-y-4 hidden lg:block float-3d"
+          className="space-y-4 hidden lg:block"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}

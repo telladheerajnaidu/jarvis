@@ -21,13 +21,13 @@
 html,
 body {
   background:
-    radial-gradient(ellipse at top, rgba(220, 38, 38, 0.22), transparent 55%),
-    radial-gradient(ellipse at bottom, rgba(250, 204, 21, 0.12), transparent 60%),
-    radial-gradient(circle at 20% 70%, rgba(239, 68, 68, 0.08), transparent 70%),
-    #0c0404;
+    radial-gradient(ellipse at top, rgba(220, 38, 38, 0.12), transparent 55%),
+    radial-gradient(ellipse at bottom, rgba(250, 204, 21, 0.06), transparent 60%),
+    #0a0404;
   color: #fef3c7;
   font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
   overflow-x: hidden;
+  font-feature-settings: "ss01", "ss02", "cv11";
 }
 
 /* ================ 3D scene utilities ================ */
@@ -128,18 +128,20 @@ body {
 .hud-panel {
   position: relative;
   background:
-    linear-gradient(180deg, rgba(38, 10, 10, 0.65), rgba(12, 4, 4, 0.82));
-  border: 1px solid rgba(250, 204, 21, 0.4);
+    linear-gradient(180deg, rgba(30, 9, 9, 0.72), rgba(8, 3, 3, 0.90));
+  border: 1px solid rgba(253, 224, 71, 0.28);
   box-shadow:
-    0 0 18px rgba(239, 68, 68, 0.12),
-    inset 0 1px 0 rgba(253, 224, 71, 0.15);
+    0 1px 0 rgba(253, 224, 71, 0.08) inset,
+    0 0 24px rgba(239, 68, 68, 0.10),
+    0 10px 40px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
   clip-path: polygon(
-    12px 0,
+    14px 0,
     100% 0,
-    100% calc(100% - 12px),
-    calc(100% - 12px) 100%,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
     0 100%,
-    0 12px
+    0 14px
   );
 }
 
@@ -244,44 +246,50 @@ body {
 /* ================ Inputs / buttons ================ */
 
 .input-hud {
-  background: rgba(12, 4, 4, 0.8);
-  border: 1px solid rgba(250, 204, 21, 0.45);
-  color: #fef3c7;
-  padding: 0.7rem 1rem;
+  background: rgba(8, 3, 3, 0.85);
+  border: 1px solid rgba(253, 224, 71, 0.35);
+  color: #fef9c3;
+  padding: 0.75rem 1rem;
   width: 100%;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.14em;
   font-size: 0.82rem;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
   clip-path: polygon(
     10px 0, 100% 0, 100% calc(100% - 10px),
     calc(100% - 10px) 100%, 0 100%, 0 10px
   );
 }
-.input-hud::placeholder { color: rgba(253, 224, 71, 0.45); }
+.input-hud::placeholder { color: rgba(253, 224, 71, 0.35); letter-spacing: 0.18em; }
+.input-hud:hover { border-color: rgba(253, 224, 71, 0.55); }
 .input-hud:focus {
   outline: none;
-  border-color: #ef4444;
-  box-shadow: 0 0 14px rgba(239, 68, 68, 0.55);
+  border-color: #fde047;
+  background: rgba(12, 5, 5, 0.92);
+  box-shadow: 0 0 0 1px rgba(253, 224, 71, 0.35), 0 0 18px rgba(239, 68, 68, 0.35);
 }
 
 .btn-hud {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.25), rgba(153, 27, 27, 0.10));
-  border: 1px solid rgba(250, 204, 21, 0.6);
-  color: #fef3c7;
-  padding: 0.7rem 1.4rem;
-  letter-spacing: 0.25em;
+  position: relative;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.18), rgba(127, 29, 29, 0.08));
+  border: 1px solid rgba(253, 224, 71, 0.45);
+  color: #fef9c3;
+  padding: 0.75rem 1.5rem;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   font-size: 0.72rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s, border-color 0.2s;
   clip-path: polygon(
     8px 0, 100% 0, 100% calc(100% - 8px),
     calc(100% - 8px) 100%, 0 100%, 0 8px
   );
 }
 .btn-hud:hover {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.4), rgba(153, 27, 27, 0.2));
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.32), rgba(127, 29, 29, 0.15));
   color: #fff7ed;
-  box-shadow: 0 0 18px rgba(239, 68, 68, 0.55);
+  border-color: rgba(253, 224, 71, 0.75);
+  box-shadow: 0 0 22px rgba(239, 68, 68, 0.4), 0 0 0 1px rgba(253, 224, 71, 0.2);
 }
 .btn-hud:disabled { opacity: 0.5; cursor: not-allowed; }
 

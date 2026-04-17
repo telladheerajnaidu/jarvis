@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { ConcentricRings, TelemetryStream, WaveformBars, HexBadge, Holosphere, HoloCube } from "./_components/Rings";
+import { TelemetryStream, WaveformBars, HexBadge, Holosphere } from "./_components/Rings";
 import {
   TextScramble,
   TypingText,
@@ -12,7 +12,6 @@ import {
   PulseGlow,
   BorderBeam,
   NumberTicker,
-  Meteors,
   Spotlight,
   Magnetic,
   Ripple,
@@ -91,10 +90,9 @@ export default function LoginPage() {
   if (!booted) {
     return (
       <main className="min-h-screen hud-grid-fine relative flex items-center justify-center overflow-hidden">
-        <AuroraBackground intensity={0.55} />
+        <AuroraBackground intensity={0.2} />
         <div className="scanline-overlay" />
-        <Meteors number={22} color="#ef4444" />
-        <Particles className="absolute inset-0" quantity={44} color="#facc15" size={0.3} />
+        <Particles className="absolute inset-0" quantity={30} color="#fde047" size={0.25} />
         <div className="max-w-2xl w-full p-4 sm:p-8 font-mono text-jarvis-ivory text-xs relative z-10">
           {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
             <motion.div
@@ -118,12 +116,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen hud-grid-fine relative overflow-hidden scene-3d">
-      <AuroraBackground intensity={0.65} />
+    <main className="min-h-screen hud-grid-fine relative overflow-hidden">
+      <AuroraBackground intensity={0.25} />
       <div className="scanline-overlay" />
-      <Meteors number={26} color="#ef4444" />
-      <Particles className="absolute inset-0 z-0" quantity={60} color="#facc15" size={0.3} />
-      <Spotlight color="rgba(239, 68, 68, 0.22)" size={720} />
+      <Particles className="absolute inset-0 z-0" quantity={36} color="#fde047" size={0.25} />
+      <Spotlight color="rgba(239, 68, 68, 0.12)" size={720} />
 
       {/* Top bar */}
       <motion.div
@@ -162,12 +159,12 @@ export default function LoginPage() {
       </motion.div>
 
       {/* 3-column HUD — collapses on smaller screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_240px] xl:grid-cols-[260px_1fr_260px] gap-4 p-3 sm:p-4 lg:h-[calc(100vh-90px)] relative z-10 layer-3d">
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_240px] xl:grid-cols-[260px_1fr_260px] gap-4 p-3 sm:p-4 lg:h-[calc(100vh-90px)] relative z-10">
         {/* Left -- telemetry */}
         <FadeIn delay={0.2} direction="left" className="hidden lg:block">
-          <div className="hud-panel hud-corners p-4 overflow-hidden h-full relative float-3d slow">
+          <div className="hud-panel hud-corners p-4 overflow-hidden h-full relative">
             <BorderBeam colorFrom="#ef4444" colorTo="#fde047" size={40} duration={8} />
-            <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/80 mb-3 border-b border-jarvis-cyan/25 pb-2">
+            <div className="text-[10px] tracking-[0.35em] text-jarvis-gold/80 mb-3 border-b border-jarvis-gold/20 pb-2">
               // BOOT TELEMETRY
             </div>
             <TelemetryStream />
@@ -175,22 +172,20 @@ export default function LoginPage() {
         </FadeIn>
 
         {/* Center -- holosphere + login */}
-        <section className="relative flex items-center justify-center min-h-[560px] sm:min-h-[600px] py-6 lg:py-0">
+        <section className="relative flex items-center justify-center min-h-[560px] sm:min-h-[640px] py-6 lg:py-0">
           <motion.div
-            className="absolute inset-0 flex items-center justify-center layer-3d"
-            initial={{ scale: 0.5, opacity: 0, rotateX: -30 }}
-            animate={{ scale: 1, opacity: 1, rotateX: 0 }}
+            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
+            aria-hidden
           >
             <div className="relative w-[320px] h-[320px] sm:w-[460px] sm:h-[460px] lg:w-[560px] lg:h-[560px]">
-              <Ripple count={5} mainSize={220} color="rgba(239, 68, 68, 0.28)" />
+              <Ripple count={4} mainSize={260} color="rgba(239, 68, 68, 0.18)" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <ConcentricRings size={320} />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center float-3d">
-                <div className="hidden sm:block lg:hidden"><Holosphere size={360} /></div>
-                <div className="hidden lg:block"><Holosphere size={460} /></div>
-                <div className="block sm:hidden"><Holosphere size={260} /></div>
+                <div className="hidden sm:block lg:hidden"><Holosphere size={420} /></div>
+                <div className="hidden lg:block"><Holosphere size={520} /></div>
+                <div className="block sm:hidden"><Holosphere size={280} /></div>
               </div>
             </div>
           </motion.div>
@@ -198,11 +193,10 @@ export default function LoginPage() {
           <AnimatePresence>
             {formReady && (
               <motion.div
-                className="relative z-10 w-full max-w-[360px] px-2 sm:px-0 layer-3d"
-                initial={{ scale: 0.9, opacity: 0, y: 20, rotateX: -12 }}
-                animate={{ scale: 1, opacity: 1, y: 0, rotateX: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                style={{ transformStyle: "preserve-3d" }}
+                className="relative z-20 w-full max-w-[380px] px-2 sm:px-0"
+                initial={{ scale: 0.94, opacity: 0, y: 14 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
               >
                 <div className="flex flex-col items-center mb-5">
                   <motion.div
@@ -224,8 +218,7 @@ export default function LoginPage() {
                   </motion.div>
                 </div>
 
-                <div className="hud-panel hud-corners p-5 backdrop-blur-md relative overflow-hidden tilt-depth-sm">
-                  <Spotlight color="rgba(253, 224, 71, 0.18)" size={420} />
+                <div className="hud-panel hud-corners p-6 backdrop-blur-xl relative overflow-hidden shadow-hud">
                   <BorderBeam colorFrom="#ef4444" colorTo="#fde047" size={60} duration={6} />
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-[10px] text-jarvis-cyan/80 tracking-[0.3em]">
@@ -335,9 +328,9 @@ export default function LoginPage() {
         {/* Right -- diagnostics */}
         <FadeIn delay={0.2} direction="right" className="hidden lg:block">
           <div className="space-y-4 h-full flex flex-col">
-            <div className="hud-panel hud-corners p-4 relative overflow-hidden float-3d">
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
               <BorderBeam colorFrom="#fde047" colorTo="#ef4444" size={35} duration={10} delay={3} />
-              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/80 mb-3 border-b border-jarvis-cyan/25 pb-2">
+              <div className="text-[10px] tracking-[0.35em] text-jarvis-gold/80 mb-3 border-b border-jarvis-gold/20 pb-2">
                 // DIAGNOSTICS
               </div>
               <div className="space-y-3 text-[10px] tracking-wider">
@@ -349,8 +342,8 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="hud-panel hud-corners p-4 relative overflow-hidden float-3d slow">
-              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/80 mb-2">
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
+              <div className="text-[10px] tracking-[0.35em] text-jarvis-gold/80 mb-2">
                 // SYSTEM MESSAGE
               </div>
               <div className="text-[10px] leading-5 text-jarvis-cyan/80 italic">
@@ -371,7 +364,7 @@ export default function LoginPage() {
             </div>
 
             <div className="hud-panel hud-corners p-3">
-              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60 mb-2">// AUDIO</div>
+              <div className="text-[9px] tracking-[0.35em] text-jarvis-gold/60 mb-2">// AUDIO</div>
               <WaveformBars count={32} />
             </div>
           </div>
