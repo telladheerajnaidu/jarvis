@@ -1,85 +1,121 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
-import { ConcentricRings, HexBadge, WaveformBars } from "./_components/Rings";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import {
   TextScramble,
-  FadeIn,
   Particles,
   PulseGlow,
-  BorderBeam,
   NumberTicker,
-  Magnetic,
-  ShineBorder,
   ShimmerText,
-  ChromaticBloom,
-  ParallaxLayer,
   useMouseFromCenter,
 } from "./_components/Animations";
 
-const BOOT_LINES = [
-  "> SECURE KERNEL ................ OK",
-  "> ARC REACTOR HANDSHAKE ........ STABLE",
-  "> BIOMETRIC SUBSYSTEMS ......... ONLINE",
-  "> AWAITING AUTHORIZATION.",
+// --- tiny util: fake live telemetry values that drift
+function useDriftingNumber(seed: number, min: number, max: number, step = 0.3) {
+  const [v, setV] = useState(min + (max - min) * seed);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setV((prev) => {
+        const delta = (Math.random() - 0.5) * (max - min) * (step / 10);
+        let next = prev + delta;
+        if (next < min) next = min + Math.random() * ((max - min) * 0.1);
+        if (next > max) next = max - Math.random() * ((max - min) * 0.1);
+        return next;
+      });
+    }, 900 + seed * 250);
+    return () => clearInterval(id);
+  }, [min, max, step, seed]);
+  return v;
+}
+
+const COORD_CYCLE = [
+  "34°02'N 118°41'W",
+  "34°02'N 118°40'W",
+  "34°03'N 118°40'W",
+  "34°03'N 118°39'W",
+  "34°02'N 118°39'W",
+];
+
+const TICKER = [
+  "STARK INDUSTRIES // MALIBU-01",
+  "QUANTUM CHANNEL ◆ AES-1024",
+  "F.R.I.D.A.Y SYNC NOMINAL",
+  "ORBITAL UPLINK ◆ 847 NODES",
+  "THREAT MATRIX ◆ GREEN",
+  "REPULSOR CAPACITORS CHARGED",
+  "MARK SERIES PROJECTIONS ONLINE",
+  "BIOMETRIC LOCK ENGAGED",
+  "GEOSYNC BEACON LOCKED",
 ];
 
 export default function LoginPage() {
   const router = useRouter();
-  const [booted, setBooted] = useState(false);
-  const [visibleLines, setVisibleLines] = useState(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nowIso, setNowIso] = useState("--:--:--");
-  const [formReady, setFormReady] = useState(false);
-  const [typingHeat, setTypingHeat] = useState(0);
-  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [coordIdx, setCoordIdx] = useState(0);
+  const [reveal, setReveal] = useState(false);
+  const [logLines, setLogLines] = useState<string[]>([]);
 
   useEffect(() => {
     const tick = () => setNowIso(new Date().toISOString().slice(11, 19));
     tick();
     const id = setInterval(tick, 1000);
+    const id2 = setInterval(() => setCoordIdx((n) => (n + 1) % COORD_CYCLE.length), 1800);
+    const id3 = setTimeout(() => setReveal(true), 150);
+    return () => { clearInterval(id); clearInterval(id2); clearTimeout(id3); };
+  }, []);
+
+  // streaming log on right panel
+  useEffect(() => {
+    const LINES = [
+      "▸ arc.reactor → 3.02 GJ stable",
+      "▸ friday.aux.sync → 7ms",
+      "▸ geofence.watch → clear",
+      "▸ malibu.tunnel → encrypted",
+      "▸ repulsor.test → 98.7%",
+      "▸ satellite.link → locked",
+      "▸ threat.scan → nominal",
+      "▸ bio.hash → accepted",
+      "▸ node.847 → heartbeat ok",
+    ];
+    let i = 0;
+    const id = setInterval(() => {
+      setLogLines((prev) => {
+        const next = [...prev, LINES[i % LINES.length]];
+        return next.slice(-5);
+      });
+      i++;
+    }, 1200);
     return () => clearInterval(id);
   }, []);
 
+  // custom cursor reticle
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+  const cx = useSpring(cursorX, { stiffness: 420, damping: 36 });
+  const cy = useSpring(cursorY, { stiffness: 420, damping: 36 });
   useEffect(() => {
-    if (visibleLines >= BOOT_LINES.length) {
-      const t = setTimeout(() => setBooted(true), 260);
-      return () => clearTimeout(t);
-    }
-    const t = setTimeout(() => setVisibleLines((n) => n + 1), 160);
-    return () => clearTimeout(t);
-  }, [visibleLines]);
-
-  useEffect(() => {
-    if (booted) {
-      const t = setTimeout(() => setFormReady(true), 420);
-      return () => clearTimeout(t);
-    }
-  }, [booted]);
-
-  // cool down typing "heat" so waveform bars pulse with input energy
-  useEffect(() => {
-    if (typingHeat <= 0) return;
-    const t = setTimeout(() => setTypingHeat((h) => Math.max(0, h - 1)), 120);
-    return () => clearTimeout(t);
-  }, [typingHeat]);
-
-  function bumpHeat() {
-    setTypingHeat((h) => Math.min(10, h + 2));
-  }
+    const onMove = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [cursorX, cursorY]);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const rect = (e.currentTarget as HTMLFormElement).getBoundingClientRect();
-    const id = Date.now();
-    setRipples((r) => [...r, { id, x: rect.width / 2, y: rect.height - 28 }]);
-    setTimeout(() => setRipples((r) => r.filter((x) => x.id !== id)), 900);
-
     setLoading(true);
     setError(null);
     try {
@@ -92,468 +128,597 @@ export default function LoginPage() {
       if (res.ok && data.success) {
         router.push("/suits");
       } else {
-        setError("AUTHENTICATION REJECTED // RETRY");
+        setError("AUTHORIZATION DENIED");
       }
     } catch {
-      setError("NETWORK ERROR // CHECK UPLINK");
+      setError("UPLINK INTERRUPTED");
     } finally {
       setLoading(false);
     }
   }
 
-  if (!booted) {
-    return (
-      <main className="min-h-screen hud-grid-fine relative flex items-center justify-center overflow-hidden">
-        <ChromaticBloom intensity={0.3} />
-        <div className="scanline-overlay" />
-        <Particles className="absolute inset-0" quantity={24} color="#22d3ee" size={0.2} />
-        <div className="max-w-md w-full px-4 sm:px-8 font-mono text-jarvis-ivory text-xs relative z-10">
-          {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20, filter: "blur(8px)" }}
-              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="py-1 tracking-wider"
-            >
-              <TextScramble duration={0.3} speed={0.025}>{line}</TextScramble>
-            </motion.div>
-          ))}
-          <motion.div
-            className="h-3 w-2 bg-jarvis-cyan inline-block ml-1"
-            animate={{ opacity: [1, 0, 1] }}
-            transition={{ duration: 0.8, repeat: Infinity }}
-          />
-        </div>
-      </main>
-    );
-  }
+  const flux = useDriftingNumber(0.2, 91, 99, 0.6);
+  const latency = useDriftingNumber(0.6, 2.6, 4.8, 0.6);
 
   return (
-    <main className="min-h-screen hud-grid-fine relative overflow-hidden">
-      <ChromaticBloom intensity={0.5} />
-      <div className="scanline-overlay" />
-      <Particles className="absolute inset-0 z-0" quantity={32} color="#ec4899" size={0.2} />
+    <main className="min-h-screen relative overflow-hidden starfield" style={{ cursor: "none" }}>
+      {/* ============ background layers ============ */}
+      <div aria-hidden className="absolute inset-0 -z-0">
+        <span className="aurora-blob a" />
+        <span className="aurora-blob b" />
+        <span className="aurora-blob c" />
+      </div>
+      <div aria-hidden className="absolute inset-0 hud-grid-fine opacity-40 -z-0" />
+      <Particles
+        className="absolute inset-0 -z-0"
+        quantity={60}
+        color="#e0e7ff"
+        size={0.15}
+      />
+      <span aria-hidden className="scan-h" />
+      <span aria-hidden className="scan-v" style={{ animationDelay: "-4s" }} />
 
-      {/* ============ top bar ============ */}
-      <motion.div
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="border-b border-jarvis-crimson/30 bg-jarvis-bg/60 backdrop-blur-sm relative z-10"
+      {/* cinema frame */}
+      <span aria-hidden className="cine-bar top" />
+      <span aria-hidden className="cine-bar bot" />
+      <div aria-hidden className="film-grain" />
+      <div aria-hidden className="cine-vignette" />
+
+      {/* cursor reticle */}
+      <motion.svg
+        aria-hidden
+        className="cursor-reticle"
+        style={{ x: cx, y: cy }}
+        viewBox="0 0 46 46"
       >
-        <div className="flex items-center justify-between px-4 sm:px-6 py-2">
-          <div className="flex items-center gap-3">
-            <motion.div
-              className="arc-reactor"
-              style={{ width: 28, height: 28 }}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            />
-            <TextScramble className="text-[10px] tracking-[0.45em] text-jarvis-gold" duration={0.5}>
-              STARK // JARVIS SECURE TERMINAL
-            </TextScramble>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] tracking-widest text-jarvis-cyan/80">
-            <span className="tabular-nums">UTC {nowIso}</span>
-            <span className="hidden sm:inline text-jarvis-cyan/30">|</span>
-            <span className="hidden sm:flex items-center gap-1.5">
-              <PulseGlow color="#22d3ee" size={6} />
-              <span className="ml-1">UPLINK OK</span>
-            </span>
-            <HexBadge>LV 04</HexBadge>
-          </div>
+        <circle cx="23" cy="23" r="14" fill="none" stroke="#67e8f9" strokeWidth="0.6" strokeOpacity="0.7" />
+        <circle cx="23" cy="23" r="2" fill="#f472b6" />
+        <line x1="23" y1="0" x2="23" y2="6" stroke="#67e8f9" strokeOpacity="0.85" />
+        <line x1="23" y1="40" x2="23" y2="46" stroke="#67e8f9" strokeOpacity="0.85" />
+        <line x1="0" y1="23" x2="6" y2="23" stroke="#67e8f9" strokeOpacity="0.85" />
+        <line x1="40" y1="23" x2="46" y2="23" stroke="#67e8f9" strokeOpacity="0.85" />
+      </motion.svg>
+
+      {/* ============ top chrome ============ */}
+      <motion.header
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-30 flex items-center justify-between px-6 md:px-10 pt-10 pb-4 text-[10px] tracking-[0.4em] text-jarvis-ivory/80"
+      >
+        <div className="flex items-center gap-4">
+          <span className="text-jarvis-cyan">◇ S·I / NAV</span>
+          <span className="text-jarvis-ivory/40">//</span>
+          <TextScramble duration={0.6} speed={0.03}>
+            ORBITAL COMMAND
+          </TextScramble>
         </div>
-      </motion.div>
-
-      {/* ============ hero scene ============ */}
-      <AnimatePresence>
-        {formReady && (
-          <motion.section
-            className="relative z-10 mx-auto max-w-[1200px] px-4 sm:px-8 pt-6 sm:pt-10 pb-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            {/* title block */}
-            <div className="text-center mb-4 sm:mb-6">
-              <motion.div
-                className="text-[10px] sm:text-[11px] tracking-[0.55em] text-jarvis-cyan/70"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                VOICE OF ARTIFICIAL INTELLIGENCE
-              </motion.div>
-              <motion.h1
-                className="font-mono font-semibold leading-none mt-2 sm:mt-3"
-                style={{ fontSize: "clamp(2.2rem, 7vw, 5rem)", letterSpacing: "0.28em" }}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.15, duration: 0.6 }}
-              >
-                <ShimmerText from="#ec4899" mid="#67e8f9" duration={5}>
-                  J.A.R.V.I.S.&nbsp;01
-                </ShimmerText>
-              </motion.h1>
-              <motion.div
-                className="text-[9px] sm:text-[10px] tracking-[0.4em] text-jarvis-crimson mt-1 sm:mt-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                JUST A RATHER VERY INTELLIGENT SYSTEM
-              </motion.div>
-            </div>
-
-            {/* HUD centerpiece + side readouts */}
-            <div className="relative flex items-center justify-center">
-              {/* left readout column */}
-              <SideColumn
-                side="left"
-                primary="57°"
-                secondary="AZIMUTH"
-                code="AX-11"
-                heat={typingHeat}
-              />
-
-              {/* center HUD */}
-              <CenterHUD typingHeat={typingHeat} />
-
-              {/* right readout column */}
-              <SideColumn
-                side="right"
-                primary="24"
-                secondary="ACTIVE NODES"
-                code="FR-93"
-                heat={typingHeat}
-              />
-            </div>
-
-            {/* form below HUD */}
-            <motion.div
-              className="relative mx-auto mt-6 sm:mt-8 max-w-[440px]"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-            >
-              <div className="hud-panel-solid hud-corners p-5 sm:p-6 relative overflow-hidden shadow-hud">
-                <BorderBeam colorFrom="#ec4899" colorTo="#22d3ee" size={60} duration={6} />
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-[10px] text-jarvis-cyan/80 tracking-[0.35em]">
-                    // AUTH REQUIRED
-                  </div>
-                  <span className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-jarvis-crimson">
-                    <PulseGlow color="#ec4899" size={5} />
-                    <span className="ml-1">SECURE CHANNEL</span>
-                  </span>
-                </div>
-
-                <form onSubmit={handleLogin} className="space-y-3 relative">
-                  <motion.div
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">USER ID</label>
-                    <input
-                      type="text"
-                      className="input-hud mt-1"
-                      placeholder="enter user id"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); bumpHeat(); }}
-                      autoComplete="username"
-                      required
-                    />
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">ACCESS CODE</label>
-                    <input
-                      type="password"
-                      className="input-hud mt-1"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => { setPassword(e.target.value); bumpHeat(); }}
-                      autoComplete="current-password"
-                      required
-                    />
-                  </motion.div>
-
-                  <AnimatePresence>
-                    {error && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="text-[10px] text-jarvis-red border border-jarvis-red/40 bg-jarvis-red/10 px-3 py-2 tracking-wider overflow-hidden"
-                      >
-                        {error}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <Magnetic strength={0.28} className="block w-full">
-                    <motion.button
-                      type="submit"
-                      className="btn-hud w-full mt-1 relative overflow-hidden"
-                      disabled={loading}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <ShineBorder duration={4} colors={["#ec4899", "#22d3ee", "#ec4899"]} />
-                      {loading ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <motion.span
-                            className="inline-block w-3 h-3 border-2 border-jarvis-cyan/40 border-t-jarvis-cyan rounded-full"
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                          />
-                          AUTHENTICATING...
-                        </span>
-                      ) : (
-                        "ENGAGE"
-                      )}
-                    </motion.button>
-                  </Magnetic>
-
-                  {/* click ripples from submit */}
-                  {ripples.map((r) => (
-                    <motion.span
-                      key={r.id}
-                      className="pointer-events-none absolute rounded-full border border-jarvis-cyan/70"
-                      style={{ left: r.x, top: r.y }}
-                      initial={{ width: 0, height: 0, x: 0, y: 0, opacity: 0.8 }}
-                      animate={{ width: 320, height: 320, x: -160, y: -160, opacity: 0 }}
-                      transition={{ duration: 0.9, ease: "easeOut" }}
-                    />
-                  ))}
-                </form>
-
-                <div className="mt-4 grid grid-cols-3 gap-2 text-[8px] text-jarvis-cyan/55 tracking-widest">
-                  {["ENC AES-256", "TLS 1.3", "FIPS-OK"].map((label, i) => (
-                    <motion.div
-                      key={label}
-                      className="hud-panel px-2 py-1 text-center"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.7 + i * 0.08 }}
-                    >
-                      {label}
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </motion.section>
-        )}
-      </AnimatePresence>
-
-      {/* ============ bottom bar ============ */}
-      <motion.div
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="fixed bottom-0 left-0 right-0 border-t border-jarvis-crimson/30 bg-jarvis-bg/70 backdrop-blur-sm px-4 sm:px-6 py-2 flex items-center justify-between z-10"
-      >
-        <div className="flex items-center gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/70">
-          <span className="flex items-center gap-1.5">
-            <PulseGlow color="#22d3ee" size={6} />
-            <span className="ml-1">SYSTEMS NOMINAL</span>
+        <div className="hidden md:flex items-center gap-4">
+          <span className="text-jarvis-ivory/50 tabular-nums">T+ {nowIso}</span>
+          <span className="text-jarvis-ivory/30">//</span>
+          <span className="text-jarvis-ivory/50 tabular-nums">{COORD_CYCLE[coordIdx]}</span>
+          <span className="text-jarvis-ivory/30">//</span>
+          <span className="flex items-center gap-1.5 text-jarvis-cyan/80">
+            <PulseGlow color="#67e8f9" size={5} />
+            <span className="ml-1">LINK</span>
           </span>
-          <span className="hidden sm:inline text-jarvis-cyan/30">|</span>
-          <span className="hidden sm:inline">CPU <NumberTicker value={12} className="text-jarvis-cyan" />%</span>
-          <span className="hidden md:inline">MEM <NumberTicker value={38} className="text-jarvis-cyan" />%</span>
-          <span className="hidden md:inline">GPU <NumberTicker value={24} className="text-jarvis-cyan" />%</span>
         </div>
-        <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/45">
-          STARK INDUSTRIES &copy; 2025
+      </motion.header>
+
+      {/* ============ hero title ============ */}
+      <div className="relative z-20 text-center px-4 mt-2 md:mt-4">
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="text-[10px] md:text-[11px] tracking-[0.7em] text-jarvis-cyan/80"
+        >
+          V O I C E &nbsp;&middot;&nbsp; O F &nbsp;&middot;&nbsp; I N T E L L I G E N C E
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0, letterSpacing: "0.8em" }}
+          animate={{ opacity: 1, letterSpacing: "0.32em" }}
+          transition={{ delay: 0.15, duration: 1.1, ease: "easeOut" }}
+          className="font-light leading-none mt-3"
+          style={{
+            fontSize: "clamp(2.4rem, 9vw, 6.6rem)",
+          }}
+        >
+          <ShimmerText from="#e0e7ff" mid="#67e8f9" duration={7}>
+            J.A.R.V.I.S.
+          </ShimmerText>
+        </motion.h1>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.55 }}
+          className="flex items-center justify-center gap-3 mt-3 text-[9px] tracking-[0.5em] text-jarvis-crimson/90"
+        >
+          <span className="h-px w-10 bg-jarvis-crimson/40" />
+          <span>MK L VIII &nbsp;·&nbsp; REVISION 4812.1</span>
+          <span className="h-px w-10 bg-jarvis-crimson/40" />
+        </motion.div>
+      </div>
+
+      {/* ============ main stage: core + side rails ============ */}
+      <div className="relative z-10 grid grid-cols-12 gap-6 px-6 md:px-10 mt-4 md:mt-6">
+        {/* LEFT rail */}
+        <motion.aside
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: reveal ? 1 : 0, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="hidden lg:flex col-span-3 flex-col items-start justify-start gap-6 pt-6"
+        >
+          <div className="flex items-baseline gap-3">
+            <div className="text-[9px] tracking-[0.5em] text-jarvis-ivory/50">NO.</div>
+            <div className="serif-num text-[64px] leading-none text-jarvis-ivory">
+              0<NumberTicker value={4} className="serif-num" />70
+            </div>
+          </div>
+          <div className="text-[10px] tracking-[0.4em] text-jarvis-ivory/55">SESSION INDEX</div>
+
+          <div className="w-full space-y-4 mt-4">
+            <Readout label="QUANTUM FLUX" value={flux.toFixed(2)} unit="%" bar={flux / 100} />
+            <Readout label="UPLINK LATENCY" value={latency.toFixed(2)} unit="ms" bar={latency / 8} invert />
+            <Readout label="NODES SYNCED" value={"847"} unit="/ 849" bar={847 / 849} />
+            <Readout label="AUX POWER" value={"92"} unit="%" bar={0.92} />
+          </div>
+
+          <div className="mt-4 w-full">
+            <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/50 mb-2">WAVEFORM · CH 01</div>
+            <Sparkline seed={0.37} color="#67e8f9" />
+          </div>
+        </motion.aside>
+
+        {/* CENTER — orbital core */}
+        <div className="col-span-12 lg:col-span-6 flex items-center justify-center min-h-[460px] md:min-h-[520px] relative">
+          <OrbitalCore />
         </div>
-      </motion.div>
+
+        {/* RIGHT — auth + log stream */}
+        <motion.aside
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: reveal ? 1 : 0, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="col-span-12 lg:col-span-3 flex flex-col gap-5 pt-6"
+        >
+          {/* glass auth panel */}
+          <div className="glass p-6 rounded-sm relative overflow-hidden">
+            <div className="flex items-start justify-between mb-4 relative z-10">
+              <div className="text-[10px] tracking-[0.45em] text-jarvis-ivory/80">
+                AUTHORIZATION
+              </div>
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-crimson flex items-center gap-1.5">
+                <PulseGlow color="#f472b6" size={5} />
+                <span className="ml-1">SECURE</span>
+              </div>
+            </div>
+            <form onSubmit={handleLogin} className="space-y-5 relative z-10">
+              <div>
+                <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/45 mb-1">OPERATIVE</div>
+                <input
+                  type="text"
+                  className="input-min"
+                  placeholder="user identifier"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
+                  required
+                />
+              </div>
+              <div>
+                <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/45 mb-1">CIPHER</div>
+                <input
+                  type="password"
+                  className="input-min"
+                  placeholder="access code"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[10px] tracking-[0.35em] text-jarvis-red"
+                  >
+                    ◆ {error}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-capsule group"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-3">
+                    <motion.span
+                      className="inline-block w-3 h-3 border-2 border-jarvis-cyan/40 border-t-jarvis-cyan rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                    />
+                    LINKING
+                  </span>
+                ) : (
+                  <>
+                    <span>ENGAGE</span>
+                    <span className="text-jarvis-cyan">⟶</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* log stream */}
+          <div className="glass p-4 rounded-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/50">SUBSYSTEM LOG</div>
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/80">LIVE</div>
+            </div>
+            <div className="font-mono text-[10px] leading-[1.6] text-jarvis-ivory/75 space-y-0.5 min-h-[90px]">
+              <AnimatePresence initial={false}>
+                {logLines.map((l, i) => (
+                  <motion.div
+                    key={`${i}-${l}`}
+                    initial={{ opacity: 0, x: 8 }}
+                    animate={{ opacity: 1 - i * 0.12, x: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {l}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </motion.aside>
+      </div>
+
+      {/* ============ bottom marquee ============ */}
+      <div className="fixed left-0 right-0 bottom-0 z-30 border-t border-jarvis-ivory/10 bg-jarvis-bg/70 backdrop-blur-sm overflow-hidden">
+        <div className="py-2 text-[10px] tracking-[0.5em] text-jarvis-ivory/70">
+          <div className="marq">
+            {[...TICKER, ...TICKER].map((t, i) => (
+              <span key={i} className="flex items-center gap-3">
+                <span className="text-jarvis-cyan/80">◇</span>
+                <span>{t}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
 
-// ================= centerpiece HUD =================
-function CenterHUD({ typingHeat }: { typingHeat: number }) {
+// ================= OrbitalCore — signature centerpiece =================
+function OrbitalCore() {
   const { x, y } = useMouseFromCenter(50, 18);
-  const rot = useTransform(() => x.get() * 18 + y.get() * 6);
+  const tiltX = useTransform(y, (v) => -v * 10);
+  const tiltY = useTransform(x, (v) => v * 12);
+
+  // wireframe latitudes / longitudes
+  const lats = useMemo(() => [-60, -30, 0, 30, 60].map((l) => l), []);
+  const longs = useMemo(() => Array.from({ length: 12 }).map((_, i) => i * 15), []);
+
+  const size = 460;
+  const c = size / 2;
+  const R = 188;
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: "min(68vw, 560px)", height: "min(68vw, 560px)" }}>
-      {/* outer soft glow */}
-      <motion.div
+    <div className="orbit-stage relative" style={{ width: size, height: size }}>
+      {/* ambient base ring glow */}
+      <div
         aria-hidden
-        className="absolute inset-0 rounded-full pointer-events-none"
+        className="absolute rounded-full"
         style={{
+          inset: "8%",
           background:
-            "radial-gradient(circle at 50% 50%, rgba(236,72,153,0.25) 0%, rgba(168,85,247,0.14) 40%, transparent 70%)",
-          filter: "blur(20px)",
+            "radial-gradient(circle at 50% 55%, rgba(103,232,249,0.20), rgba(168,85,247,0.12) 40%, transparent 70%)",
+          filter: "blur(18px)",
         }}
-        animate={{ opacity: [0.65, 0.9, 0.65] }}
-        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* parallax rings */}
-      <ParallaxLayer depth={18} tilt={4} className="absolute inset-0">
-        <ConcentricRings size={520} />
-      </ParallaxLayer>
-
-      {/* rotating pink/violet brush-curves (the abstract swooshes from the ref) */}
+      {/* wireframe globe SVG */}
       <motion.div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{ rotate: rot }}
+        className="absolute inset-0"
+        style={{
+          rotateX: tiltX,
+          rotateY: tiltY,
+          transformPerspective: 1200,
+          transformStyle: "preserve-3d",
+        }}
       >
-        <svg viewBox="0 0 520 520" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          viewBox={`0 0 ${size} ${size}`}
+          className="absolute inset-0 w-full h-full"
+          style={{ filter: "drop-shadow(0 0 14px rgba(103,232,249,0.35))" }}
+        >
           <defs>
-            <linearGradient id="curvePink" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#f472b6" stopOpacity="0" />
-              <stop offset="50%" stopColor="#ec4899" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="curveViolet" x1="1" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#a855f7" stopOpacity="0" />
-              <stop offset="50%" stopColor="#c4b5fd" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+            <radialGradient id="coreGrad" cx="50%" cy="50%" r="55%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+              <stop offset="20%" stopColor="#67e8f9" />
+              <stop offset="55%" stopColor="#a855f7" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#08081a" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="limb" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#67e8f9" stopOpacity="0" />
+              <stop offset="50%" stopColor="#67e8f9" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#f472b6" stopOpacity="0" />
             </linearGradient>
           </defs>
-          <motion.path
-            d="M 60 260 C 120 120, 320 60, 470 180"
-            fill="none"
-            stroke="url(#curvePink)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ duration: 1.8, delay: 0.25, ease: "easeOut" }}
-          />
-          <motion.path
-            d="M 80 320 C 200 430, 360 420, 460 300"
-            fill="none"
-            stroke="url(#curveViolet)"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ duration: 1.8, delay: 0.45, ease: "easeOut" }}
-          />
-          <motion.path
-            d="M 130 120 Q 260 0, 400 110"
-            fill="none"
-            stroke="#67e8f9"
-            strokeOpacity="0.55"
-            strokeWidth="1"
-            strokeDasharray="2 6"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 2, delay: 0.6 }}
-          />
+
+          {/* soft core */}
+          <circle cx={c} cy={c} r={R * 0.7} fill="url(#coreGrad)" opacity="0.7" />
+
+          {/* outer limb */}
+          <circle cx={c} cy={c} r={R} fill="none" stroke="url(#limb)" strokeWidth="1.5" />
+          <circle cx={c} cy={c} r={R - 8} fill="none" stroke="#67e8f9" strokeOpacity="0.18" />
+
+          {/* latitudes as flattened ellipses */}
+          <g className="ring-rotate-slow" style={{ transformOrigin: `${c}px ${c}px` }}>
+            {lats.map((lat, i) => {
+              const ry = R * Math.cos((lat * Math.PI) / 180);
+              const cy = c + R * Math.sin((lat * Math.PI) / 180) * 0.35;
+              return (
+                <ellipse
+                  key={i}
+                  cx={c}
+                  cy={cy}
+                  rx={R}
+                  ry={Math.abs(ry) * 0.35}
+                  fill="none"
+                  stroke="#a855f7"
+                  strokeOpacity={lat === 0 ? 0.55 : 0.28}
+                  strokeWidth={lat === 0 ? 1 : 0.6}
+                  strokeDasharray={lat === 0 ? "0" : "2 4"}
+                />
+              );
+            })}
+          </g>
+
+          {/* longitudes as rotated ellipses (thin slices) */}
+          <g className="ring-rotate-mid" style={{ transformOrigin: `${c}px ${c}px` }}>
+            {longs.map((lon, i) => (
+              <ellipse
+                key={i}
+                cx={c}
+                cy={c}
+                rx={R * Math.abs(Math.cos((lon * Math.PI) / 180))}
+                ry={R}
+                fill="none"
+                stroke="#67e8f9"
+                strokeOpacity={i % 3 === 0 ? 0.35 : 0.14}
+                strokeWidth="0.5"
+              />
+            ))}
+          </g>
+
+          {/* tick ring */}
+          <g>
+            {Array.from({ length: 72 }).map((_, i) => {
+              const a = (i * 360) / 72;
+              const rad = (a * Math.PI) / 180;
+              const r1 = R + 14;
+              const r2 = R + (i % 6 === 0 ? 28 : 20);
+              return (
+                <line
+                  key={i}
+                  x1={c + r1 * Math.cos(rad)}
+                  y1={c + r1 * Math.sin(rad)}
+                  x2={c + r2 * Math.cos(rad)}
+                  y2={c + r2 * Math.sin(rad)}
+                  stroke={i % 6 === 0 ? "#f472b6" : "#67e8f9"}
+                  strokeOpacity={i % 6 === 0 ? 0.85 : 0.35}
+                  strokeWidth={i % 6 === 0 ? 1.2 : 0.6}
+                />
+              );
+            })}
+          </g>
+
+          {/* crosshair */}
+          <g stroke="#67e8f9" strokeOpacity="0.4" strokeWidth="0.8">
+            <line x1={c} y1="2" x2={c} y2="24" />
+            <line x1={c} y1={size - 24} x2={c} y2={size - 2} />
+            <line x1="2" y1={c} x2="24" y2={c} />
+            <line x1={size - 24} y1={c} x2={size - 2} y2={c} />
+          </g>
+
+          {/* scan arc sweep */}
+          <motion.g
+            style={{ transformOrigin: `${c}px ${c}px` }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          >
+            <path
+              d={`M ${c + R - 8} ${c} A ${R - 8} ${R - 8} 0 0 0 ${c} ${c - R + 8}`}
+              fill="none"
+              stroke="#f472b6"
+              strokeOpacity="0.85"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <circle cx={c + R - 8} cy={c} r="4" fill="#fde68a" />
+          </motion.g>
+
+          {/* marker pings */}
+          {[
+            { lat: 34, lon: 242 },
+            { lat: -18, lon: 60 },
+            { lat: 52, lon: 140 },
+            { lat: -45, lon: 300 },
+          ].map((m, i) => {
+            const latR = (m.lat * Math.PI) / 180;
+            const lonR = (m.lon * Math.PI) / 180;
+            const px = c + R * Math.cos(latR) * Math.sin(lonR) * 0.92;
+            const py = c - R * Math.sin(latR) * 0.55;
+            return (
+              <g key={i}>
+                <circle cx={px} cy={py} r="2.5" fill="#f472b6">
+                  <animate attributeName="r" values="2;5;2" dur={`${1.8 + i * 0.4}s`} repeatCount="indefinite" />
+                </circle>
+                <circle cx={px} cy={py} r="7" fill="none" stroke="#f472b6" strokeOpacity="0.7">
+                  <animate attributeName="r" values="3;16;3" dur={`${1.8 + i * 0.4}s`} repeatCount="indefinite" />
+                  <animate attributeName="stroke-opacity" values="0.8;0;0.8" dur={`${1.8 + i * 0.4}s`} repeatCount="indefinite" />
+                </circle>
+              </g>
+            );
+          })}
         </svg>
       </motion.div>
 
-      {/* reactive core ripples when typing */}
-      <motion.div
-        aria-hidden
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 220,
-          height: 220,
-          border: "1px solid rgba(34, 211, 238, 0.55)",
-        }}
-        animate={{
-          scale: [1, 1 + typingHeat * 0.02, 1],
-          opacity: [0.55, 0.15, 0.55],
-        }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        aria-hidden
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 140,
-          height: 140,
-          border: "1px dashed rgba(236, 72, 153, 0.6)",
-        }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-      />
-
-      {/* central numeric readout */}
-      <motion.div
-        className="relative z-10 flex flex-col items-center justify-center text-center"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.35, duration: 0.55 }}
-      >
-        <div className="text-[9px] tracking-[0.4em] text-jarvis-cyan/60">// MK CORE</div>
+      {/* outer orbit rings with satellites — CSS 3D */}
+      <div className="orbit-rig">
         <div
-          className="font-mono leading-none mt-1"
+          className="orbit-ring-3d solid orbit-spin-a"
+          style={{ transform: "rotateX(68deg) rotateZ(18deg) scale(1.15)" }}
+        >
+          <Satellite angle={0} distance={size * 0.575} color="cyan" />
+          <Satellite angle={160} distance={size * 0.575} color="pink" />
+        </div>
+        <div
+          className="orbit-ring-3d pink orbit-spin-b"
+          style={{ transform: "rotateX(80deg) rotateY(12deg) scale(1.3)" }}
+        >
+          <Satellite angle={60} distance={size * 0.65} color="pink" />
+        </div>
+        <div
+          className="orbit-ring-3d orbit-spin-c"
+          style={{ transform: "rotateX(56deg) rotateZ(-40deg) scale(1.05)" }}
+        >
+          <Satellite angle={220} distance={size * 0.528} color="cyan" />
+          <Satellite angle={330} distance={size * 0.528} color="cyan" />
+        </div>
+      </div>
+
+      {/* center readout */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <div className="text-[9px] tracking-[0.55em] text-jarvis-cyan/70">// CORE</div>
+        <div
+          className="serif-num leading-none mt-1"
           style={{
-            fontSize: "clamp(1.6rem, 4.5vw, 3rem)",
-            letterSpacing: "0.18em",
-            color: "#ec4899",
-            textShadow: "0 0 18px rgba(236,72,153,0.7), 0 0 4px #67e8f9",
+            fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
+            color: "#fde68a",
+            textShadow: "0 0 14px rgba(253,230,138,0.6), 0 0 28px rgba(244,114,182,0.45)",
           }}
         >
-          A-0<NumberTicker value={7} className="inline text-jarvis-red" />
+          0<NumberTicker value={7} className="serif-num" />
         </div>
-        <div className="text-[9px] tracking-[0.4em] text-jarvis-cyan/50 mt-2">
-          HEARTBEAT <span className="text-jarvis-cyan">NOMINAL</span>
+        <div className="text-[9px] tracking-[0.5em] text-jarvis-ivory/60 mt-2">
+          HEARTBEAT · <span className="text-jarvis-cyan">NOMINAL</span>
         </div>
-      </motion.div>
+      </div>
+
+      {/* corner brackets */}
+      <Corners />
     </div>
   );
 }
 
-// ================= side column (readouts + waveform) =================
-function SideColumn({
-  side,
-  primary,
-  secondary,
-  code,
-  heat,
-}: {
-  side: "left" | "right";
-  primary: string;
-  secondary: string;
-  code: string;
-  heat: number;
-}) {
-  const isLeft = side === "left";
+function Satellite({ angle, distance, color }: { angle: number; distance: number; color: "cyan" | "pink" }) {
+  const rad = (angle * Math.PI) / 180;
+  const x = Math.cos(rad) * distance;
+  const y = Math.sin(rad) * distance;
   return (
-    <FadeIn
-      delay={0.3}
-      direction={isLeft ? "left" : "right"}
-      className={`hidden md:flex absolute top-1/2 -translate-y-1/2 ${isLeft ? "left-0" : "right-0"} flex-col items-${isLeft ? "start" : "end"} gap-3 z-10`}
-    >
-      <div className={`text-[9px] tracking-[0.4em] text-jarvis-crimson ${isLeft ? "text-left" : "text-right"}`}>
-        {code}
+    <span
+      className={`orbit-sat ${color === "pink" ? "pink" : ""}`}
+      style={{ transform: `translate(${x}px, ${y}px)` }}
+    />
+  );
+}
+
+function Corners() {
+  const pad = 10;
+  const arm = 18;
+  return (
+    <svg aria-hidden className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <g stroke="#67e8f9" strokeWidth="0.6" fill="none" opacity="0.75">
+        <path d={`M ${pad} ${pad + arm} L ${pad} ${pad} L ${pad + arm} ${pad}`} />
+        <path d={`M ${100 - pad - arm} ${pad} L ${100 - pad} ${pad} L ${100 - pad} ${pad + arm}`} />
+        <path d={`M ${100 - pad} ${100 - pad - arm} L ${100 - pad} ${100 - pad} L ${100 - pad - arm} ${100 - pad}`} />
+        <path d={`M ${pad + arm} ${100 - pad} L ${pad} ${100 - pad} L ${pad} ${100 - pad - arm}`} />
+      </g>
+    </svg>
+  );
+}
+
+function Readout({
+  label,
+  value,
+  unit,
+  bar,
+  invert = false,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  bar: number;
+  invert?: boolean;
+}) {
+  const pct = Math.min(1, Math.max(0, bar));
+  return (
+    <div>
+      <div className="flex items-baseline justify-between text-jarvis-ivory/80">
+        <span className="text-[9px] tracking-[0.45em] text-jarvis-ivory/55">{label}</span>
+        <span className="text-[11px] tabular-nums">
+          <span className="serif-num text-[18px] text-jarvis-ivory">{value}</span>
+          <span className="ml-1 text-jarvis-ivory/45 text-[9px] tracking-[0.3em]">{unit}</span>
+        </span>
       </div>
-      <div
-        className="font-mono leading-none"
-        style={{
-          fontSize: "clamp(2rem, 4vw, 3rem)",
-          color: "#67e8f9",
-          letterSpacing: "0.06em",
-          textShadow: "0 0 12px rgba(103,232,249,0.6)",
-        }}
-      >
-        {primary}
+      <div className="mt-1 h-[2px] bg-jarvis-ivory/10 relative overflow-hidden">
+        <motion.div
+          className="absolute left-0 top-0 bottom-0"
+          style={{
+            background: invert
+              ? "linear-gradient(90deg, #f472b6, #a855f7)"
+              : "linear-gradient(90deg, #67e8f9, #f472b6)",
+          }}
+          animate={{ width: `${pct * 100}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        />
       </div>
-      <div className={`text-[9px] tracking-[0.4em] text-jarvis-cyan/70 ${isLeft ? "text-left" : "text-right"}`}>
-        {secondary}
-      </div>
-      <div className="w-[140px] h-[52px] opacity-90" style={{ filter: `brightness(${1 + heat * 0.04})` }}>
-        <WaveformBars count={18} />
-      </div>
-      <div className={`text-[8px] tracking-[0.35em] text-jarvis-gold/60 ${isLeft ? "text-left" : "text-right"}`}>
-        CH.{isLeft ? "01" : "02"} LIVE
-      </div>
-    </FadeIn>
+    </div>
+  );
+}
+
+function Sparkline({ seed, color = "#67e8f9" }: { seed: number; color?: string }) {
+  const [pts, setPts] = useState<number[]>(() =>
+    Array.from({ length: 40 }).map((_, i) => 0.5 + 0.4 * Math.sin(i * 0.35 + seed * 6)),
+  );
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPts((prev) => {
+        const next = prev.slice(1);
+        const last = prev[prev.length - 1];
+        let v = last + (Math.random() - 0.5) * 0.25;
+        if (v < 0.1) v = 0.1; if (v > 0.95) v = 0.95;
+        next.push(v);
+        return next;
+      });
+    }, 280);
+    return () => clearInterval(id);
+  }, []);
+  const w = 220, h = 44;
+  const path = pts
+    .map((v, i) => `${i === 0 ? "M" : "L"} ${(i / (pts.length - 1)) * w} ${h - v * h}`)
+    .join(" ");
+  return (
+    <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="block">
+      <defs>
+        <linearGradient id={`spark-${seed}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={color} stopOpacity="0.1" />
+          <stop offset="100%" stopColor={color} stopOpacity="1" />
+        </linearGradient>
+      </defs>
+      <path d={path} fill="none" stroke={`url(#spark-${seed})`} strokeWidth="1.3" />
+      <circle cx={w} cy={h - pts[pts.length - 1] * h} r="2" fill={color} />
+    </svg>
   );
 }
