@@ -1,6 +1,6 @@
 # Bugs Reference (Interviewer Cheat Sheet)
 
-Five bugs across three tiers. Tuned for the Q2 Software interview loop (Abhijeet, Shreya, Hitesh, Krithika). Tier mix holds across candidates; only the credentials rotate -- see `README.md` for the per-slot table.
+Five bugs across three tiers. Candidate creds come from the `JARVIS_USERS` env var (see `README.md`); only the roster changes per slot, bugs stay the same.
 
 | # | Tier | Surface | File | One-line fix |
 |---|---|---|---|---|
@@ -49,7 +49,7 @@ Five bugs across three tiers. Tuned for the Q2 Software interview loop (Abhijeet
 
 **Trigger:** Open any suit detail page. POWER OUTPUT and TOP SPEED show "—".
 **DevTools tell:** Network -> `/api/suits/[id]` response has `power_output` and `top_speed`. Console/Sources: UI reads `suit.powerOutput` / `suit.topSpeed` which are `undefined`.
-**Why this matters for Hitesh:** Python backends use snake_case, JS frontends use camelCase. Classic integration mismatch.
+**Why this matters:** Python backends use snake_case, JS frontends use camelCase. Classic integration mismatch.
 **Fix:** Change `suit.powerOutput` to `suit.power_output` (or add a mapping layer).
 
 ---

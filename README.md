@@ -11,18 +11,19 @@ npm run dev
 # open http://localhost:3000
 ```
 
-## Credentials (interviewer only -- hand out one per candidate)
+## Credentials
 
-| Candidate | Interview slot | Email to hand over | Real password |
-|---|---|---|---|
-| Abhijeet Kumar | Mon 20 Apr 2026, 4:00pm | `Abhijeet@q2software.com` | `ironclad` |
-| P Shreya | Tue 21 Apr 2026, 4:00pm | `Shreya@q2software.com` | `harmonic` |
-| Hitesh Singh Solanki | Thu 23 Apr 2026, 4:00pm | `Hitesh@q2software.com` | `kevlar` |
-| Krithika V | Thu 23 Apr 2026, 4:30pm | `Krithika@q2software.com` | `palladium` |
+Creds load from the `JARVIS_USERS` env var (JSON). Keep the real per-interview roster out of the repo.
 
-Hand the candidate the capitalised email (that is the L1 trap) and the password. The lowercase version is the real value on the server.
+Local dev without env setup falls back to a single demo cred: `demo@example.com` / `demo`.
 
-USERS[0] in `lib/auth.ts` is the candidate `/api/admin/grant` will unlock. Reorder before each session so the first row matches who you are interviewing.
+Per-interview setup:
+1. Put the real roster in `.env.local` (gitignored) and/or Vercel project env:
+   ```
+   JARVIS_USERS=[{"email":"first@example.com","password":"xxxx","name":"First Last"}, ...]
+   ```
+2. Hand the candidate the **capital-first-letter** email (that is the L1 trap) and the password. The lowercase version is the real value on the server.
+3. `USERS[0]` is the candidate `/api/admin/grant` unlocks -- list them first when swapping interviews.
 
 **Hint to withhold:** emails are lowercase on the server. (That's bug L1.)
 
@@ -32,7 +33,7 @@ USERS[0] in `lib/auth.ts` is the candidate `/api/admin/grant` will unlock. Reord
 
 ### L1 — Case-sensitive email comparison
 - **File:** `app/api/login/route.ts`
-- **Symptom:** Login with the capital-first-letter email (e.g. `Abhijeet@q2software.com`) fails. UI shows generic "Authentication failed".
+- **Symptom:** Login with the capital-first-letter email (e.g. `Candidate@example.com`) fails. UI shows generic "Authentication failed".
 - **How to find:** Network tab -> login response is `200 OK` with body `{success: false, error: "INVALID_CREDENTIALS", detail: "EMAIL_CASE_MISMATCH: email comparison is case-sensitive on the server"}`.
 - **DevTools skill:** Inspecting response body (not just status code).
 - **Fix:** Compare `u.email.toLowerCase() === email.toLowerCase()`.

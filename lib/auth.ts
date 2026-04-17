@@ -3,15 +3,23 @@ import crypto from "crypto";
 const SECRET = process.env.JARVIS_SECRET || "stark-mainframe-dev-secret";
 export const COOKIE_NAME = "jarvis_session";
 
-// USERS[0] is the "primary" candidate -- /api/admin/grant hands them a session.
-// Rotate the ordering when you swap interviews. Do not mirror these values
-// anywhere the client can read -- placeholder text, env vars, docstrings, etc.
-export const USERS: { email: string; password: string; name: string }[] = [
-  { email: "abhijeet@q2software.com", password: "ironclad", name: "Abhijeet Kumar" },
-  { email: "shreya@q2software.com", password: "harmonic", name: "P Shreya" },
-  { email: "hitesh@q2software.com", password: "kevlar", name: "Hitesh Singh Solanki" },
-  { email: "krithika@q2software.com", password: "palladium", name: "Krithika V" },
-];
+type User = { email: string; password: string; name: string };
+
+// Candidate creds live in env var JARVIS_USERS (JSON array of {email,password,name}).
+// Fallback is a single generic demo cred so local dev works without env setup.
+// Do not commit real creds to this file.
+function loadUsers(): User[] {
+  const raw = process.env.JARVIS_USERS;
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as User[];
+    } catch {}
+  }
+  return [{ email: "demo@example.com", password: "demo", name: "Demo User" }];
+}
+
+export const USERS: User[] = loadUsers();
 
 export function sign(payload: object): string {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");

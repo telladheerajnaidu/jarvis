@@ -24,21 +24,24 @@ async function main() {
   // 2. Bug 1 - Case-sensitive email error
   // ===============================================
   console.log('02 - Bug 1: case error...');
-  await loginPage.fill('input[type="text"]', 'Abhijeet@q2software.com');
-  await loginPage.fill('input[type="password"]', 'ironclad');
+  const EMAIL = process.env.CAPTURE_EMAIL || 'Demo@example.com';
+  const PW = process.env.CAPTURE_PASSWORD || 'demo';
+  const EMAIL_LC = EMAIL.toLowerCase();
+  await loginPage.fill('input[type="text"]', EMAIL);
+  await loginPage.fill('input[type="password"]', PW);
   await loginPage.click('button[type="submit"]');
   await loginPage.waitForTimeout(1500);
   await loginPage.screenshot({ path: `${OUT}/02_bug1_case_error_ui.png`, fullPage: false });
 
   // Capture the API response for Bug 1
-  const bug1Resp = await loginPage.evaluate(async () => {
+  const bug1Resp = await loginPage.evaluate(async ([email, password]) => {
     const r = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'Abhijeet@q2software.com', password: 'ironclad' }),
+      body: JSON.stringify({ email, password }),
     });
     return r.json();
-  });
+  }, [EMAIL, PW]);
   writeFileSync(`${OUT}/02_bug1_response_body.json`, JSON.stringify(bug1Resp, null, 2));
   console.log('  Bug 1 response:', JSON.stringify(bug1Resp));
 
@@ -64,8 +67,8 @@ async function main() {
   // Login with correct creds via navigation to trigger the cookie
   await bug2Page.goto(BASE, { waitUntil: 'networkidle' });
   await bug2Page.waitForTimeout(3500);
-  await bug2Page.fill('input[type="text"]', 'abhijeet@q2software.com');
-  await bug2Page.fill('input[type="password"]', 'ironclad');
+  await bug2Page.fill('input[type="text"]', EMAIL_LC);
+  await bug2Page.fill('input[type="password"]', PW);
   await bug2Page.click('button[type="submit"]');
   await bug2Page.waitForTimeout(2000);
   // Should land on /suits but show UNAUTHORIZED because cookie is Path=/admin

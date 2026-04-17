@@ -17,8 +17,6 @@ import {
   ShineBorder,
   ShimmerText,
   ChromaticBloom,
-  ChromaticText,
-  IridescentRing,
   ParallaxLayer,
 } from "./_components/Animations";
 
@@ -92,9 +90,9 @@ export default function LoginPage() {
   if (!booted) {
     return (
       <main className="min-h-screen hud-grid-fine relative flex items-center justify-center overflow-hidden">
-        <ChromaticBloom intensity={0.55} />
+        <ChromaticBloom intensity={0.35} />
         <div className="scanline-overlay" />
-        <Particles className="absolute inset-0" quantity={30} color="#fde047" size={0.25} />
+        <Particles className="absolute inset-0" quantity={24} color="#fbbf24" size={0.2} />
         <div className="max-w-2xl w-full p-4 sm:p-8 font-mono text-jarvis-ivory text-xs relative z-10">
           {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
             <motion.div
@@ -119,9 +117,9 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen hud-grid-fine relative overflow-hidden">
-      <ChromaticBloom intensity={1} />
+      <ChromaticBloom intensity={0.45} />
       <div className="scanline-overlay" />
-      <Particles className="absolute inset-0 z-0" quantity={42} color="#fde047" size={0.3} />
+      <Particles className="absolute inset-0 z-0" quantity={28} color="#fbbf24" size={0.22} />
 
       {/* Top bar */}
       <motion.div
@@ -150,7 +148,7 @@ export default function LoginPage() {
             <span className="tabular-nums">UTC {nowIso}</span>
             <span className="text-jarvis-cyan/40 hidden sm:inline">|</span>
             <span className="flex items-center gap-1.5">
-              <PulseGlow color="#fde047" size={6} />
+              <PulseGlow color="#fbbf24" size={6} />
               <span className="ml-1">UPLINK NOMINAL</span>
             </span>
             <span className="text-jarvis-cyan/40 hidden md:inline">|</span>
@@ -164,7 +162,7 @@ export default function LoginPage() {
         {/* Left -- telemetry */}
         <FadeIn delay={0.2} direction="left" className="hidden lg:block">
           <div className="hud-panel hud-corners p-4 overflow-hidden h-full relative">
-            <BorderBeam colorFrom="#ef4444" colorTo="#fde047" size={40} duration={8} />
+            <BorderBeam colorFrom="#dc2626" colorTo="#fbbf24" size={40} duration={8} />
             <div className="text-[10px] tracking-[0.35em] text-jarvis-gold/80 mb-3 border-b border-jarvis-gold/20 pb-2">
               // BOOT TELEMETRY
             </div>
@@ -172,24 +170,21 @@ export default function LoginPage() {
           </div>
         </FadeIn>
 
-        {/* Center -- holosphere + login */}
+        {/* Center -- login (holosphere relegated to subtle background aura) */}
         <section className="relative flex items-center justify-center min-h-[560px] sm:min-h-[640px] py-6 lg:py-0">
           <motion.div
-            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+            className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-60"
             initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{ scale: 1, opacity: 0.6 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
             aria-hidden
           >
-            <ParallaxLayer depth={24} tilt={9} className="relative w-[320px] h-[320px] sm:w-[460px] sm:h-[460px] lg:w-[560px] lg:h-[560px]">
-              <Ripple count={4} mainSize={260} color="rgba(239, 68, 68, 0.18)" />
+            <ParallaxLayer depth={16} tilt={6} className="relative w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] lg:w-[420px] lg:h-[420px]">
+              <Ripple count={3} mainSize={220} color="rgba(220, 38, 38, 0.18)" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <IridescentRing size={320} thickness={1.5} />
-                <IridescentRing size={420} thickness={1} className="hidden sm:block" />
-                <IridescentRing size={520} thickness={1} className="hidden lg:block" />
-                <div className="hidden sm:block lg:hidden"><Holosphere size={420} /></div>
-                <div className="hidden lg:block"><Holosphere size={520} /></div>
-                <div className="block sm:hidden"><Holosphere size={280} /></div>
+                <div className="hidden sm:block lg:hidden"><Holosphere size={320} /></div>
+                <div className="hidden lg:block"><Holosphere size={380} /></div>
+                <div className="block sm:hidden"><Holosphere size={240} /></div>
               </div>
             </ParallaxLayer>
           </motion.div>
@@ -197,7 +192,7 @@ export default function LoginPage() {
           <AnimatePresence>
             {formReady && (
               <motion.div
-                className="relative z-20 w-full max-w-[380px] px-2 sm:px-0"
+                className="relative z-20 w-full max-w-[400px] px-2 sm:px-0"
                 initial={{ scale: 0.94, opacity: 0, y: 14 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, ease: "easeOut" }}
@@ -209,13 +204,13 @@ export default function LoginPage() {
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.1, type: "spring", stiffness: 150 }}
                   />
-                  <ChromaticText className="text-xl tracking-[0.5em] text-jarvis-ivory" intensity={4}>
-                    <ShimmerText from="#ef4444" mid="#fef9c3" duration={4}>
+                  <div className="text-xl tracking-[0.5em] text-jarvis-ivory font-semibold">
+                    <ShimmerText from="#dc2626" mid="#fbbf24" duration={5}>
                       J.A.R.V.I.S.
                     </ShimmerText>
-                  </ChromaticText>
+                  </div>
                   <motion.div
-                    className="text-[9px] text-jarvis-cyan/60 mt-1 tracking-[0.3em]"
+                    className="text-[9px] text-jarvis-gold/70 mt-2 tracking-[0.3em]"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
@@ -224,8 +219,8 @@ export default function LoginPage() {
                   </motion.div>
                 </div>
 
-                <div className="hud-panel hud-corners p-6 backdrop-blur-xl relative overflow-hidden shadow-hud">
-                  <BorderBeam colorFrom="#ef4444" colorTo="#fde047" size={60} duration={6} />
+                <div className="hud-panel-solid hud-corners p-6 relative overflow-hidden shadow-hud">
+                  <BorderBeam colorFrom="#dc2626" colorTo="#fbbf24" size={60} duration={6} />
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-[10px] text-jarvis-cyan/80 tracking-[0.3em]">
                       // AUTH REQUIRED
@@ -286,7 +281,7 @@ export default function LoginPage() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <ShineBorder duration={4} colors={["#ef4444", "#fde047", "#ef4444"]} />
+                        <ShineBorder duration={4} colors={["#dc2626", "#fbbf24", "#dc2626"]} />
                         {loading ? (
                           <span className="flex items-center justify-center gap-2">
                             <motion.span
@@ -335,7 +330,7 @@ export default function LoginPage() {
         <FadeIn delay={0.2} direction="right" className="hidden lg:block">
           <div className="space-y-4 h-full flex flex-col">
             <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-              <BorderBeam colorFrom="#fde047" colorTo="#ef4444" size={35} duration={10} delay={3} />
+              <BorderBeam colorFrom="#fbbf24" colorTo="#dc2626" size={35} duration={10} delay={3} />
               <div className="text-[10px] tracking-[0.35em] text-jarvis-gold/80 mb-3 border-b border-jarvis-gold/20 pb-2">
                 // DIAGNOSTICS
               </div>
@@ -386,7 +381,7 @@ export default function LoginPage() {
       >
         <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/80">
           <span className="flex items-center gap-1.5">
-            <PulseGlow color="#fde047" size={6} />
+            <PulseGlow color="#fbbf24" size={6} />
             <span className="ml-1">SYSTEMS NOMINAL</span>
           </span>
           <span className="text-jarvis-cyan/40">|</span>

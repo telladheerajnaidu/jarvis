@@ -51,7 +51,7 @@ export function TopBar({ session }: { session?: string }) {
           <span className="hidden sm:inline">{date}</span>
           <span className="text-jarvis-cyan/40 hidden md:inline">|</span>
           <span className="flex items-center gap-1.5">
-            <PulseGlow color="#fde047" size={6} />
+            <PulseGlow color="#fbbf24" size={6} />
             <span className="ml-1">UPLINK</span>
           </span>
           <span className="text-jarvis-cyan/40 hidden md:inline">|</span>
@@ -85,7 +85,7 @@ export function SidePanel({ title, children }: { title: string; children: React.
     <aside className="hud-panel hud-corners p-4 h-full">
       <div className="text-[10px] tracking-[0.35em] text-jarvis-gold/80 mb-3 border-b border-jarvis-gold/20 pb-2 flex items-center justify-between">
         <span>// {title}</span>
-        <span className="h-1.5 w-1.5 rounded-full bg-jarvis-red shadow-[0_0_8px_#ef4444]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-jarvis-red shadow-[0_0_8px_#dc2626]" />
       </div>
       {children}
     </aside>
@@ -102,7 +102,7 @@ export function BottomBar() {
     >
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/80">
         <span className="flex items-center gap-1.5">
-          <PulseGlow color="#fde047" size={6} />
+          <PulseGlow color="#fbbf24" size={6} />
           <span className="ml-1">SYSTEMS NOMINAL</span>
         </span>
         <span className="text-jarvis-cyan/40">|</span>
@@ -145,17 +145,17 @@ export function HudShell({ children, session }: { children: React.ReactNode; ses
         >
           <SidePanel title="DIAGNOSTICS">
             <div className="space-y-3 text-[10px] tracking-wider">
-              <Metric label="ARC REACTOR" value={98} color="#ef4444" />
-              <Metric label="NEURAL LINK" value={86} color="#facc15" />
-              <Metric label="THRUSTERS" value={94} color="#fde047" />
-              <Metric label="SHIELD MATRIX" value={72} color="#f59e0b" />
+              <Metric label="ARC REACTOR" value={98} color="#dc2626" />
+              <Metric label="NEURAL LINK" value={86} color="#fbbf24" />
+              <Metric label="THRUSTERS" value={94} color="#991b1b" />
+              <Metric label="SHIELD MATRIX" value={72} color="#fbbf24" />
               <Metric label="AMMO CORE" value={44} color="#dc2626" />
             </div>
           </SidePanel>
           <SidePanel title="FRIDAY">
             <div className="text-[10px] leading-5 text-jarvis-cyan/70">
               <div className="flex items-center gap-1.5">
-                <PulseGlow color="#fde047" size={5} />
+                <PulseGlow color="#fbbf24" size={5} />
                 <span className="ml-1 text-jarvis-cyan">LISTENING</span>
               </div>
               <div className="mt-2 italic opacity-70">

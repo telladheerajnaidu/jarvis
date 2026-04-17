@@ -121,7 +121,7 @@ async function main() {
     margin: { top: '20mm', bottom: '20mm', left: '18mm', right: '18mm' },
     printBackground: true,
     displayHeaderFooter: true,
-    headerTemplate: '<div style="font-size:8px;color:#999;width:100%;text-align:center;margin-top:5px;">Jarvis Debug Lab -- Interview Walkthrough (Hitesh Singh Solanki)</div>',
+    headerTemplate: '<div style="font-size:8px;color:#999;width:100%;text-align:center;margin-top:5px;">Jarvis Debug Lab -- Interview Walkthrough</div>',
     footerTemplate: '<div style="font-size:8px;color:#999;width:100%;text-align:center;margin-bottom:5px;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>',
   });
 

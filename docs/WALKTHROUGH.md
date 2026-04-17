@@ -3,16 +3,7 @@
 Five planted bugs, tiered by difficulty. All are real -- no mocks. The backend lives on Vercel, the bugs trigger identically whether the candidate runs it locally or against the production URL.
 
 **Target URL:** https://jarvis-nine-coral.vercel.app
-**Credentials:** see the per-slot table in `README.md`. Hand the candidate the capital-first-letter email and the password. Case matters on the server -- that is Bug 1.
-
-**Candidate slots (Q2 Software interview loop):**
-
-| Slot | Candidate | Email to hand over | Password |
-|---|---|---|---|
-| Mon 20 Apr, 4:00pm | Abhijeet Kumar | `Abhijeet@q2software.com` | `ironclad` |
-| Tue 21 Apr, 4:00pm | P Shreya | `Shreya@q2software.com` | `harmonic` |
-| Thu 23 Apr, 4:00pm | Hitesh Singh Solanki | `Hitesh@q2software.com` | `kevlar` |
-| Thu 23 Apr, 4:30pm | Krithika V | `Krithika@q2software.com` | `palladium` |
+**Credentials:** configured via the `JARVIS_USERS` env var (see `README.md`). Real per-candidate creds are kept out of the repo. Hand the candidate the capital-first-letter email and the password. Case matters on the server -- that is Bug 1.
 
 The bugs are tuned to test skills relevant to a backend engineer debugging a frontend integration -- Python vs JS naming, HTTP cookie scoping, response-body vs status-code reading, client-side caching, and race conditions. Same five bugs for every slot, only the credential row rotates.
 
@@ -70,7 +61,7 @@ Bugs are **sticky across logout/login** by design. Clicking `DISENGAGE` only cle
 ![Login page](./screenshots/01_login_page.png)
 
 ### Trigger
-Candidate types the capital-first-letter email you handed them (e.g. `Abhijeet@q2software.com`) with the correct password.
+Candidate types the capital-first-letter email you handed them (e.g. `Candidate@example.com`) with the correct password.
 
 ### Symptom
 UI shows a red terminal error: `AUTHENTICATION REJECTED // SEE TERMINAL`. Generic -- no direct hint about case.
@@ -127,7 +118,7 @@ That issues a clean session for whoever is `USERS[0]`. Then navigate to `/suits`
 ```bash
 curl -s -X POST https://jarvis-nine-coral.vercel.app/api/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"Abhijeet@q2software.com","password":"ironclad"}'
+  -d '{"email":"Candidate@example.com","password":"<pw>"}'
 ```
 You should see `"success":false` with the `EMAIL_CASE_MISMATCH` detail, status 200.
 
@@ -473,7 +464,7 @@ time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
 - "The API fields look fine" (without comparing them to what the UI reads).
 - "The response looks the same so the request must be wrong" (on Bug 5 -- misses that *order* of responses is what matters, not content).
 
-### Why these bugs for Hitesh's profile
+### Why these bugs for a backend-engineer profile
 
 | Bug | Tests | Relevance to Backend Engineer |
 |---|---|---|
