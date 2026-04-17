@@ -24,8 +24,8 @@ async function main() {
   // 2. Bug 1 - Case-sensitive email error
   // ===============================================
   console.log('02 - Bug 1: case error...');
-  await loginPage.fill('input[type="text"]', 'Hitesh@q2software.com');
-  await loginPage.fill('input[type="password"]', 'logeasy');
+  await loginPage.fill('input[type="text"]', 'Abhijeet@q2software.com');
+  await loginPage.fill('input[type="password"]', 'ironclad');
   await loginPage.click('button[type="submit"]');
   await loginPage.waitForTimeout(1500);
   await loginPage.screenshot({ path: `${OUT}/02_bug1_case_error_ui.png`, fullPage: false });
@@ -35,7 +35,7 @@ async function main() {
     const r = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'Hitesh@q2software.com', password: 'logeasy' }),
+      body: JSON.stringify({ email: 'Abhijeet@q2software.com', password: 'ironclad' }),
     });
     return r.json();
   });
@@ -64,8 +64,8 @@ async function main() {
   // Login with correct creds via navigation to trigger the cookie
   await bug2Page.goto(BASE, { waitUntil: 'networkidle' });
   await bug2Page.waitForTimeout(3500);
-  await bug2Page.fill('input[type="text"]', 'hitesh@q2software.com');
-  await bug2Page.fill('input[type="password"]', 'logeasy');
+  await bug2Page.fill('input[type="text"]', 'abhijeet@q2software.com');
+  await bug2Page.fill('input[type="password"]', 'ironclad');
   await bug2Page.click('button[type="submit"]');
   await bug2Page.waitForTimeout(2000);
   // Should land on /suits but show UNAUTHORIZED because cookie is Path=/admin

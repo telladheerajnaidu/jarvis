@@ -12,12 +12,14 @@ import {
   PulseGlow,
   BorderBeam,
   NumberTicker,
-  Spotlight,
   Magnetic,
   Ripple,
   ShineBorder,
-  AuroraBackground,
   ShimmerText,
+  ChromaticBloom,
+  ChromaticText,
+  IridescentRing,
+  ParallaxLayer,
 } from "./_components/Animations";
 
 const BOOT_LINES = [
@@ -90,7 +92,7 @@ export default function LoginPage() {
   if (!booted) {
     return (
       <main className="min-h-screen hud-grid-fine relative flex items-center justify-center overflow-hidden">
-        <AuroraBackground intensity={0.2} />
+        <ChromaticBloom intensity={0.55} />
         <div className="scanline-overlay" />
         <Particles className="absolute inset-0" quantity={30} color="#fde047" size={0.25} />
         <div className="max-w-2xl w-full p-4 sm:p-8 font-mono text-jarvis-ivory text-xs relative z-10">
@@ -117,10 +119,9 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen hud-grid-fine relative overflow-hidden">
-      <AuroraBackground intensity={0.25} />
+      <ChromaticBloom intensity={1} />
       <div className="scanline-overlay" />
-      <Particles className="absolute inset-0 z-0" quantity={36} color="#fde047" size={0.25} />
-      <Spotlight color="rgba(239, 68, 68, 0.12)" size={720} />
+      <Particles className="absolute inset-0 z-0" quantity={42} color="#fde047" size={0.3} />
 
       {/* Top bar */}
       <motion.div
@@ -180,14 +181,17 @@ export default function LoginPage() {
             transition={{ duration: 1.2, ease: "easeOut" }}
             aria-hidden
           >
-            <div className="relative w-[320px] h-[320px] sm:w-[460px] sm:h-[460px] lg:w-[560px] lg:h-[560px]">
+            <ParallaxLayer depth={24} tilt={9} className="relative w-[320px] h-[320px] sm:w-[460px] sm:h-[460px] lg:w-[560px] lg:h-[560px]">
               <Ripple count={4} mainSize={260} color="rgba(239, 68, 68, 0.18)" />
               <div className="absolute inset-0 flex items-center justify-center">
+                <IridescentRing size={320} thickness={1.5} />
+                <IridescentRing size={420} thickness={1} className="hidden sm:block" />
+                <IridescentRing size={520} thickness={1} className="hidden lg:block" />
                 <div className="hidden sm:block lg:hidden"><Holosphere size={420} /></div>
                 <div className="hidden lg:block"><Holosphere size={520} /></div>
                 <div className="block sm:hidden"><Holosphere size={280} /></div>
               </div>
-            </div>
+            </ParallaxLayer>
           </motion.div>
 
           <AnimatePresence>
@@ -205,9 +209,11 @@ export default function LoginPage() {
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.1, type: "spring", stiffness: 150 }}
                   />
-                  <ShimmerText className="text-xl tracking-[0.5em]" from="#ef4444" mid="#fef9c3" duration={4}>
-                    J.A.R.V.I.S.
-                  </ShimmerText>
+                  <ChromaticText className="text-xl tracking-[0.5em] text-jarvis-ivory" intensity={4}>
+                    <ShimmerText from="#ef4444" mid="#fef9c3" duration={4}>
+                      J.A.R.V.I.S.
+                    </ShimmerText>
+                  </ChromaticText>
                   <motion.div
                     className="text-[9px] text-jarvis-cyan/60 mt-1 tracking-[0.3em]"
                     initial={{ opacity: 0 }}

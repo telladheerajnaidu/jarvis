@@ -924,3 +924,195 @@ export function ShimmerText({
     </motion.span>
   );
 }
+
+// ============================================================
+// useMouseFromCenter — normalized (-1..1) pointer position relative to
+// the viewport centre, spring-smoothed. Drives parallax/RGB-split.
+// ============================================================
+
+export function useMouseFromCenter(stiffness = 80, damping = 20) {
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, { stiffness, damping });
+  const sy = useSpring(my, { stiffness, damping });
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      mx.set((e.clientX / w) * 2 - 1);
+      my.set((e.clientY / h) * 2 - 1);
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [mx, my]);
+  return { x: sx, y: sy };
+}
+
+// ============================================================
+// ParallaxLayer — translate + rotate based on pointer spring.
+// Wraps any child and adds depth-aware drift.
+// ============================================================
+
+export function ParallaxLayer({
+  children,
+  depth = 30,
+  tilt = 10,
+  className,
+  style,
+}: {
+  children: React.ReactNode;
+  depth?: number;
+  tilt?: number;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const { x, y } = useMouseFromCenter();
+  const tx = useTransform(x, (v) => v * depth);
+  const ty = useTransform(y, (v) => v * depth);
+  const rx = useTransform(y, (v) => -v * tilt);
+  const ry = useTransform(x, (v) => v * tilt);
+  return (
+    <motion.div
+      className={className}
+      style={{
+        x: tx,
+        y: ty,
+        rotateX: rx,
+        rotateY: ry,
+        transformPerspective: 1200,
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+        ...style,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ============================================================
+// ChromaticText — RGB-split text that intensifies with pointer
+// distance from centre. Red + gold channels offset in opposite
+// directions over the base glyph.
+// ============================================================
+
+export function ChromaticText({
+  children,
+  className,
+  intensity = 6,
+  rColor = "#ef4444",
+  gColor = "#fde047",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  intensity?: number;
+  rColor?: string;
+  gColor?: string;
+}) {
+  const { x, y } = useMouseFromCenter(60, 18);
+  const rx = useTransform(x, (v) => v * intensity);
+  const ry = useTransform(y, (v) => v * intensity);
+  const gx = useTransform(x, (v) => -v * intensity);
+  const gy = useTransform(y, (v) => -v * intensity);
+  return (
+    <span className={`relative inline-block ${className || ""}`}>
+      <motion.span
+        aria-hidden
+        className="absolute inset-0 pointer-events-none mix-blend-screen"
+        style={{ color: rColor, x: rx, y: ry, filter: "blur(0.4px)" }}
+      >
+        {children}
+      </motion.span>
+      <motion.span
+        aria-hidden
+        className="absolute inset-0 pointer-events-none mix-blend-screen"
+        style={{ color: gColor, x: gx, y: gy, filter: "blur(0.4px)" }}
+      >
+        {children}
+      </motion.span>
+      <span className="relative">{children}</span>
+    </span>
+  );
+}
+
+// ============================================================
+// IridescentRing — a rotating conic-gradient ring that reacts to
+// pointer proximity. Used as a halo behind the arc reactor /
+// holosphere to imitate the refractive material in the reel.
+// ============================================================
+
+export function IridescentRing({
+  size = 360,
+  thickness = 2,
+  className,
+}: {
+  size?: number;
+  thickness?: number;
+  className?: string;
+}) {
+  const { x, y } = useMouseFromCenter(50, 16);
+  const hue = useTransform(() => Math.min(1, Math.hypot(x.get(), y.get())));
+  const opacity = useTransform(hue, [0, 1], [0.35, 0.85]);
+  return (
+    <motion.div
+      aria-hidden
+      className={`pointer-events-none absolute ${className || ""}`}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        opacity,
+        background: `conic-gradient(from 0deg, rgba(239,68,68,0.0) 0deg, rgba(239,68,68,0.9) 60deg, rgba(253,224,71,0.9) 130deg, rgba(254,243,199,0.9) 200deg, rgba(239,68,68,0.9) 280deg, rgba(239,68,68,0.0) 360deg)`,
+        WebkitMask: `radial-gradient(circle, transparent calc(50% - ${thickness + 1}px), #000 calc(50% - ${thickness}px), #000 50%, transparent calc(50% + 1px))`,
+        mask: `radial-gradient(circle, transparent calc(50% - ${thickness + 1}px), #000 calc(50% - ${thickness}px), #000 50%, transparent calc(50% + 1px))`,
+        filter: "blur(0.5px)",
+      }}
+      animate={{ rotate: 360 }}
+      transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+    />
+  );
+}
+
+// ============================================================
+// ChromaticBloom — full-screen RGB bloom that grows with pointer
+// velocity. Three soft radial gradients (red / gold / ivory) each
+// offset by a few px relative to the cursor. The overdone-webgl
+// effect in the reel, translated to DOM.
+// ============================================================
+
+export function ChromaticBloom({ intensity = 1 }: { intensity?: number }) {
+  const px = useMotionValue(0.5);
+  const py = useMotionValue(0.5);
+  const sx = useSpring(px, { stiffness: 60, damping: 18 });
+  const sy = useSpring(py, { stiffness: 60, damping: 18 });
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      px.set(e.clientX / (window.innerWidth || 1));
+      py.set(e.clientY / (window.innerHeight || 1));
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [px, py]);
+
+  const rBg = useTransform(() => {
+    const vx = sx.get(), vy = sy.get();
+    return `radial-gradient(360px circle at ${(vx * 100).toFixed(2)}% ${(vy * 100).toFixed(2)}%, rgba(239,68,68,${0.28 * intensity}), transparent 60%)`;
+  });
+  const gBg = useTransform(() => {
+    const vx = sx.get(), vy = sy.get();
+    return `radial-gradient(340px circle at ${(vx * 100 + 2).toFixed(2)}% ${(vy * 100 - 2).toFixed(2)}%, rgba(253,224,71,${0.22 * intensity}), transparent 60%)`;
+  });
+  const iBg = useTransform(() => {
+    const vx = sx.get(), vy = sy.get();
+    return `radial-gradient(300px circle at ${(vx * 100 - 2).toFixed(2)}% ${(vy * 100 + 2).toFixed(2)}%, rgba(254,243,199,${0.16 * intensity}), transparent 65%)`;
+  });
+
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 mix-blend-screen">
+      <motion.div className="absolute inset-0" style={{ background: rBg }} />
+      <motion.div className="absolute inset-0" style={{ background: gBg }} />
+      <motion.div className="absolute inset-0" style={{ background: iBg }} />
+    </div>
+  );
+}

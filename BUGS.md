@@ -1,6 +1,6 @@
 # Bugs Reference (Interviewer Cheat Sheet)
 
-Five bugs across three tiers. Designed for Hitesh Singh Solanki's profile (Backend Engineer, Python, FastAPI, PostgreSQL).
+Five bugs across three tiers. Tuned for the Q2 Software interview loop (Abhijeet, Shreya, Hitesh, Krithika). Tier mix holds across candidates; only the credentials rotate -- see `README.md` for the per-slot table.
 
 | # | Tier | Surface | File | One-line fix |
 |---|---|---|---|---|
@@ -14,7 +14,7 @@ Five bugs across three tiers. Designed for Hitesh Singh Solanki's profile (Backe
 
 ## Bug 1 — Case-sensitive email (L1)
 
-**Trigger:** `Hitesh@q2software.com` / `logeasy`
+**Trigger:** any candidate row with the capital-first-letter email (see `README.md` table) paired with the correct password.
 **DevTools tell:** `POST /api/login` -> 200 OK -> response body `detail: "EMAIL_CASE_MISMATCH..."`
 **Fix:**
 ```diff
@@ -96,9 +96,9 @@ Clears cookies + browser cache (`Clear-Site-Data: "cache", "cookies"`). All five
 
 ---
 
-## Why these bugs for Hitesh's profile
+## Why these bugs for a backend engineer
 
-| Bug | Tests | Relevance to Backend Engineer |
+| Bug | Tests | Relevance |
 |---|---|---|
 | L1 (email case) | Response body inspection | API error handling -- 200 with error body is a common pattern |
 | L3 (cookie path) | Cookie/header inspection | HTTP fundamentals -- cookie scoping, path attributes |

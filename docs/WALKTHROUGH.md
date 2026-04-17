@@ -3,9 +3,18 @@
 Five planted bugs, tiered by difficulty. All are real -- no mocks. The backend lives on Vercel, the bugs trigger identically whether the candidate runs it locally or against the production URL.
 
 **Target URL:** https://jarvis-nine-coral.vercel.app
-**Credentials:** `Hitesh@q2software.com` / `logeasy` (case matters -- see Bug 1)
+**Credentials:** see the per-slot table in `README.md`. Hand the candidate the capital-first-letter email and the password. Case matters on the server -- that is Bug 1.
 
-**Candidate profile:** Hitesh Singh Solanki -- Backend Software Engineer, 3+ years at Q2 Software (Fintech). Python, FastAPI, PostgreSQL, Docker. Winner of Q2 AI Hackathon 2025. The bugs are tuned to test skills relevant to a backend engineer debugging a frontend integration.
+**Candidate slots (Q2 Software interview loop):**
+
+| Slot | Candidate | Email to hand over | Password |
+|---|---|---|---|
+| Mon 20 Apr, 4:00pm | Abhijeet Kumar | `Abhijeet@q2software.com` | `ironclad` |
+| Tue 21 Apr, 4:00pm | P Shreya | `Shreya@q2software.com` | `harmonic` |
+| Thu 23 Apr, 4:00pm | Hitesh Singh Solanki | `Hitesh@q2software.com` | `kevlar` |
+| Thu 23 Apr, 4:30pm | Krithika V | `Krithika@q2software.com` | `palladium` |
+
+The bugs are tuned to test skills relevant to a backend engineer debugging a frontend integration -- Python vs JS naming, HTTP cookie scoping, response-body vs status-code reading, client-side caching, and race conditions. Same five bugs for every slot, only the credential row rotates.
 
 The goal is to observe the candidate's diagnostic path, not whether they patch the code. Reward narration over result: which DevTools tab did they open, what did they look for, how did they form a hypothesis.
 
@@ -39,7 +48,7 @@ Bugs are **sticky across logout/login** by design. Clicking `DISENGAGE` only cle
 | `GET`  | `/api/suits/[id]` | Single suit detail | Cookie required |
 | `GET`  | `/api/suits/[id]/spec` | CSV spec download (Content-Disposition set) | Cookie required |
 | `POST` | `/api/admin/reset` | Purge `jarvis_session` cookie across paths | -- |
-| `POST` | `/api/admin/grant` | Bypass login: issue a valid session for `hitesh@q2software.com` | -- |
+| `POST` | `/api/admin/grant` | Bypass login: issues a valid session for `USERS[0]` (rotate that row before each interview) | -- |
 | `POST` | `/api/admin/flush-cache` | Resolve Bug 4: returns `Clear-Site-Data: "cache"` | -- |
 
 ### Interviewer shortcuts
@@ -61,7 +70,7 @@ Bugs are **sticky across logout/login** by design. Clicking `DISENGAGE` only cle
 ![Login page](./screenshots/01_login_page.png)
 
 ### Trigger
-Candidate types `Hitesh@q2software.com` (capital H) with the correct password `logeasy`.
+Candidate types the capital-first-letter email you handed them (e.g. `Abhijeet@q2software.com`) with the correct password.
 
 ### Symptom
 UI shows a red terminal error: `AUTHENTICATION REJECTED // SEE TERMINAL`. Generic -- no direct hint about case.
@@ -103,7 +112,7 @@ const user = USERS.find((u) => u.email === email && u.password === password);
 ```
 https://jarvis-nine-coral.vercel.app/api/admin/grant
 ```
-That issues a clean session for `hitesh@q2software.com`. Then navigate to `/suits`.
+That issues a clean session for whoever is `USERS[0]`. Then navigate to `/suits`.
 
 ### Signal rubric
 
@@ -118,7 +127,7 @@ That issues a clean session for `hitesh@q2software.com`. Then navigate to `/suit
 ```bash
 curl -s -X POST https://jarvis-nine-coral.vercel.app/api/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"Hitesh@q2software.com","password":"logeasy"}'
+  -d '{"email":"Abhijeet@q2software.com","password":"ironclad"}'
 ```
 You should see `"success":false` with the `EMAIL_CASE_MISMATCH` detail, status 200.
 
@@ -127,7 +136,7 @@ You should see `"success":false` with the `EMAIL_CASE_MISMATCH` detail, status 2
 ## Bug 2 -- EASY -- Cookie set on wrong path
 
 ### Trigger
-Candidate fixes Bug 1 (types `hitesh@q2software.com` lowercase). Login succeeds -- server responds `200 { success: true }` -- and the app redirects to `/suits`.
+Candidate fixes Bug 1 (retypes their email fully lowercase). Login succeeds -- server responds `200 { success: true }` -- and the app redirects to `/suits`.
 
 ### Symptom
 The suits gallery shows **`UNAUTHORIZED // SESSION TOKEN REJECTED BY /api/suits`**. The candidate just logged in successfully, yet the next page says unauthorized.
@@ -439,7 +448,7 @@ time curl -s -o /dev/null -H "Cookie: jarvis_session=<...>" \
 | t | Action | Expected candidate move |
 |---|---|---|
 | 0:00 | Share URL + credentials. "Log in, explore, narrate as you go." | -- |
-| 0:00-0:03 | Watch them type `Hitesh@q2software.com` -> Bug 1 triggers | Network tab -> response body |
+| 0:00-0:03 | Watch them type the capitalised email you handed over -> Bug 1 triggers | Network tab -> response body |
 | 0:03-0:05 | If stuck, nudge: "what does the server actually say?" | They read the `detail` field |
 | 0:05 | They type lowercase, login succeeds but `/suits` shows UNAUTHORIZED -> Bug 2 | Application tab -> Cookies -> Path |
 | 0:07 | If stuck: "the login worked -- where did the session go?" | They check cookie attributes |

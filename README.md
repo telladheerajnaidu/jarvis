@@ -11,15 +11,20 @@ npm run dev
 # open http://localhost:3000
 ```
 
-## Credentials (give to candidate)
+## Credentials (interviewer only -- hand out one per candidate)
 
-| User | Email | Password |
-|---|---|---|
-| Hitesh Singh Solanki | `Hitesh@q2software.com` | `logeasy` |
-| Vikram Mehta | `vikram@q2software.com` | `fintech` |
-| Priya Sharma | `priya@q2software.com` | `banking` |
+| Candidate | Interview slot | Email to hand over | Real password |
+|---|---|---|---|
+| Abhijeet Kumar | Mon 20 Apr 2026, 4:00pm | `Abhijeet@q2software.com` | `ironclad` |
+| P Shreya | Tue 21 Apr 2026, 4:00pm | `Shreya@q2software.com` | `harmonic` |
+| Hitesh Singh Solanki | Thu 23 Apr 2026, 4:00pm | `Hitesh@q2software.com` | `kevlar` |
+| Krithika V | Thu 23 Apr 2026, 4:30pm | `Krithika@q2software.com` | `palladium` |
 
-**Hint to withhold:** emails are lowercase. (That's bug L1.)
+Hand the candidate the capitalised email (that is the L1 trap) and the password. The lowercase version is the real value on the server.
+
+USERS[0] in `lib/auth.ts` is the candidate `/api/admin/grant` will unlock. Reorder before each session so the first row matches who you are interviewing.
+
+**Hint to withhold:** emails are lowercase on the server. (That's bug L1.)
 
 ---
 
@@ -27,7 +32,7 @@ npm run dev
 
 ### L1 — Case-sensitive email comparison
 - **File:** `app/api/login/route.ts`
-- **Symptom:** Login with `Hitesh@q2software.com` fails. UI shows generic "Authentication failed".
+- **Symptom:** Login with the capital-first-letter email (e.g. `Abhijeet@q2software.com`) fails. UI shows generic "Authentication failed".
 - **How to find:** Network tab -> login response is `200 OK` with body `{success: false, error: "INVALID_CREDENTIALS", detail: "EMAIL_CASE_MISMATCH: email comparison is case-sensitive on the server"}`.
 - **DevTools skill:** Inspecting response body (not just status code).
 - **Fix:** Compare `u.email.toLowerCase() === email.toLowerCase()`.
@@ -64,13 +69,13 @@ npm run dev
 
 ## Interview flow (15-20 min for DevTools round)
 
-1. Give candidate the URL and Hitesh's credentials.
+1. Give the candidate the URL and the credentials from the row above that matches their slot.
 2. Ask: "Log in and browse the suit registry. Narrate what you see, what you try, what's broken, and how you'd fix it."
 3. Sit quiet. Let them drive.
 4. Score against the rubric.
 
 Expected progression:
-- They type `Hitesh@q2software.com` first -> hits L1 -> good candidate opens Network tab.
+- They type the capitalised email first -> hits L1 -> good candidate opens Network tab.
 - Once logged in -> hits L3 -> good candidate opens Application -> Cookies.
 - On detail page -> hits S4 (missing fields).
 - Tries filter -> might notice M1 or H1.

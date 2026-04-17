@@ -3,10 +3,14 @@ import crypto from "crypto";
 const SECRET = process.env.JARVIS_SECRET || "stark-mainframe-dev-secret";
 export const COOKIE_NAME = "jarvis_session";
 
+// USERS[0] is the "primary" candidate -- /api/admin/grant hands them a session.
+// Rotate the ordering when you swap interviews. Do not mirror these values
+// anywhere the client can read -- placeholder text, env vars, docstrings, etc.
 export const USERS: { email: string; password: string; name: string }[] = [
-  { email: "hitesh@q2software.com", password: "logeasy", name: "Hitesh Singh Solanki" },
-  { email: "vikram@q2software.com", password: "fintech", name: "Vikram Mehta" },
-  { email: "priya@q2software.com", password: "banking", name: "Priya Sharma" },
+  { email: "abhijeet@q2software.com", password: "ironclad", name: "Abhijeet Kumar" },
+  { email: "shreya@q2software.com", password: "harmonic", name: "P Shreya" },
+  { email: "hitesh@q2software.com", password: "kevlar", name: "Hitesh Singh Solanki" },
+  { email: "krithika@q2software.com", password: "palladium", name: "Krithika V" },
 ];
 
 export function sign(payload: object): string {
