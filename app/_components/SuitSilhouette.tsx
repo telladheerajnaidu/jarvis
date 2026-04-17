@@ -8,17 +8,17 @@ type Props = {
 };
 
 const PALETTES: Record<string, { primary: string; accent: string }> = {
-  mk3: { primary: "#b91c1c", accent: "#f59e0b" },
-  mk7: { primary: "#b91c1c", accent: "#f59e0b" },
-  mk42: { primary: "#b45309", accent: "#fbbf24" },
-  mk43: { primary: "#b91c1c", accent: "#f59e0b" },
-  mk46: { primary: "#b91c1c", accent: "#f59e0b" },
-  mk50: { primary: "#dc2626", accent: "#fbbf24" },
-  mk85: { primary: "#7f1d1d", accent: "#fbbf24" },
+  mk3: { primary: "#9333ea", accent: "#f59e0b" },
+  mk7: { primary: "#9333ea", accent: "#f59e0b" },
+  mk42: { primary: "#0891b2", accent: "#22d3ee" },
+  mk43: { primary: "#9333ea", accent: "#f59e0b" },
+  mk46: { primary: "#9333ea", accent: "#f59e0b" },
+  mk50: { primary: "#ec4899", accent: "#22d3ee" },
+  mk85: { primary: "#6b21a8", accent: "#22d3ee" },
 };
 
 export function paletteFor(id: string) {
-  return PALETTES[id] || { primary: "#b91c1c", accent: "#f59e0b" };
+  return PALETTES[id] || { primary: "#9333ea", accent: "#f59e0b" };
 }
 
 function toRoman(n: number): string {
@@ -42,20 +42,20 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
         <defs>
           <radialGradient id={`glow-${mark}`} cx="0.5" cy="0.5" r="0.5">
             <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.35" />
-            <stop offset="60%" stopColor="#991b1b" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#991b1b" stopOpacity="0" />
+            <stop offset="60%" stopColor="#a855f7" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
           </radialGradient>
           <radialGradient id={`reactor-${mark}`} cx="0.5" cy="0.5" r="0.5">
             <stop offset="0%" stopColor="#ffffff" />
             <stop offset="25%" stopColor="#e0f2fe" />
             <stop offset="60%" stopColor="#67e8f9" />
-            <stop offset="100%" stopColor="#991b1b" stopOpacity="0" />
+            <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
           </radialGradient>
         </defs>
 
         <circle cx="150" cy="150" r="140" fill={`url(#glow-${mark})`} />
 
-        <g stroke="#dc2626" strokeOpacity="0.25" fill="none">
+        <g stroke="#ec4899" strokeOpacity="0.25" fill="none">
           <circle cx="150" cy="150" r="135" strokeDasharray="2 6" />
           <circle cx="150" cy="150" r="110" strokeDasharray="4 4" />
           <circle cx="150" cy="150" r="85" strokeDasharray="1 3" />
@@ -65,7 +65,7 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
         </g>
 
         {/* crosshair ticks */}
-        <g stroke="#dc2626" strokeOpacity="0.5">
+        <g stroke="#ec4899" strokeOpacity="0.5">
           <line x1="150" y1="10" x2="150" y2="24" />
           <line x1="150" y1="276" x2="150" y2="290" />
           <line x1="10" y1="150" x2="24" y2="150" />
@@ -85,14 +85,14 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
 
         {/* arc reactor core */}
         <g>
-          <circle cx="150" cy="150" r="28" fill="none" stroke="#991b1b" strokeOpacity="0.6" />
-          <circle cx="150" cy="150" r="22" fill="none" stroke="#dc2626" strokeOpacity="0.8" />
+          <circle cx="150" cy="150" r="28" fill="none" stroke="#a855f7" strokeOpacity="0.6" />
+          <circle cx="150" cy="150" r="22" fill="none" stroke="#ec4899" strokeOpacity="0.8" />
           <circle cx="150" cy="150" r="16" fill="#06b6d4" fillOpacity="0.25" />
           <circle cx="150" cy="150" r="10" fill="#bef264" fillOpacity="0.9">
             <animate attributeName="r" values="9;11;9" dur="2.4s" repeatCount="indefinite" />
             <animate attributeName="fill-opacity" values="0.85;1;0.85" dur="2.4s" repeatCount="indefinite" />
           </circle>
-          <circle cx="150" cy="150" r="5" fill="#fef2f2" />
+          <circle cx="150" cy="150" r="5" fill="#e0e7ff" />
           {/* radial coils */}
           {Array.from({ length: 8 }).map((_, i) => {
             const a = (i / 8) * Math.PI * 2;
@@ -127,7 +127,7 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
         {codename && (
           <div
             className="text-[10px] tracking-[0.4em] mt-3 font-mono"
-            style={{ color: "#dc2626", opacity: 0.85 }}
+            style={{ color: "#ec4899", opacity: 0.85 }}
           >
             &quot;{codename.toUpperCase()}&quot;
           </div>

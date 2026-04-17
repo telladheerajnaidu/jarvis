@@ -6,23 +6,23 @@ const config: Config = {
     extend: {
       colors: {
         jarvis: {
-          bg: "#050202",
-          panel: "#0a0303",
-          cyan: "#fca5a5",
-          gold: "#fbbf24",
-          red: "#dc2626",
-          crimson: "#991b1b",
-          blood: "#450a0a",
-          ivory: "#fef2f2",
-          bone: "#fef2f2",
-          grid: "#2a0a0a",
+          bg: "#08081a",
+          panel: "#10102a",
+          cyan: "#22d3ee",
+          gold: "#f472b6",
+          red: "#ec4899",
+          crimson: "#a855f7",
+          blood: "#1e1b4b",
+          ivory: "#e0e7ff",
+          bone: "#f5f3ff",
+          grid: "#1e1b4b",
         },
       },
       fontFamily: {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       boxShadow: {
-        hud: "0 0 32px rgba(220,38,38,0.35), inset 0 0 14px rgba(251,191,36,0.18)",
+        hud: "0 0 32px rgba(236,72,153,0.35), inset 0 0 14px rgba(34,211,238,0.22)",
       },
       animation: {
         flicker: "flicker 3s linear infinite",
@@ -39,8 +39,8 @@ const config: Config = {
           "100%": { transform: "translateY(100%)" },
         },
         pulseReactor: {
-          "0%,100%": { boxShadow: "0 0 20px #dc2626, 0 0 40px #fbbf24" },
-          "50%": { boxShadow: "0 0 10px #dc2626, 0 0 20px #fbbf24" },
+          "0%,100%": { boxShadow: "0 0 20px #ec4899, 0 0 40px #22d3ee" },
+          "50%": { boxShadow: "0 0 10px #ec4899, 0 0 20px #22d3ee" },
         },
       },
     },

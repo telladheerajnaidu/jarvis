@@ -7,15 +7,15 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
       <defs>
         <radialGradient id="core" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#e0f7ff" />
-          <stop offset="30%" stopColor="#fbbf24" />
-          <stop offset="70%" stopColor="#dc2626" />
+          <stop offset="30%" stopColor="#22d3ee" />
+          <stop offset="70%" stopColor="#ec4899" />
           <stop offset="100%" stopColor="#020617" />
         </radialGradient>
       </defs>
 
       {/* Outer ring with tick marks */}
       <g className="ring-rotate-slow" style={{ transformOrigin: `${c}px ${c}px` }}>
-        <circle cx={c} cy={c} r={c - 8} fill="none" stroke="#fbbf24" strokeOpacity="0.35" strokeWidth="1" />
+        <circle cx={c} cy={c} r={c - 8} fill="none" stroke="#22d3ee" strokeOpacity="0.35" strokeWidth="1" />
         {Array.from({ length: 60 }).map((_, i) => {
           const angle = (i * 360) / 60;
           const isMajor = i % 5 === 0;
@@ -29,7 +29,7 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
               y1={c + r1 * Math.sin(rad)}
               x2={c + r2 * Math.cos(rad)}
               y2={c + r2 * Math.sin(rad)}
-              stroke={isMajor ? "#fbbf24" : "#dc2626"}
+              stroke={isMajor ? "#22d3ee" : "#ec4899"}
               strokeWidth={isMajor ? 1.5 : 0.7}
               strokeOpacity="0.7"
             />
@@ -40,7 +40,7 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
           const rad = (deg * Math.PI) / 180;
           const x = c + (c - 8) * Math.cos(rad);
           const y = c + (c - 8) * Math.sin(rad);
-          return <circle key={deg} cx={x} cy={y} r="4" fill="#fbbf24" />;
+          return <circle key={deg} cx={x} cy={y} r="4" fill="#22d3ee" />;
         })}
       </g>
 
@@ -48,10 +48,10 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
       <g className="ring-rotate-mid" style={{ transformOrigin: `${c}px ${c}px` }}>
         <circle
           cx={c} cy={c} r={c - 52}
-          fill="none" stroke="#fbbf24" strokeOpacity="0.45"
+          fill="none" stroke="#22d3ee" strokeOpacity="0.45"
           strokeWidth="1" strokeDasharray="2 6"
         />
-        <circle cx={c} cy={c} r={c - 60} fill="none" stroke="#dc2626" strokeOpacity="0.3" strokeWidth="1" />
+        <circle cx={c} cy={c} r={c - 60} fill="none" stroke="#ec4899" strokeOpacity="0.3" strokeWidth="1" />
         {Array.from({ length: 4 }).map((_, i) => {
           const a = (i * 360) / 4 + 22;
           const rad = (a * Math.PI) / 180;
@@ -62,7 +62,7 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
                 y1={c + (c - 70) * Math.sin(rad)}
                 x2={c + (c - 50) * Math.cos(rad)}
                 y2={c + (c - 50) * Math.sin(rad)}
-                stroke="#b45309"
+                stroke="#0891b2"
                 strokeWidth="1.5"
               />
             </g>
@@ -72,15 +72,15 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
 
       {/* Inner ring */}
       <g className="ring-rotate-fast" style={{ transformOrigin: `${c}px ${c}px` }}>
-        <circle cx={c} cy={c} r={c - 100} fill="none" stroke="#fbbf24" strokeOpacity="0.6" strokeWidth="1.2" strokeDasharray="60 10 20 10" />
-        <circle cx={c} cy={c} r={c - 120} fill="none" stroke="#fbbf24" strokeOpacity="0.25" strokeWidth="0.6" />
+        <circle cx={c} cy={c} r={c - 100} fill="none" stroke="#22d3ee" strokeOpacity="0.6" strokeWidth="1.2" strokeDasharray="60 10 20 10" />
+        <circle cx={c} cy={c} r={c - 120} fill="none" stroke="#22d3ee" strokeOpacity="0.25" strokeWidth="0.6" />
       </g>
 
       {/* Crosshair */}
-      <line x1={c} y1="20" x2={c} y2="50" stroke="#fbbf24" strokeOpacity="0.7" strokeWidth="1" />
-      <line x1={c} y1={size - 20} x2={c} y2={size - 50} stroke="#fbbf24" strokeOpacity="0.7" strokeWidth="1" />
-      <line x1="20" y1={c} x2="50" y2={c} stroke="#fbbf24" strokeOpacity="0.7" strokeWidth="1" />
-      <line x1={size - 20} y1={c} x2={size - 50} y2={c} stroke="#fbbf24" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1={c} y1="20" x2={c} y2="50" stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1={c} y1={size - 20} x2={c} y2={size - 50} stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1="20" y1={c} x2="50" y2={c} stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1={size - 20} y1={c} x2={size - 50} y2={c} stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
 
       {/* Center glow */}
       <circle cx={c} cy={c} r={c - 160} fill="url(#core)" opacity="0.7" />
@@ -93,7 +93,7 @@ export function CircularDial({
   value,
   max = 100,
   unit = "",
-  color = "#fbbf24",
+  color = "#22d3ee",
   size = 110,
 }: {
   label: string;
@@ -240,8 +240,8 @@ export function Holosphere({ size = 460 }: { size?: number }) {
           }}
         >
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: "visible" }}>
-            <circle cx={c} cy={c} r={c - 4} fill="none" stroke="#fbbf24" strokeOpacity="0.42" strokeWidth="1" />
-            <circle cx={c} cy={c} r={c - 18} fill="none" stroke="#dc2626" strokeOpacity="0.22" strokeWidth="0.6" strokeDasharray="2 6" />
+            <circle cx={c} cy={c} r={c - 4} fill="none" stroke="#22d3ee" strokeOpacity="0.42" strokeWidth="1" />
+            <circle cx={c} cy={c} r={c - 18} fill="none" stroke="#ec4899" strokeOpacity="0.22" strokeWidth="0.6" strokeDasharray="2 6" />
             {ticks.map((_, i) => {
               const angle = (i * 360) / 72;
               const isMajor = i % 6 === 0;
@@ -255,7 +255,7 @@ export function Holosphere({ size = 460 }: { size?: number }) {
                   y1={c + r1 * Math.sin(rad)}
                   x2={c + r2 * Math.cos(rad)}
                   y2={c + r2 * Math.sin(rad)}
-                  stroke={isMajor ? "#fbbf24" : "#dc2626"}
+                  stroke={isMajor ? "#22d3ee" : "#ec4899"}
                   strokeOpacity={isMajor ? 0.85 : 0.35}
                   strokeWidth={isMajor ? 1.2 : 0.6}
                 />
@@ -303,16 +303,16 @@ export function Holosphere({ size = 460 }: { size?: number }) {
           style={{
             inset: "40%",
             background:
-              "radial-gradient(circle, #fff7ed 0%, #fbbf24 25%, #dc2626 60%, #7f1d1d 82%, transparent 95%)",
+              "radial-gradient(circle, #fff7ed 0%, #22d3ee 25%, #ec4899 60%, #6b21a8 82%, transparent 95%)",
             boxShadow:
-              "0 0 40px #dc2626, 0 0 80px rgba(253, 224, 71, 0.45), inset 0 0 20px rgba(255,255,255,0.35)",
+              "0 0 40px #ec4899, 0 0 80px rgba(253, 224, 71, 0.45), inset 0 0 20px rgba(255,255,255,0.35)",
           }}
         />
         <div
           className="absolute rounded-full"
           style={{
             inset: "46%",
-            background: "radial-gradient(circle, #ffffff 0%, #fbbf24 70%, transparent 100%)",
+            background: "radial-gradient(circle, #ffffff 0%, #22d3ee 70%, transparent 100%)",
             boxShadow: "0 0 18px #ffffff",
           }}
         />

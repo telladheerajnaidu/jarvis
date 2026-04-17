@@ -5,18 +5,14 @@ export const COOKIE_NAME = "jarvis_session";
 
 type User = { email: string; password: string; name: string };
 
-// Candidate creds live in env var JARVIS_USERS (JSON array of {email,password,name}).
-// Fallback is a single generic demo cred so local dev works without env setup.
+// Single admin cred, pulled from env (JARVIS_ADMIN_EMAIL / JARVIS_ADMIN_PASSWORD /
+// JARVIS_ADMIN_NAME). Fallback is a generic demo cred so local dev works without env setup.
 // Do not commit real creds to this file.
 function loadUsers(): User[] {
-  const raw = process.env.JARVIS_USERS;
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed as User[];
-    } catch {}
-  }
-  return [{ email: "demo@example.com", password: "demo", name: "Demo User" }];
+  const email = process.env.JARVIS_ADMIN_EMAIL || "demo@example.com";
+  const password = process.env.JARVIS_ADMIN_PASSWORD || "demo";
+  const name = process.env.JARVIS_ADMIN_NAME || "Admin";
+  return [{ email, password, name }];
 }
 
 export const USERS: User[] = loadUsers();

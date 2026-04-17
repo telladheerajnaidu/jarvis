@@ -13,17 +13,19 @@ npm run dev
 
 ## Credentials
 
-Creds load from the `JARVIS_USERS` env var (JSON). Keep the real per-interview roster out of the repo.
+Single admin cred. Values come from env vars so nothing real ever lands in the repo.
 
-Local dev without env setup falls back to a single demo cred: `demo@example.com` / `demo`.
+Set these three in `.env.local` for local dev and in Vercel (Project Settings -> Environment Variables) for prod:
 
-Per-interview setup:
-1. Put the real roster in `.env.local` (gitignored) and/or Vercel project env:
-   ```
-   JARVIS_USERS=[{"email":"first@example.com","password":"xxxx","name":"First Last"}, ...]
-   ```
-2. Hand the candidate the **capital-first-letter** email (that is the L1 trap) and the password. The lowercase version is the real value on the server.
-3. `USERS[0]` is the candidate `/api/admin/grant` unlocks -- list them first when swapping interviews.
+```
+JARVIS_ADMIN_EMAIL=admin@example.com
+JARVIS_ADMIN_PASSWORD=yourpassword
+JARVIS_ADMIN_NAME=Admin
+```
+
+Hand the candidate the **capital-first-letter** email (that is the L1 trap) and the password. The lowercase version is the real value on the server.
+
+Default fallback if env is unset: `demo@example.com` / `demo` (useful for local smoke-testing without `.env.local`).
 
 **Hint to withhold:** emails are lowercase on the server. (That's bug L1.)
 

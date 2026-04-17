@@ -141,8 +141,8 @@ export function BorderBeam({
   size = 50,
   duration = 6,
   delay = 0,
-  colorFrom = "#fbbf24",
-  colorTo = "#b45309",
+  colorFrom = "#22d3ee",
+  colorTo = "#0891b2",
   borderWidth = 1,
   className,
 }: {
@@ -186,7 +186,7 @@ export function BorderBeam({
 // ============================================================
 
 export function GlowEffect({
-  colors = ["#fbbf24", "#991b1b", "#b45309", "#fbbf24"],
+  colors = ["#22d3ee", "#a855f7", "#0891b2", "#22d3ee"],
   mode = "rotate",
   blur = "medium",
   duration = 5,
@@ -250,7 +250,7 @@ type Circle = {
 export function Particles({
   className = "",
   quantity = 80,
-  color = "#fbbf24",
+  color = "#22d3ee",
   size = 0.4,
   staticity = 50,
   ease = 50,
@@ -526,7 +526,7 @@ export function StaggerItem({
 // ============================================================
 
 export function PulseGlow({
-  color = "#fbbf24",
+  color = "#22d3ee",
   size = 8,
   className,
 }: {
@@ -557,7 +557,7 @@ export function PulseGlow({
 
 export function Meteors({
   number = 20,
-  color = "#fbbf24",
+  color = "#22d3ee",
   className,
 }: {
   number?: number;
@@ -832,7 +832,7 @@ export function Ripple({
 export function ShineBorder({
   duration = 10,
   borderWidth = 1,
-  colors = ["#fbbf24", "#b45309", "#fbbf24"],
+  colors = ["#22d3ee", "#0891b2", "#22d3ee"],
   className,
 }: {
   duration?: number;
@@ -901,7 +901,7 @@ export function ShimmerText({
   children,
   className,
   duration = 3,
-  from = "#fbbf24",
+  from = "#22d3ee",
   mid = "#ffffff",
 }: {
   children: React.ReactNode;
@@ -1000,8 +1000,8 @@ export function ChromaticText({
   children,
   className,
   intensity = 6,
-  rColor = "#dc2626",
-  gColor = "#fbbf24",
+  rColor = "#ec4899",
+  gColor = "#22d3ee",
 }: {
   children: React.ReactNode;
   className?: string;
