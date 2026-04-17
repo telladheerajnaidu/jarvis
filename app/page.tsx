@@ -215,28 +215,26 @@ export default function LoginPage() {
         >
           V O I C E &nbsp;&middot;&nbsp; O F &nbsp;&middot;&nbsp; I N T E L L I G E N C E
         </motion.div>
-        <motion.h1
-          initial={{ opacity: 0, letterSpacing: "0.8em" }}
-          animate={{ opacity: 1, letterSpacing: "0.32em" }}
-          transition={{ delay: 0.15, duration: 1.1, ease: "easeOut" }}
-          className="font-light leading-none mt-3"
-          style={{
-            fontSize: "clamp(2.4rem, 9vw, 6.6rem)",
-          }}
-        >
-          <ShimmerText from="#e0e7ff" mid="#67e8f9" duration={7}>
-            J.A.R.V.I.S.
-          </ShimmerText>
-        </motion.h1>
+
+        <HeroRune3D />
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.55 }}
-          className="flex items-center justify-center gap-3 mt-3 text-[9px] tracking-[0.5em] text-jarvis-crimson/90"
+          className="flex items-center justify-center gap-3 mt-2 text-[9px] tracking-[0.55em] text-jarvis-ivory/55"
         >
-          <span className="h-px w-10 bg-jarvis-crimson/40" />
-          <span>MK L VIII &nbsp;·&nbsp; REVISION 4812.1</span>
-          <span className="h-px w-10 bg-jarvis-crimson/40" />
+          <span className="h-px w-8 bg-jarvis-ivory/20" />
+          <span>J &middot; A &middot; R &middot; V &middot; I &middot; S</span>
+          <span className="h-px w-8 bg-jarvis-ivory/20" />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="text-[9px] tracking-[0.5em] text-jarvis-crimson/80 mt-1.5"
+        >
+          MK L VIII &nbsp;·&nbsp; REVISION 4812.1
         </motion.div>
       </div>
 
@@ -416,6 +414,104 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// ================= HeroRune3D — extruded sci-fi title =================
+function HeroRune3D() {
+  const { x, y } = useMouseFromCenter(55, 16);
+  const rotY = useTransform(x, (v) => v * 14);
+  const rotX = useTransform(y, (v) => -v * 8);
+  // Elder Futhark transliteration of "JARVIS":
+  // J=ᛃ (Jera) · A=ᚨ (Ansuz) · R=ᚱ (Raidho) · V=ᚹ (Wunjo) · I=ᛁ (Isa) · S=ᛋ (Sowilo)
+  const glyphs = ["ᛃ", "ᚨ", "ᚱ", "ᚹ", "ᛁ", "ᛋ"];
+  // stack copies in z-space for extrusion
+  const stack = Array.from({ length: 8 });
+  return (
+    <div
+      className="relative inline-block mt-3"
+      style={{ perspective: 1400, transformStyle: "preserve-3d" }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, ease: "easeOut" }}
+        style={{
+          rotateX: rotX,
+          rotateY: rotY,
+          transformStyle: "preserve-3d",
+          transformPerspective: 1400,
+          willChange: "transform",
+        }}
+        className="relative"
+      >
+        {stack.map((_, i) => {
+          const depth = -(i + 1) * 3;
+          const fade = 1 - i * 0.13;
+          const tint = i === 0 ? "#e0e7ff" : i < 3 ? "#c4b5fd" : i < 5 ? "#a855f7" : "#4c1d95";
+          return (
+            <div
+              key={i}
+              aria-hidden={i !== 0}
+              className="absolute inset-0 flex items-center justify-center gap-[0.4em] select-none pointer-events-none"
+              style={{
+                fontSize: "clamp(1.8rem, 5.6vw, 4.2rem)",
+                letterSpacing: "0.2em",
+                fontWeight: 300,
+                color: tint,
+                opacity: fade,
+                transform: `translateZ(${depth}px)`,
+                filter: i === 0 ? "drop-shadow(0 0 18px rgba(103,232,249,0.55))" : "none",
+              }}
+            >
+              {glyphs.map((g, j) => (
+                <span key={j}>{g}</span>
+              ))}
+            </div>
+          );
+        })}
+        {/* Foreground glyph row with gradient + shimmer */}
+        <div
+          className="relative flex items-center justify-center gap-[0.4em] leading-none"
+          style={{
+            fontSize: "clamp(1.8rem, 5.6vw, 4.2rem)",
+            letterSpacing: "0.2em",
+            fontWeight: 300,
+          }}
+        >
+          {glyphs.map((g, i) => (
+            <motion.span
+              key={i}
+              initial={{ opacity: 0, y: 8, rotateX: -30 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ delay: 0.12 + i * 0.07, duration: 0.6, ease: "easeOut" }}
+              style={{
+                background: "linear-gradient(180deg, #f5f3ff 0%, #67e8f9 55%, #a855f7 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                textShadow: "0 0 1px rgba(103,232,249,0.4)",
+                filter: "drop-shadow(0 0 10px rgba(244, 114, 182, 0.25))",
+              }}
+            >
+              {g}
+            </motion.span>
+          ))}
+        </div>
+        {/* scanning highlight line */}
+        <motion.div
+          aria-hidden
+          className="absolute left-0 right-0 h-[2px] pointer-events-none"
+          style={{
+            top: "50%",
+            background: "linear-gradient(90deg, transparent, rgba(103,232,249,0.85), transparent)",
+            filter: "blur(1px)",
+          }}
+          animate={{ top: ["-5%", "105%"] }}
+          transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.div>
+    </div>
   );
 }
 
