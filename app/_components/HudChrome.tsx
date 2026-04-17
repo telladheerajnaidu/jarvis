@@ -26,8 +26,8 @@ export function TopBar({ session }: { session?: string }) {
       transition={{ duration: 0.5 }}
       className="border-b border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm"
     >
-      <div className="flex items-center justify-between px-6 py-2 gap-6">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center justify-between px-4 sm:px-6 py-2 gap-3 sm:gap-6">
+        <div className="flex items-center gap-3 sm:gap-4">
           <motion.div
             className="arc-reactor"
             style={{ width: 34, height: 34 }}
@@ -39,22 +39,22 @@ export function TopBar({ session }: { session?: string }) {
             <TextScramble className="text-[10px] tracking-[0.4em] text-jarvis-cyan" duration={0.5}>
               J.A.R.V.I.S.
             </TextScramble>
-            <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/50">
+            <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60 hidden sm:block">
               STARK INDUSTRIES MAINFRAME v8.4.1
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-6 text-[10px] tracking-widest text-jarvis-cyan/70">
-          <span>UTC {time}</span>
-          <span className="text-jarvis-cyan/40">|</span>
-          <span>{date}</span>
-          <span className="text-jarvis-cyan/40">|</span>
+        <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[10px] tracking-widest text-jarvis-cyan/80">
+          <span className="tabular-nums">UTC {time}</span>
+          <span className="text-jarvis-cyan/40 hidden sm:inline">|</span>
+          <span className="hidden sm:inline">{date}</span>
+          <span className="text-jarvis-cyan/40 hidden md:inline">|</span>
           <span className="flex items-center gap-1.5">
-            <PulseGlow color="#34d399" size={6} />
+            <PulseGlow color="#fde047" size={6} />
             <span className="ml-1">UPLINK</span>
           </span>
-          <span className="text-jarvis-cyan/40">|</span>
+          <span className="text-jarvis-cyan/40 hidden md:inline">|</span>
           <HexBadge>{session || "GUEST"}</HexBadge>
         </div>
       </div>
@@ -97,11 +97,11 @@ export function BottomBar() {
       initial={{ y: 40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="border-t border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm px-6 py-2 flex items-end justify-between gap-8"
+      className="border-t border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm px-4 sm:px-6 py-2 flex flex-wrap items-end justify-between gap-3 sm:gap-8"
     >
-      <div className="flex items-center gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/70">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/80">
         <span className="flex items-center gap-1.5">
-          <PulseGlow color="#34d399" size={6} />
+          <PulseGlow color="#fde047" size={6} />
           <span className="ml-1">SYSTEMS NOMINAL</span>
         </span>
         <span className="text-jarvis-cyan/40">|</span>
@@ -109,10 +109,10 @@ export function BottomBar() {
         <span>MEM <NumberTicker value={38} className="text-jarvis-cyan/70 text-[10px]" />%</span>
         <span>GPU <NumberTicker value={24} className="text-jarvis-cyan/70 text-[10px]" />%</span>
       </div>
-      <div className="flex-1 max-w-md">
+      <div className="flex-1 max-w-md hidden md:block">
         <WaveformBars count={48} />
       </div>
-      <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/50">
+      <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">
         MALIBU DATACENTER // 34&deg;N 118&deg;W
       </div>
     </motion.div>
@@ -121,11 +121,12 @@ export function BottomBar() {
 
 export function HudShell({ children, session }: { children: React.ReactNode; session?: string }) {
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative scene-3d">
       <div className="scanline-overlay" />
       <TopBar session={session} />
-      <div className="flex-1 grid grid-cols-[240px_1fr_240px] gap-4 p-4 relative">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[220px_1fr_220px] xl:grid-cols-[240px_1fr_240px] gap-3 sm:gap-4 p-3 sm:p-4 relative layer-3d">
         <motion.div
+          className="hidden lg:block float-3d slow"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -134,26 +135,26 @@ export function HudShell({ children, session }: { children: React.ReactNode; ses
             <TelemetryStream />
           </SidePanel>
         </motion.div>
-        <main className="relative">{children}</main>
+        <main className="relative min-w-0">{children}</main>
         <motion.div
-          className="space-y-4"
+          className="space-y-4 hidden lg:block float-3d"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <SidePanel title="DIAGNOSTICS">
             <div className="space-y-3 text-[10px] tracking-wider">
-              <Metric label="ARC REACTOR" value={98} color="#22d3ee" />
-              <Metric label="NEURAL LINK" value={86} color="#22d3ee" />
-              <Metric label="THRUSTERS" value={94} color="#22d3ee" />
+              <Metric label="ARC REACTOR" value={98} color="#ef4444" />
+              <Metric label="NEURAL LINK" value={86} color="#facc15" />
+              <Metric label="THRUSTERS" value={94} color="#fde047" />
               <Metric label="SHIELD MATRIX" value={72} color="#f59e0b" />
-              <Metric label="AMMO CORE" value={44} color="#ef4444" />
+              <Metric label="AMMO CORE" value={44} color="#dc2626" />
             </div>
           </SidePanel>
           <SidePanel title="FRIDAY">
             <div className="text-[10px] leading-5 text-jarvis-cyan/70">
               <div className="flex items-center gap-1.5">
-                <PulseGlow color="#22d3ee" size={5} />
+                <PulseGlow color="#fde047" size={5} />
                 <span className="ml-1 text-jarvis-cyan">LISTENING</span>
               </div>
               <div className="mt-2 italic opacity-70">

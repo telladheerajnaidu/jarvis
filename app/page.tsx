@@ -3,8 +3,23 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { ConcentricRings, TelemetryStream, WaveformBars, HexBadge } from "./_components/Rings";
-import { TextScramble, TypingText, FadeIn, Particles, PulseGlow, BorderBeam, NumberTicker } from "./_components/Animations";
+import { ConcentricRings, TelemetryStream, WaveformBars, HexBadge, Holosphere, HoloCube } from "./_components/Rings";
+import {
+  TextScramble,
+  TypingText,
+  FadeIn,
+  Particles,
+  PulseGlow,
+  BorderBeam,
+  NumberTicker,
+  Meteors,
+  Spotlight,
+  Magnetic,
+  Ripple,
+  ShineBorder,
+  AuroraBackground,
+  ShimmerText,
+} from "./_components/Animations";
 
 const BOOT_LINES = [
   "> INITIALIZING J.A.R.V.I.S. v8.4.1",
@@ -76,9 +91,11 @@ export default function LoginPage() {
   if (!booted) {
     return (
       <main className="min-h-screen hud-grid-fine relative flex items-center justify-center overflow-hidden">
+        <AuroraBackground intensity={0.55} />
         <div className="scanline-overlay" />
-        <Particles className="absolute inset-0" quantity={40} color="#22d3ee" size={0.3} />
-        <div className="max-w-2xl w-full p-8 font-mono text-jarvis-cyan text-xs">
+        <Meteors number={22} color="#ef4444" />
+        <Particles className="absolute inset-0" quantity={44} color="#facc15" size={0.3} />
+        <div className="max-w-2xl w-full p-4 sm:p-8 font-mono text-jarvis-ivory text-xs relative z-10">
           {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
             <motion.div
               key={i}
@@ -101,9 +118,12 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen hud-grid-fine relative overflow-hidden">
+    <main className="min-h-screen hud-grid-fine relative overflow-hidden scene-3d">
+      <AuroraBackground intensity={0.65} />
       <div className="scanline-overlay" />
-      <Particles className="absolute inset-0 z-0" quantity={60} color="#22d3ee" size={0.3} />
+      <Meteors number={26} color="#ef4444" />
+      <Particles className="absolute inset-0 z-0" quantity={60} color="#facc15" size={0.3} />
+      <Spotlight color="rgba(239, 68, 68, 0.22)" size={720} />
 
       {/* Top bar */}
       <motion.div
@@ -112,8 +132,8 @@ export default function LoginPage() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="border-b border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm relative z-10"
       >
-        <div className="flex items-center justify-between px-6 py-2">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-2">
+          <div className="flex items-center gap-3 sm:gap-4">
             <motion.div
               className="arc-reactor"
               style={{ width: 32, height: 32 }}
@@ -125,55 +145,64 @@ export default function LoginPage() {
               <TextScramble className="text-[10px] tracking-[0.4em] text-jarvis-cyan" duration={0.6}>
                 J.A.R.V.I.S.
               </TextScramble>
-              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/50">SECURE TERMINAL // MAINFRAME v8.4.1</div>
+              <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60 hidden sm:block">SECURE TERMINAL // MAINFRAME v8.4.1</div>
             </div>
           </div>
-          <div className="flex items-center gap-6 text-[10px] tracking-widest text-jarvis-cyan/70">
-            <span>UTC {nowIso}</span>
-            <span className="text-jarvis-cyan/40">|</span>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[10px] tracking-widest text-jarvis-cyan/80">
+            <span className="tabular-nums">UTC {nowIso}</span>
+            <span className="text-jarvis-cyan/40 hidden sm:inline">|</span>
             <span className="flex items-center gap-1.5">
-              <PulseGlow color="#34d399" size={6} />
+              <PulseGlow color="#fde047" size={6} />
               <span className="ml-1">UPLINK NOMINAL</span>
             </span>
-            <span className="text-jarvis-cyan/40">|</span>
+            <span className="text-jarvis-cyan/40 hidden md:inline">|</span>
             <HexBadge>SESSION 04</HexBadge>
           </div>
         </div>
       </motion.div>
 
-      {/* 3-column HUD */}
-      <div className="grid grid-cols-[260px_1fr_260px] gap-4 p-4 h-[calc(100vh-90px)] relative z-10">
+      {/* 3-column HUD — collapses on smaller screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_240px] xl:grid-cols-[260px_1fr_260px] gap-4 p-3 sm:p-4 lg:h-[calc(100vh-90px)] relative z-10 layer-3d">
         {/* Left -- telemetry */}
-        <FadeIn delay={0.2} direction="left">
-          <div className="hud-panel hud-corners p-4 overflow-hidden h-full relative">
-            <BorderBeam colorFrom="#22d3ee" colorTo="#0891b2" size={40} duration={8} />
-            <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-3 border-b border-jarvis-cyan/20 pb-2">
+        <FadeIn delay={0.2} direction="left" className="hidden lg:block">
+          <div className="hud-panel hud-corners p-4 overflow-hidden h-full relative float-3d slow">
+            <BorderBeam colorFrom="#ef4444" colorTo="#fde047" size={40} duration={8} />
+            <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/80 mb-3 border-b border-jarvis-cyan/25 pb-2">
               // BOOT TELEMETRY
             </div>
             <TelemetryStream />
           </div>
         </FadeIn>
 
-        {/* Center -- big ring + login */}
-        <section className="relative flex items-center justify-center">
+        {/* Center -- holosphere + login */}
+        <section className="relative flex items-center justify-center min-h-[560px] sm:min-h-[600px] py-6 lg:py-0">
           <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            className="absolute inset-0 flex items-center justify-center layer-3d"
+            initial={{ scale: 0.5, opacity: 0, rotateX: -30 }}
+            animate={{ scale: 1, opacity: 1, rotateX: 0 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
           >
-            <div className="relative w-[560px] h-[560px]">
-              <ConcentricRings size={560} />
+            <div className="relative w-[320px] h-[320px] sm:w-[460px] sm:h-[460px] lg:w-[560px] lg:h-[560px]">
+              <Ripple count={5} mainSize={220} color="rgba(239, 68, 68, 0.28)" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ConcentricRings size={320} />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center float-3d">
+                <div className="hidden sm:block lg:hidden"><Holosphere size={360} /></div>
+                <div className="hidden lg:block"><Holosphere size={460} /></div>
+                <div className="block sm:hidden"><Holosphere size={260} /></div>
+              </div>
             </div>
           </motion.div>
 
           <AnimatePresence>
             {formReady && (
               <motion.div
-                className="relative z-10 w-[360px]"
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="relative z-10 w-full max-w-[360px] px-2 sm:px-0 layer-3d"
+                initial={{ scale: 0.9, opacity: 0, y: 20, rotateX: -12 }}
+                animate={{ scale: 1, opacity: 1, y: 0, rotateX: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
+                style={{ transformStyle: "preserve-3d" }}
               >
                 <div className="flex flex-col items-center mb-5">
                   <motion.div
@@ -182,13 +211,9 @@ export default function LoginPage() {
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.1, type: "spring", stiffness: 150 }}
                   />
-                  <TextScramble
-                    className="text-xl tracking-[0.5em] text-jarvis-cyan"
-                    duration={0.8}
-                    characterSet="ABCDEFGHIJKLMNOPQRSTUVWXYZ.0123456789"
-                  >
+                  <ShimmerText className="text-xl tracking-[0.5em]" from="#ef4444" mid="#fef9c3" duration={4}>
                     J.A.R.V.I.S.
-                  </TextScramble>
+                  </ShimmerText>
                   <motion.div
                     className="text-[9px] text-jarvis-cyan/60 mt-1 tracking-[0.3em]"
                     initial={{ opacity: 0 }}
@@ -199,8 +224,9 @@ export default function LoginPage() {
                   </motion.div>
                 </div>
 
-                <div className="hud-panel hud-corners p-5 backdrop-blur-md relative overflow-hidden">
-                  <BorderBeam colorFrom="#22d3ee" colorTo="#f59e0b" size={60} duration={6} />
+                <div className="hud-panel hud-corners p-5 backdrop-blur-md relative overflow-hidden tilt-depth-sm">
+                  <Spotlight color="rgba(253, 224, 71, 0.18)" size={420} />
+                  <BorderBeam colorFrom="#ef4444" colorTo="#fde047" size={60} duration={6} />
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-[10px] text-jarvis-cyan/80 tracking-[0.3em]">
                       // AUTH REQUIRED
@@ -253,26 +279,29 @@ export default function LoginPage() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                    <motion.button
-                      type="submit"
-                      className="btn-hud w-full mt-2"
-                      disabled={loading}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {loading ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <motion.span
-                            className="inline-block w-3 h-3 border-2 border-jarvis-cyan/40 border-t-jarvis-cyan rounded-full"
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                          />
-                          AUTHENTICATING...
-                        </span>
-                      ) : (
-                        "ENGAGE"
-                      )}
-                    </motion.button>
+                    <Magnetic strength={0.25} className="block w-full">
+                      <motion.button
+                        type="submit"
+                        className="btn-hud w-full mt-2 relative overflow-hidden"
+                        disabled={loading}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <ShineBorder duration={4} colors={["#ef4444", "#fde047", "#ef4444"]} />
+                        {loading ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <motion.span
+                              className="inline-block w-3 h-3 border-2 border-jarvis-cyan/40 border-t-jarvis-cyan rounded-full"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                            />
+                            AUTHENTICATING...
+                          </span>
+                        ) : (
+                          "ENGAGE"
+                        )}
+                      </motion.button>
+                    </Magnetic>
                   </form>
 
                   <div className="mt-4 grid grid-cols-3 gap-2 text-[8px] text-jarvis-cyan/50 tracking-widest">
@@ -304,11 +333,11 @@ export default function LoginPage() {
         </section>
 
         {/* Right -- diagnostics */}
-        <FadeIn delay={0.2} direction="right">
+        <FadeIn delay={0.2} direction="right" className="hidden lg:block">
           <div className="space-y-4 h-full flex flex-col">
-            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-              <BorderBeam colorFrom="#f59e0b" colorTo="#22d3ee" size={35} duration={10} delay={3} />
-              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-3 border-b border-jarvis-cyan/20 pb-2">
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden float-3d">
+              <BorderBeam colorFrom="#fde047" colorTo="#ef4444" size={35} duration={10} delay={3} />
+              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/80 mb-3 border-b border-jarvis-cyan/25 pb-2">
                 // DIAGNOSTICS
               </div>
               <div className="space-y-3 text-[10px] tracking-wider">
@@ -320,8 +349,8 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70 mb-2">
+            <div className="hud-panel hud-corners p-4 relative overflow-hidden float-3d slow">
+              <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/80 mb-2">
                 // SYSTEM MESSAGE
               </div>
               <div className="text-[10px] leading-5 text-jarvis-cyan/80 italic">
@@ -354,11 +383,11 @@ export default function LoginPage() {
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="border-t border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm px-6 py-2 flex items-center justify-between relative z-10"
+        className="border-t border-jarvis-cyan/30 bg-jarvis-bg/70 backdrop-blur-sm px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 relative z-10"
       >
-        <div className="flex items-center gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/70">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] tracking-[0.25em] text-jarvis-cyan/80">
           <span className="flex items-center gap-1.5">
-            <PulseGlow color="#34d399" size={6} />
+            <PulseGlow color="#fde047" size={6} />
             <span className="ml-1">SYSTEMS NOMINAL</span>
           </span>
           <span className="text-jarvis-cyan/40">|</span>

@@ -6,7 +6,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { HudShell } from "../_components/HudChrome";
 import { HexBadge } from "../_components/Rings";
 import { SuitSilhouette, paletteFor } from "../_components/SuitSilhouette";
-import { AnimatedNumber, TextScramble, FadeIn, BorderBeam, PulseGlow, StaggerGroup, StaggerItem } from "../_components/Animations";
+import {
+  AnimatedNumber,
+  TextScramble,
+  FadeIn,
+  BorderBeam,
+  PulseGlow,
+  StaggerGroup,
+  StaggerItem,
+  Tilt3D,
+  Magnetic,
+  ShimmerText,
+  ShineBorder,
+  Meteors,
+} from "../_components/Animations";
 
 type SuitCard = {
   id: string;
@@ -137,7 +150,7 @@ export default function SuitsPage() {
     <HudShell session="MARK REGISTRY">
       <div className="h-full flex flex-col">
         <motion.header
-          className="mb-4 flex items-center justify-between"
+          className="mb-4 flex flex-wrap items-center justify-between gap-3"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -146,35 +159,40 @@ export default function SuitsPage() {
             <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan/60">
               // HALL OF ARMOR // MALIBU VAULT
             </div>
-            <TextScramble className="text-2xl tracking-[0.3em] text-jarvis-cyan inline-block" duration={0.6}>
+            <ShimmerText className="text-2xl tracking-[0.3em]" from="#ef4444" mid="#fef9c3" duration={4}>
               SUIT REGISTRY
-            </TextScramble>
+            </ShimmerText>
           </div>
           <div className="flex items-center gap-3">
             <HexBadge>{suits.length} UNITS</HexBadge>
-            <motion.button
-              className="btn-hud btn-gold"
-              onClick={resync}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              RESYNC TELEMETRY
-            </motion.button>
-            <motion.button
-              className="btn-hud"
-              onClick={logout}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              DISENGAGE
-            </motion.button>
+            <Magnetic strength={0.2}>
+              <motion.button
+                className="btn-hud btn-gold relative overflow-hidden"
+                onClick={resync}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <ShineBorder duration={6} colors={["#fde047", "#ef4444", "#fde047"]} />
+                RESYNC TELEMETRY
+              </motion.button>
+            </Magnetic>
+            <Magnetic strength={0.2}>
+              <motion.button
+                className="btn-hud"
+                onClick={logout}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                DISENGAGE
+              </motion.button>
+            </Magnetic>
           </div>
         </motion.header>
 
         <FadeIn delay={0.15}>
-          <div className="hud-panel hud-corners p-3 mb-3 flex items-center justify-between gap-6 relative overflow-hidden">
-            <BorderBeam colorFrom="#f59e0b" colorTo="#22d3ee" size={50} duration={8} />
-            <div className="flex items-center gap-6">
+          <div className="hud-panel hud-corners p-3 mb-3 flex flex-wrap items-center justify-between gap-4 sm:gap-6 relative overflow-hidden float-3d slow">
+            <BorderBeam colorFrom="#fde047" colorTo="#ef4444" size={50} duration={8} />
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div>
                 <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">HEARTBEAT</div>
                 <div className="text-3xl tracking-[0.25em] text-jarvis-gold font-mono">
@@ -218,7 +236,7 @@ export default function SuitsPage() {
         </FadeIn>
 
         <FadeIn delay={0.25}>
-          <form onSubmit={applyFilter} className="flex items-end gap-3 mb-4 hud-panel hud-corners p-3">
+          <form onSubmit={applyFilter} className="flex flex-wrap items-end gap-3 mb-4 hud-panel hud-corners p-3">
             <div className="flex-1 max-w-xs">
               <label className="text-[9px] text-jarvis-cyan/70 tracking-[0.3em]">
                 FILTER BY MARK NUMBER
@@ -274,13 +292,15 @@ export default function SuitsPage() {
         </AnimatePresence>
 
         {!loading && !error && (
-          <StaggerGroup stagger={0.06} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex-1 overflow-y-auto pr-1">
+          <StaggerGroup stagger={0.06} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 flex-1 overflow-y-auto pr-1 layer-3d">
             {suits.map((s) => (
               <StaggerItem key={s.id}>
+                <Tilt3D max={8} glare>
                 <Link
                   href={`/suits/${s.id}`}
                   className="hud-panel hud-corners p-4 group hover:bg-jarvis-cyan/5 transition-all block relative overflow-hidden"
                 >
+                  <ShineBorder duration={9} colors={["#ef4444", "#fde047", "transparent", "#ef4444"]} />
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">
@@ -323,6 +343,7 @@ export default function SuitsPage() {
                     </motion.span>
                   </div>
                 </Link>
+                </Tilt3D>
               </StaggerItem>
             ))}
           </StaggerGroup>

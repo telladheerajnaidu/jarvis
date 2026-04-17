@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useRef, useState, type ComponentPropsWithoutRef, type CSSProperties } from "react";
 import { motion, useSpring, useTransform, useInView, useMotionValue, type Transition } from "motion/react";
 
 // ============================================================
@@ -547,5 +547,380 @@ export function PulseGlow({
         style={{ backgroundColor: color, width: size, height: size }}
       />
     </span>
+  );
+}
+
+// ============================================================
+// Meteors — streaking diagonal meteor particles
+// Adapted from magic-ui / aceternity-ui
+// ============================================================
+
+export function Meteors({
+  number = 20,
+  color = "#22d3ee",
+  className,
+}: {
+  number?: number;
+  color?: string;
+  className?: string;
+}) {
+  const [items, setItems] = useState<
+    { top: string; left: string; delay: string; duration: string }[]
+  >([]);
+
+  useEffect(() => {
+    setItems(
+      Array.from({ length: number }).map(() => ({
+        top: `${Math.floor(Math.random() * -100)}px`,
+        left: `${Math.floor(Math.random() * 100)}%`,
+        delay: `${(Math.random() * 6).toFixed(2)}s`,
+        duration: `${(Math.random() * 6 + 4).toFixed(2)}s`,
+      })),
+    );
+  }, [number]);
+
+  return (
+    <div
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${className || ""}`}
+      aria-hidden
+    >
+      {items.map((m, i) => (
+        <span
+          key={i}
+          className="meteor"
+          style={{
+            top: m.top,
+            left: m.left,
+            animationDelay: m.delay,
+            animationDuration: m.duration,
+            background: color,
+            boxShadow: `0 0 6px 1px ${color}`,
+            ["--meteor-color" as any]: color,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// Spotlight — mouse-following radial gradient glow
+// Adapted from aceternity-ui
+// ============================================================
+
+export function Spotlight({
+  color = "rgba(34, 211, 238, 0.22)",
+  size = 520,
+  className,
+}: {
+  color?: string;
+  size?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const mx = useMotionValue(-9999);
+  const my = useMotionValue(-9999);
+  const x = useSpring(mx, { stiffness: 180, damping: 26 });
+  const y = useSpring(my, { stiffness: 180, damping: 26 });
+  const background = useTransform(
+    [x, y] as any,
+    ([lx, ly]: number[]) =>
+      `radial-gradient(${size}px circle at ${lx}px ${ly}px, ${color}, transparent 60%)`,
+  );
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    function onMove(e: MouseEvent) {
+      const rect = el!.getBoundingClientRect();
+      mx.set(e.clientX - rect.left);
+      my.set(e.clientY - rect.top);
+    }
+    function onLeave() {
+      mx.set(-9999);
+      my.set(-9999);
+    }
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, [mx, my]);
+
+  return (
+    <div
+      ref={ref}
+      className={`pointer-events-none absolute inset-0 ${className || ""}`}
+      aria-hidden
+    >
+      <motion.div className="absolute inset-0" style={{ background }} />
+    </div>
+  );
+}
+
+// ============================================================
+// Tilt3D — 3D mouse-tilt wrapper for cards
+// ============================================================
+
+export function Tilt3D({
+  children,
+  max = 10,
+  className,
+  glare = true,
+}: {
+  children: React.ReactNode;
+  max?: number;
+  className?: string;
+  glare?: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const rx = useSpring(0, { stiffness: 220, damping: 22 });
+  const ry = useSpring(0, { stiffness: 220, damping: 22 });
+  const gx = useSpring(50, { stiffness: 220, damping: 22 });
+  const gy = useSpring(50, { stiffness: 220, damping: 22 });
+
+  function onMove(e: React.MouseEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    ry.set((px - 0.5) * 2 * max);
+    rx.set((0.5 - py) * 2 * max);
+    gx.set(px * 100);
+    gy.set(py * 100);
+  }
+
+  function onLeave() {
+    rx.set(0);
+    ry.set(0);
+    gx.set(50);
+    gy.set(50);
+  }
+
+  const glareBg = useTransform(
+    [gx, gy] as any,
+    ([lx, ly]: number[]) =>
+      `radial-gradient(240px circle at ${lx}% ${ly}%, rgba(34,211,238,0.18), transparent 70%)`,
+  );
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      style={{
+        rotateX: rx,
+        rotateY: ry,
+        transformStyle: "preserve-3d",
+        transformPerspective: 900,
+      }}
+      className={`relative ${className || ""}`}
+    >
+      {children}
+      {glare && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{ background: glareBg, mixBlendMode: "screen" }}
+        />
+      )}
+    </motion.div>
+  );
+}
+
+// ============================================================
+// Magnetic — magnetic cursor pull for buttons / CTAs
+// ============================================================
+
+export function Magnetic({
+  children,
+  strength = 0.35,
+  className,
+}: {
+  children: React.ReactNode;
+  strength?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useSpring(0, { stiffness: 260, damping: 18 });
+  const y = useSpring(0, { stiffness: 260, damping: 18 });
+
+  function onMove(e: React.MouseEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    x.set((e.clientX - cx) * strength);
+    y.set((e.clientY - cy) * strength);
+  }
+
+  function onLeave() {
+    x.set(0);
+    y.set(0);
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      style={{ x, y }}
+      className={`inline-block ${className || ""}`}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ============================================================
+// Ripple — concentric expanding rings
+// Adapted from magic-ui
+// ============================================================
+
+export function Ripple({
+  count = 5,
+  color = "rgba(34, 211, 238, 0.35)",
+  mainSize = 180,
+  className,
+}: {
+  count?: number;
+  color?: string;
+  mainSize?: number;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`pointer-events-none absolute inset-0 flex items-center justify-center ${className || ""}`}
+      aria-hidden
+    >
+      {Array.from({ length: count }).map((_, i) => {
+        const size = mainSize + i * 70;
+        const opacity = 0.55 - i * 0.1;
+        const delay = i * 0.45;
+        return (
+          <motion.span
+            key={i}
+            className="absolute rounded-full border"
+            style={{
+              width: size,
+              height: size,
+              borderColor: color,
+              opacity,
+            }}
+            animate={{ scale: [1, 1.25, 1], opacity: [opacity, 0, opacity] }}
+            transition={{
+              duration: 3.6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================
+// ShineBorder — rotating conic-gradient border
+// Adapted from magic-ui
+// ============================================================
+
+export function ShineBorder({
+  duration = 10,
+  borderWidth = 1,
+  colors = ["#22d3ee", "#f59e0b", "#22d3ee"],
+  className,
+}: {
+  duration?: number;
+  borderWidth?: number;
+  colors?: string[];
+  className?: string;
+}) {
+  const style: CSSProperties = {
+    ["--shine-duration" as any]: `${duration}s`,
+    ["--shine-bw" as any]: `${borderWidth}px`,
+    ["--shine-gradient" as any]: `conic-gradient(from 0deg, transparent 0 65%, ${colors.join(", ")}, transparent 95% 100%)`,
+  };
+  return (
+    <span
+      aria-hidden
+      className={`shine-border pointer-events-none absolute inset-0 ${className || ""}`}
+      style={style}
+    />
+  );
+}
+
+// ============================================================
+// AuroraBackground — slow drifting gradient aurora
+// Adapted from aceternity-ui
+// ============================================================
+
+export function AuroraBackground({
+  className,
+  intensity = 0.5,
+}: {
+  className?: string;
+  intensity?: number;
+}) {
+  const a = 0.25 * intensity;
+  const b = 0.18 * intensity;
+  return (
+    <div
+      aria-hidden
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${className || ""}`}
+    >
+      <motion.div
+        className="absolute -inset-[20%] opacity-80 blur-3xl"
+        style={{
+          background: `conic-gradient(from 0deg at 50% 50%, rgba(34,211,238,${a}), rgba(245,158,11,${b}), rgba(8,145,178,${a}), rgba(34,211,238,${a}))`,
+        }}
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 40, ease: "linear", repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute -inset-[10%] opacity-60 blur-2xl"
+        style={{
+          background: `radial-gradient(closest-side, rgba(34,211,238,${a * 1.2}), transparent 70%), radial-gradient(closest-side, rgba(245,158,11,${b * 1.2}), transparent 70%)`,
+        }}
+        animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
+        transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
+      />
+    </div>
+  );
+}
+
+// ============================================================
+// ShimmerText — animated gradient shimmer sweep across text
+// ============================================================
+
+export function ShimmerText({
+  children,
+  className,
+  duration = 3,
+  from = "#22d3ee",
+  mid = "#ffffff",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  duration?: number;
+  from?: string;
+  mid?: string;
+}) {
+  return (
+    <motion.span
+      className={`inline-block bg-clip-text text-transparent ${className || ""}`}
+      style={{
+        backgroundImage: `linear-gradient(100deg, ${from} 20%, ${mid} 45%, ${from} 70%)`,
+        backgroundSize: "250% 100%",
+      }}
+      animate={{ backgroundPositionX: ["150%", "-50%"] }}
+      transition={{ duration, repeat: Infinity, ease: "linear" }}
+    >
+      {children}
+    </motion.span>
   );
 }

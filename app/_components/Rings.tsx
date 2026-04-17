@@ -7,15 +7,15 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
       <defs>
         <radialGradient id="core" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#e0f7ff" />
-          <stop offset="30%" stopColor="#67e8f9" />
-          <stop offset="70%" stopColor="#0891b2" />
+          <stop offset="30%" stopColor="#fde047" />
+          <stop offset="70%" stopColor="#ef4444" />
           <stop offset="100%" stopColor="#020617" />
         </radialGradient>
       </defs>
 
       {/* Outer ring with tick marks */}
       <g className="ring-rotate-slow" style={{ transformOrigin: `${c}px ${c}px` }}>
-        <circle cx={c} cy={c} r={c - 8} fill="none" stroke="#22d3ee" strokeOpacity="0.35" strokeWidth="1" />
+        <circle cx={c} cy={c} r={c - 8} fill="none" stroke="#fde047" strokeOpacity="0.35" strokeWidth="1" />
         {Array.from({ length: 60 }).map((_, i) => {
           const angle = (i * 360) / 60;
           const isMajor = i % 5 === 0;
@@ -29,7 +29,7 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
               y1={c + r1 * Math.sin(rad)}
               x2={c + r2 * Math.cos(rad)}
               y2={c + r2 * Math.sin(rad)}
-              stroke={isMajor ? "#22d3ee" : "#0891b2"}
+              stroke={isMajor ? "#fde047" : "#ef4444"}
               strokeWidth={isMajor ? 1.5 : 0.7}
               strokeOpacity="0.7"
             />
@@ -40,7 +40,7 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
           const rad = (deg * Math.PI) / 180;
           const x = c + (c - 8) * Math.cos(rad);
           const y = c + (c - 8) * Math.sin(rad);
-          return <circle key={deg} cx={x} cy={y} r="4" fill="#22d3ee" />;
+          return <circle key={deg} cx={x} cy={y} r="4" fill="#fde047" />;
         })}
       </g>
 
@@ -48,10 +48,10 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
       <g className="ring-rotate-mid" style={{ transformOrigin: `${c}px ${c}px` }}>
         <circle
           cx={c} cy={c} r={c - 52}
-          fill="none" stroke="#22d3ee" strokeOpacity="0.45"
+          fill="none" stroke="#fde047" strokeOpacity="0.45"
           strokeWidth="1" strokeDasharray="2 6"
         />
-        <circle cx={c} cy={c} r={c - 60} fill="none" stroke="#0891b2" strokeOpacity="0.3" strokeWidth="1" />
+        <circle cx={c} cy={c} r={c - 60} fill="none" stroke="#ef4444" strokeOpacity="0.3" strokeWidth="1" />
         {Array.from({ length: 4 }).map((_, i) => {
           const a = (i * 360) / 4 + 22;
           const rad = (a * Math.PI) / 180;
@@ -72,15 +72,15 @@ export function ConcentricRings({ size = 520 }: { size?: number }) {
 
       {/* Inner ring */}
       <g className="ring-rotate-fast" style={{ transformOrigin: `${c}px ${c}px` }}>
-        <circle cx={c} cy={c} r={c - 100} fill="none" stroke="#22d3ee" strokeOpacity="0.6" strokeWidth="1.2" strokeDasharray="60 10 20 10" />
-        <circle cx={c} cy={c} r={c - 120} fill="none" stroke="#22d3ee" strokeOpacity="0.25" strokeWidth="0.6" />
+        <circle cx={c} cy={c} r={c - 100} fill="none" stroke="#fde047" strokeOpacity="0.6" strokeWidth="1.2" strokeDasharray="60 10 20 10" />
+        <circle cx={c} cy={c} r={c - 120} fill="none" stroke="#fde047" strokeOpacity="0.25" strokeWidth="0.6" />
       </g>
 
       {/* Crosshair */}
-      <line x1={c} y1="20" x2={c} y2="50" stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
-      <line x1={c} y1={size - 20} x2={c} y2={size - 50} stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
-      <line x1="20" y1={c} x2="50" y2={c} stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
-      <line x1={size - 20} y1={c} x2={size - 50} y2={c} stroke="#22d3ee" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1={c} y1="20" x2={c} y2="50" stroke="#fde047" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1={c} y1={size - 20} x2={c} y2={size - 50} stroke="#fde047" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1="20" y1={c} x2="50" y2={c} stroke="#fde047" strokeOpacity="0.7" strokeWidth="1" />
+      <line x1={size - 20} y1={c} x2={size - 50} y2={c} stroke="#fde047" strokeOpacity="0.7" strokeWidth="1" />
 
       {/* Center glow */}
       <circle cx={c} cy={c} r={c - 160} fill="url(#core)" opacity="0.7" />
@@ -93,7 +93,7 @@ export function CircularDial({
   value,
   max = 100,
   unit = "",
-  color = "#22d3ee",
+  color = "#fde047",
   size = 110,
 }: {
   label: string;
@@ -211,5 +211,96 @@ export function HexBadge({ children }: { children: React.ReactNode }) {
     >
       {children}
     </span>
+  );
+}
+
+// ============================================================
+// Holosphere — CSS 3D wireframe sphere with crossing rings
+// ============================================================
+
+export function Holosphere({ size = 460 }: { size?: number }) {
+  const ringConfigs = [
+    { axis: "rotateY", deg: 0,   colorVar: "#fde047" },
+    { axis: "rotateY", deg: 30,  colorVar: "#facc15" },
+    { axis: "rotateY", deg: 60,  colorVar: "#f59e0b" },
+    { axis: "rotateY", deg: 90,  colorVar: "#ef4444" },
+    { axis: "rotateY", deg: 120, colorVar: "#facc15" },
+    { axis: "rotateY", deg: 150, colorVar: "#fde047" },
+    { axis: "rotateX", deg: 0,   colorVar: "#fde047", dashed: true },
+    { axis: "rotateX", deg: 45,  colorVar: "#ef4444", dashed: true },
+    { axis: "rotateX", deg: 90,  colorVar: "#facc15" },
+  ];
+
+  return (
+    <div
+      className="holo-stage"
+      style={{ width: size, height: size }}
+      aria-hidden
+    >
+      <div
+        className="holo-sphere"
+        style={{ width: size, height: size }}
+      >
+        {ringConfigs.map((r, i) => (
+          <div
+            key={i}
+            className={`holo-ring ${r.dashed ? "dashed" : ""}`}
+            style={{
+              transform: `${r.axis}(${r.deg}deg)`,
+              borderColor: r.colorVar,
+              boxShadow: `0 0 18px ${r.colorVar}55, inset 0 0 22px ${r.colorVar}33`,
+            }}
+          />
+        ))}
+        {/* tick marks on equator */}
+        <div
+          className="holo-ring"
+          style={{
+            transform: "rotateX(90deg)",
+            borderStyle: "dotted",
+            borderColor: "#fde047",
+          }}
+        />
+        {/* core glow */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            inset: "35%",
+            background:
+              "radial-gradient(circle, #fff7ed 0%, #fde047 30%, #ef4444 65%, transparent 90%)",
+            boxShadow: "0 0 60px #ef4444, 0 0 100px #facc15",
+            transform: "translateZ(0)",
+            filter: "blur(1px)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// HoloCube — rotating 3D wireframe cube with HUD text faces
+// ============================================================
+
+export function HoloCube({ size = 180 }: { size?: number }) {
+  const half = size / 2;
+  const faces = [
+    { t: `translateZ(${half}px)`,                          label: "FRONT" },
+    { t: `translateZ(-${half}px) rotateY(180deg)`,         label: "REAR" },
+    { t: `rotateY(90deg) translateZ(${half}px)`,           label: "PORT" },
+    { t: `rotateY(-90deg) translateZ(${half}px)`,          label: "STBD" },
+    { t: `rotateX(90deg) translateZ(${half}px)`,           label: "UP" },
+    { t: `rotateX(-90deg) translateZ(${half}px)`,          label: "DN" },
+  ];
+  return (
+    <div className="holo-stage" style={{ width: size, height: size }} aria-hidden>
+      <div className="holo-cube" style={{ width: size, height: size }}>
+        {faces.map((f, i) => (
+          <span key={i} style={{ transform: f.t, width: size, height: size }}>
+            {f.label}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -7,7 +7,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { HudShell } from "../../_components/HudChrome";
 import { CircularDial, HexBadge, WaveformBars } from "../../_components/Rings";
 import { SuitSilhouette, paletteFor } from "../../_components/SuitSilhouette";
-import { TextScramble, FadeIn, BorderBeam, NumberTicker, PulseGlow, StaggerGroup, StaggerItem } from "../../_components/Animations";
+import {
+  TextScramble,
+  FadeIn,
+  BorderBeam,
+  NumberTicker,
+  PulseGlow,
+  StaggerGroup,
+  StaggerItem,
+  ShimmerText,
+  ShineBorder,
+  Magnetic,
+  AuroraBackground,
+  Ripple,
+} from "../../_components/Animations";
 
 type Integrity = {
   overall: number;
@@ -125,59 +138,64 @@ export default function SuitDetailPage() {
   }
 
   const integrityBad = suit.integrity.overall < 50;
-  const integrityColor = integrityBad ? "#ef4444" : suit.integrity.overall < 80 ? "#f59e0b" : "#22d3ee";
+  const integrityColor = integrityBad ? "#ef4444" : suit.integrity.overall < 80 ? "#f59e0b" : "#fde047";
 
   return (
     <HudShell session={`MK ${suit.mark}`}>
       <div className="h-full flex flex-col overflow-y-auto pr-1">
         {/* Header row */}
         <motion.div
-          className="flex items-start justify-between mb-4 gap-4"
+          className="flex flex-wrap items-start justify-between mb-4 gap-3 sm:gap-4"
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link href="/suits" className="btn-hud">&larr; REGISTRY</Link>
             <div>
               <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan/60">
                 {suit.classification} // {suit.year} // {suit.status.toUpperCase()}
               </div>
-              <TextScramble className="text-2xl tracking-[0.3em] text-jarvis-cyan inline-block" duration={0.6}>
+              <ShimmerText className="text-xl sm:text-2xl tracking-[0.3em]" from="#ef4444" mid="#fef9c3" duration={4}>
                 {suit.name}
-              </TextScramble>
+              </ShimmerText>
               <div className="text-[11px] italic text-slate-400">&quot;{suit.codename}&quot; HUD</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <HexBadge>{suit.hud_version}</HexBadge>
-            <motion.button
-              onClick={downloadSpec}
-              className="btn-hud btn-gold"
-              disabled={downloading}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              {downloading ? "TRANSMITTING..." : "DOWNLOAD SPEC SHEET"}
-            </motion.button>
-            <motion.button
-              onClick={logout}
-              className="btn-hud"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              DISENGAGE
-            </motion.button>
+            <Magnetic strength={0.2}>
+              <motion.button
+                onClick={downloadSpec}
+                className="btn-hud btn-gold relative overflow-hidden"
+                disabled={downloading}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <ShineBorder duration={5} colors={["#fde047", "#ef4444", "#fde047"]} />
+                {downloading ? "TRANSMITTING..." : "DOWNLOAD SPEC SHEET"}
+              </motion.button>
+            </Magnetic>
+            <Magnetic strength={0.2}>
+              <motion.button
+                onClick={logout}
+                className="btn-hud"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                DISENGAGE
+              </motion.button>
+            </Magnetic>
           </div>
         </motion.div>
 
         {/* Main grid: stats | figure | dials */}
-        <div className="grid grid-cols-[1fr_1.2fr_1fr] gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_1fr] gap-3 sm:gap-4 mb-4 layer-3d">
           {/* Left -- suit diagnostics */}
           <FadeIn delay={0.1} direction="left">
             <div className="space-y-4">
               <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-                <BorderBeam colorFrom="#22d3ee" colorTo="#0891b2" size={35} duration={10} />
+                <BorderBeam colorFrom="#fde047" colorTo="#991b1b" size={35} duration={10} />
                 <SectionTitle>SUIT DIAGNOSTICS</SectionTitle>
                 <StaggerGroup stagger={0.06} className="space-y-2 text-[10px] tracking-wider mt-3">
                   <StaggerItem><IntegrityRow label="HELMET" value={suit.integrity.helmet} /></StaggerItem>
@@ -196,7 +214,7 @@ export default function SuitDetailPage() {
                   {suit.battles.map((b) => (
                     <StaggerItem key={b}>
                       <div className="flex items-center gap-2">
-                        <PulseGlow color="#22d3ee" size={4} />
+                        <PulseGlow color="#fde047" size={4} />
                         <span className="ml-1">{b}</span>
                       </div>
                     </StaggerItem>
@@ -215,18 +233,20 @@ export default function SuitDetailPage() {
           >
             <SectionTitle>SUIT PROFILE // MK {suit.mark}</SectionTitle>
             <div className="relative flex-1 min-h-[380px] flex items-center justify-center">
+              <AuroraBackground intensity={0.35} />
+              <Ripple count={4} mainSize={240} color="rgba(34, 211, 238, 0.2)" />
               <div className="absolute inset-0 hud-hexpattern opacity-20" />
               <svg className="absolute inset-0 m-auto" width="320" height="320" viewBox="0 0 320 320" style={{ opacity: 0.75 }}>
                 <g className="ring-rotate-slow" style={{ transformOrigin: "160px 160px" }}>
-                  <circle cx="160" cy="160" r="150" fill="none" stroke="#22d3ee" strokeOpacity="0.3" strokeDasharray="4 6" />
+                  <circle cx="160" cy="160" r="150" fill="none" stroke="#fde047" strokeOpacity="0.3" strokeDasharray="4 6" />
                 </g>
                 <g className="ring-rotate-mid" style={{ transformOrigin: "160px 160px" }}>
                   <circle cx="160" cy="160" r="130" fill="none" stroke="#f59e0b" strokeOpacity="0.25" strokeDasharray="2 8" />
                 </g>
-                <line x1="160" y1="5" x2="160" y2="25" stroke="#22d3ee" strokeOpacity="0.5" />
-                <line x1="160" y1="295" x2="160" y2="315" stroke="#22d3ee" strokeOpacity="0.5" />
-                <line x1="5" y1="160" x2="25" y2="160" stroke="#22d3ee" strokeOpacity="0.5" />
-                <line x1="295" y1="160" x2="315" y2="160" stroke="#22d3ee" strokeOpacity="0.5" />
+                <line x1="160" y1="5" x2="160" y2="25" stroke="#fde047" strokeOpacity="0.5" />
+                <line x1="160" y1="295" x2="160" y2="315" stroke="#fde047" strokeOpacity="0.5" />
+                <line x1="5" y1="160" x2="25" y2="160" stroke="#fde047" strokeOpacity="0.5" />
+                <line x1="295" y1="160" x2="315" y2="160" stroke="#fde047" strokeOpacity="0.5" />
               </svg>
               <SuitSilhouette
                 mark={suit.mark}
@@ -253,7 +273,7 @@ export default function SuitDetailPage() {
           <FadeIn delay={0.2} direction="right">
             <div className="space-y-4">
               <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-                <BorderBeam colorFrom="#22d3ee" colorTo="#f59e0b" size={35} duration={10} delay={2} />
+                <BorderBeam colorFrom="#fde047" colorTo="#f59e0b" size={35} duration={10} delay={2} />
                 <SectionTitle>LIVE TELEMETRY</SectionTitle>
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <CircularDial label="INTEGRITY" value={suit.integrity.overall} unit="%" color={integrityColor} />
@@ -277,7 +297,7 @@ export default function SuitDetailPage() {
         </div>
 
         {/* Bottom grid: specs | weapons | description */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <FadeIn delay={0.3} direction="up">
             <div className="hud-panel hud-corners p-4 relative overflow-hidden">
               <SectionTitle>CORE SPECS</SectionTitle>
@@ -346,7 +366,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <div className="flex items-center justify-between border-b border-jarvis-cyan/20 pb-2">
       <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70">// {children}</div>
       <div className="flex gap-1">
-        <PulseGlow color="#22d3ee" size={4} />
+        <PulseGlow color="#fde047" size={4} />
         <span className="w-1 h-1 bg-jarvis-cyan/50 rounded-full" />
         <span className="w-1 h-1 bg-jarvis-cyan/30 rounded-full" />
       </div>
