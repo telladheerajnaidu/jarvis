@@ -20,6 +20,7 @@ import {
 import { Starfield3D } from "../_components/Starfield3D";
 import { GsapBoot } from "../_components/GsapBoot";
 import { BarbaBoot } from "../_components/BarbaBoot";
+import { OrbitalCore3D } from "../_components/OrbitalCore3D";
 
 // --- tiny util: fake live telemetry values that drift
 function useDriftingNumber(seed: number, min: number, max: number, step = 0.3) {
@@ -269,8 +270,9 @@ export default function LoginPage() {
           </div>
         </motion.aside>
 
-        {/* CENTER — orbital core */}
+        {/* CENTER — orbital core (WebGL globe + SVG chrome overlay) */}
         <div data-boot="orbital" className="col-span-12 lg:col-span-6 flex items-center justify-center min-h-[460px] md:min-h-[520px] relative">
+          <OrbitalCore3D className="absolute inset-0" />
           <OrbitalCore />
         </div>
 
@@ -524,24 +526,20 @@ function OrbitalCore() {
   const tiltX = useTransform(y, (v) => -v * 10);
   const tiltY = useTransform(x, (v) => v * 12);
 
-  // wireframe latitudes / longitudes
-  const lats = useMemo(() => [-60, -30, 0, 30, 60].map((l) => l), []);
-  const longs = useMemo(() => Array.from({ length: 12 }).map((_, i) => i * 15), []);
-
   const size = 460;
   const c = size / 2;
   const R = 188;
 
   return (
     <div className="orbit-stage relative" style={{ width: size, height: size }}>
-      {/* ambient base ring glow */}
+      {/* ambient base ring glow (softened — WebGL globe provides the bulk of the glow now) */}
       <div
         aria-hidden
         className="absolute rounded-full"
         style={{
           inset: "8%",
           background:
-            "radial-gradient(circle at 50% 55%, rgba(103,232,249,0.20), rgba(168,85,247,0.12) 40%, transparent 70%)",
+            "radial-gradient(circle at 50% 55%, rgba(103,232,249,0.08), transparent 70%)",
           filter: "blur(18px)",
         }}
       />
@@ -575,51 +573,9 @@ function OrbitalCore() {
             </linearGradient>
           </defs>
 
-          {/* soft core */}
-          <circle cx={c} cy={c} r={R * 0.7} fill="url(#coreGrad)" opacity="0.7" />
-
-          {/* outer limb */}
-          <circle cx={c} cy={c} r={R} fill="none" stroke="url(#limb)" strokeWidth="1.5" />
-          <circle cx={c} cy={c} r={R - 8} fill="none" stroke="#67e8f9" strokeOpacity="0.18" />
-
-          {/* latitudes as flattened ellipses */}
-          <g className="ring-rotate-slow" style={{ transformOrigin: `${c}px ${c}px` }}>
-            {lats.map((lat, i) => {
-              const ry = R * Math.cos((lat * Math.PI) / 180);
-              const cy = c + R * Math.sin((lat * Math.PI) / 180) * 0.35;
-              return (
-                <ellipse
-                  key={i}
-                  cx={c}
-                  cy={cy}
-                  rx={R}
-                  ry={Math.abs(ry) * 0.35}
-                  fill="none"
-                  stroke="#a855f7"
-                  strokeOpacity={lat === 0 ? 0.55 : 0.28}
-                  strokeWidth={lat === 0 ? 1 : 0.6}
-                  strokeDasharray={lat === 0 ? "0" : "2 4"}
-                />
-              );
-            })}
-          </g>
-
-          {/* longitudes as rotated ellipses (thin slices) */}
-          <g className="ring-rotate-mid" style={{ transformOrigin: `${c}px ${c}px` }}>
-            {longs.map((lon, i) => (
-              <ellipse
-                key={i}
-                cx={c}
-                cy={c}
-                rx={R * Math.abs(Math.cos((lon * Math.PI) / 180))}
-                ry={R}
-                fill="none"
-                stroke="#67e8f9"
-                strokeOpacity={i % 3 === 0 ? 0.35 : 0.14}
-                strokeWidth="0.5"
-              />
-            ))}
-          </g>
+          {/* outer limb — HUD frame around WebGL globe */}
+          <circle cx={c} cy={c} r={R + 6} fill="none" stroke="url(#limb)" strokeWidth="1" strokeOpacity="0.55" />
+          <circle cx={c} cy={c} r={R + 14} fill="none" stroke="#67e8f9" strokeOpacity="0.15" />
 
           {/* tick ring */}
           <g>
@@ -694,29 +650,7 @@ function OrbitalCore() {
         </svg>
       </motion.div>
 
-      {/* outer orbit rings with satellites — CSS 3D */}
-      <div className="orbit-rig">
-        <div
-          className="orbit-ring-3d solid orbit-spin-a"
-          style={{ transform: "rotateX(68deg) rotateZ(18deg) scale(1.15)" }}
-        >
-          <Satellite angle={0} distance={size * 0.575} color="cyan" />
-          <Satellite angle={160} distance={size * 0.575} color="pink" />
-        </div>
-        <div
-          className="orbit-ring-3d pink orbit-spin-b"
-          style={{ transform: "rotateX(80deg) rotateY(12deg) scale(1.3)" }}
-        >
-          <Satellite angle={60} distance={size * 0.65} color="pink" />
-        </div>
-        <div
-          className="orbit-ring-3d orbit-spin-c"
-          style={{ transform: "rotateX(56deg) rotateZ(-40deg) scale(1.05)" }}
-        >
-          <Satellite angle={220} distance={size * 0.528} color="cyan" />
-          <Satellite angle={330} distance={size * 0.528} color="cyan" />
-        </div>
-      </div>
+      {/* orbit rings + satellites now rendered in <OrbitalCore3D /> via WebGL */}
 
       {/* center readout */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

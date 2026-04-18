@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { ConcentricRings, HexBadge } from "../../_components/Rings";
 import { TextScramble, BorderBeam, PulseGlow } from "../../_components/Animations";
 import { SplineBackdrop } from "../../../_components/SplineBackdrop";
+import { RuneBackdrop3D } from "../../../_components/RuneBackdrop3D";
 
 const STEPS = [
   "> PURGE COMMAND RECEIVED",
@@ -45,7 +46,11 @@ export default function AdminReset() {
 
   return (
     <main className="min-h-screen hud-grid-fine relative overflow-hidden">
-      <SplineBackdrop scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode" />
+      <RuneBackdrop3D className="absolute inset-0 z-0" />
+      <SplineBackdrop
+        scene="https://prod.spline.design/Os9Hp-6FEYKLlwhL/scene.splinecode"
+        className="z-[1]"
+      />
       <div className="scanline-overlay" />
 
       <motion.div
