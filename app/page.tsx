@@ -17,6 +17,9 @@ import {
   ShimmerText,
   useMouseFromCenter,
 } from "./_components/Animations";
+import { Starfield3D } from "../_components/Starfield3D";
+import { GsapBoot } from "../_components/GsapBoot";
+import { BarbaBoot } from "../_components/BarbaBoot";
 
 // --- tiny util: fake live telemetry values that drift
 function useDriftingNumber(seed: number, min: number, max: number, step = 0.3) {
@@ -141,20 +144,17 @@ export default function LoginPage() {
   const latency = useDriftingNumber(0.6, 2.6, 4.8, 0.6);
 
   return (
-    <main className="min-h-screen relative overflow-hidden starfield" style={{ cursor: "none" }}>
+    <GsapBoot>
+    <main className="min-h-screen relative overflow-hidden" style={{ cursor: "none" }}>
+      <BarbaBoot />
       {/* ============ background layers ============ */}
       <div aria-hidden className="absolute inset-0 -z-0">
         <span className="aurora-blob a" />
         <span className="aurora-blob b" />
         <span className="aurora-blob c" />
       </div>
+      <Starfield3D className="absolute inset-0 -z-0" />
       <div aria-hidden className="absolute inset-0 hud-grid-fine opacity-40 -z-0" />
-      <Particles
-        className="absolute inset-0 -z-0"
-        quantity={60}
-        color="#e0e7ff"
-        size={0.15}
-      />
       <span aria-hidden className="scan-h" />
       <span aria-hidden className="scan-v" style={{ animationDelay: "-4s" }} />
 
@@ -216,7 +216,7 @@ export default function LoginPage() {
           V O I C E &nbsp;&middot;&nbsp; O F &nbsp;&middot;&nbsp; I N T E L L I G E N C E
         </motion.div>
 
-        <HeroRune3D />
+        <div data-boot="rune"><HeroRune3D /></div>
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -246,6 +246,7 @@ export default function LoginPage() {
           animate={{ opacity: reveal ? 1 : 0, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
           className="hidden lg:flex col-span-3 flex-col items-start justify-start gap-6 pt-6"
+          data-boot="rail"
         >
           <div className="flex items-baseline gap-3">
             <div className="text-[9px] tracking-[0.5em] text-jarvis-ivory/50">NO.</div>
@@ -269,7 +270,7 @@ export default function LoginPage() {
         </motion.aside>
 
         {/* CENTER — orbital core */}
-        <div className="col-span-12 lg:col-span-6 flex items-center justify-center min-h-[460px] md:min-h-[520px] relative">
+        <div data-boot="orbital" className="col-span-12 lg:col-span-6 flex items-center justify-center min-h-[460px] md:min-h-[520px] relative">
           <OrbitalCore />
         </div>
 
@@ -279,6 +280,7 @@ export default function LoginPage() {
           animate={{ opacity: reveal ? 1 : 0, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
           className="col-span-12 lg:col-span-3 flex flex-col gap-5 pt-6"
+          data-boot="auth"
         >
           {/* glass auth panel — elevated primary CTA */}
           <motion.div
@@ -401,7 +403,7 @@ export default function LoginPage() {
       </div>
 
       {/* ============ bottom marquee ============ */}
-      <div className="fixed left-0 right-0 bottom-0 z-30 border-t border-jarvis-ivory/10 bg-jarvis-bg/70 backdrop-blur-sm overflow-hidden">
+      <div data-boot="ticker" className="fixed left-0 right-0 bottom-0 z-30 border-t border-jarvis-ivory/10 bg-jarvis-bg/70 backdrop-blur-sm overflow-hidden">
         <div className="py-2 text-[10px] tracking-[0.5em] text-jarvis-ivory/70">
           <div className="marq">
             {[...TICKER, ...TICKER].map((t, i) => (
@@ -414,6 +416,7 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+    </GsapBoot>
   );
 }
 

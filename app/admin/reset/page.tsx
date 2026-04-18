@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { ConcentricRings, HexBadge } from "../../_components/Rings";
 import { TextScramble, BorderBeam, PulseGlow } from "../../_components/Animations";
+import { SplineBackdrop } from "../../../_components/SplineBackdrop";
 
 const STEPS = [
   "> PURGE COMMAND RECEIVED",
@@ -44,6 +45,7 @@ export default function AdminReset() {
 
   return (
     <main className="min-h-screen hud-grid-fine relative overflow-hidden">
+      <SplineBackdrop scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode" />
       <div className="scanline-overlay" />
 
       <motion.div

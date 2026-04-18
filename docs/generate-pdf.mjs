@@ -116,7 +116,7 @@ async function main() {
   await page.waitForTimeout(2000);
 
   await page.pdf({
-    path: 'docs/WALKTHROUGH.pdf',
+    path: 'docs/Jarvis_Walkthrough.pdf',
     format: 'A4',
     margin: { top: '20mm', bottom: '20mm', left: '18mm', right: '18mm' },
     printBackground: true,
@@ -130,7 +130,7 @@ async function main() {
   // Clean up temp files
   execSync('rm -f docs/WALKTHROUGH_temp.html docs/WALKTHROUGH_styled.html');
 
-  console.log('PDF generated: docs/WALKTHROUGH.pdf');
+  console.log('PDF generated: docs/Jarvis_Walkthrough.pdf');
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

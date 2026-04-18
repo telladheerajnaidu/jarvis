@@ -19,6 +19,7 @@ import {
   ShimmerText,
   ShineBorder,
 } from "../_components/Animations";
+import { AnimeCardGrid } from "../../_components/AnimeCardGrid";
 
 type SuitCard = {
   id: string;
@@ -291,22 +292,24 @@ export default function SuitsPage() {
         </AnimatePresence>
 
         {!loading && !error && (
+          <AnimeCardGrid>
           <StaggerGroup stagger={0.06} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 flex-1 overflow-y-auto pr-1">
             {suits.map((s) => (
               <StaggerItem key={s.id}>
                 <Tilt3D max={8} glare>
                 <Link
                   href={`/suits/${s.id}`}
+                  data-anime-card
                   className="hud-panel hud-corners p-4 group hover:bg-jarvis-cyan/5 transition-all block relative overflow-hidden"
                 >
                   <ShineBorder duration={9} colors={["#ec4899", "#22d3ee", "transparent", "#ec4899"]} />
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">
+                      <div data-anime-chip className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">
                         MARK {s.mark} // {s.year}
                       </div>
-                      <div className="text-base tracking-[0.2em] text-jarvis-cyan mt-1">{s.name}</div>
-                      <div className="text-[10px] italic text-slate-400">&quot;{s.codename}&quot;</div>
+                      <div data-anime-chip className="text-base tracking-[0.2em] text-jarvis-cyan mt-1">{s.name}</div>
+                      <div data-anime-chip className="text-[10px] italic text-slate-400">&quot;{s.codename}&quot;</div>
                     </div>
                     <span
                       className={`text-[9px] tracking-[0.25em] border px-2 py-1 ${statusColor[s.status] || ""}`}
@@ -346,6 +349,7 @@ export default function SuitsPage() {
               </StaggerItem>
             ))}
           </StaggerGroup>
+          </AnimeCardGrid>
         )}
 
         {loading && (

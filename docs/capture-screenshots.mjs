@@ -24,12 +24,12 @@ async function main() {
   // 2. Bug 1 - Case-sensitive email error
   // ===============================================
   console.log('02 - Bug 1: case error...');
-  const EMAIL = process.env.CAPTURE_EMAIL || 'Demo@example.com';
-  const PW = process.env.CAPTURE_PASSWORD || 'demo';
+  const EMAIL = process.env.CAPTURE_EMAIL || 'Admin@jarvis.local';
+  const PW = process.env.CAPTURE_PASSWORD || 'jarvis';
   const EMAIL_LC = EMAIL.toLowerCase();
   await loginPage.fill('input[type="text"]', EMAIL);
   await loginPage.fill('input[type="password"]', PW);
-  await loginPage.click('button[type="submit"]');
+  await loginPage.click('button[type="submit"]', { force: true });
   await loginPage.waitForTimeout(1500);
   await loginPage.screenshot({ path: `${OUT}/02_bug1_case_error_ui.png`, fullPage: false });
 
@@ -62,14 +62,14 @@ async function main() {
   // ===============================================
   console.log('03b - Bug 2: cookie path...');
   const bug2Page = await ctx.newPage();
-  // Clear existing cookies first
+  // Clear existing cookies + localStorage first (Bug 4 cache would otherwise hide UNAUTHORIZED)
   await ctx.clearCookies();
-  // Login with correct creds via navigation to trigger the cookie
   await bug2Page.goto(BASE, { waitUntil: 'networkidle' });
+  await bug2Page.evaluate(() => { try { localStorage.clear(); } catch {} });
   await bug2Page.waitForTimeout(3500);
   await bug2Page.fill('input[type="text"]', EMAIL_LC);
   await bug2Page.fill('input[type="password"]', PW);
-  await bug2Page.click('button[type="submit"]');
+  await bug2Page.click('button[type="submit"]', { force: true });
   await bug2Page.waitForTimeout(2000);
   // Should land on /suits but show UNAUTHORIZED because cookie is Path=/admin
   await bug2Page.screenshot({ path: `${OUT}/03b_bug2_cookie_path_unauthorized.png`, fullPage: false });
@@ -134,13 +134,13 @@ async function main() {
 
   // Apply mark 3 (slow)
   await racePage.fill('input[type="number"]', '3');
-  await racePage.click('button[type="submit"]');
+  await racePage.click('button[type="submit"]', { force: true });
   await racePage.waitForTimeout(1500); // mid-flight
   await racePage.screenshot({ path: `${OUT}/06_bug5_race_midflight.png`, fullPage: false });
 
   // Now apply mark 85 (fast) while mark 3 is still pending
   await racePage.fill('input[type="number"]', '85');
-  await racePage.click('button[type="submit"]');
+  await racePage.click('button[type="submit"]', { force: true });
   await racePage.waitForTimeout(500); // mark 85 returns quickly
   await racePage.screenshot({ path: `${OUT}/06_bug5_race_mark85_brief.png`, fullPage: false });
 
