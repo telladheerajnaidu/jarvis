@@ -17,7 +17,7 @@ async function main() {
   console.log('01 - Login page...');
   const loginPage = await ctx.newPage();
   await loginPage.goto(BASE, { waitUntil: 'networkidle' });
-  await loginPage.waitForTimeout(4000); // wait for boot animation
+  await loginPage.waitForTimeout(6500); // wait for boot animation + satellite motion
   await loginPage.screenshot({ path: `${OUT}/01_login_page.png`, fullPage: false });
 
   // ===============================================

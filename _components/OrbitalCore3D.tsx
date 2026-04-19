@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Stars } from "@react-three/drei";
+import { Line, Stars } from "@react-three/drei";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -246,6 +246,76 @@ function Atmosphere() {
   );
 }
 
+function SatelliteTrack() {
+  const group = useRef<THREE.Group>(null!);
+  const sat = useRef<THREE.Group>(null!);
+
+  const { points, curve, r } = useMemo(() => {
+    const r = 2.05;
+    const c = new THREE.EllipseCurve(0, 0, r, r, 0, Math.PI * 2, false, 0);
+    const pts2 = c.getPoints(240);
+    const pts = pts2.map((p) => new THREE.Vector3(p.x, 0, p.y));
+    return { points: pts, curve: c, r };
+  }, []);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime * 0.22;
+    const u = (t % (Math.PI * 2)) / (Math.PI * 2);
+    const p = curve.getPoint(u);
+    if (sat.current) {
+      sat.current.position.set(p.x, 0, p.y);
+      sat.current.lookAt(0, 0, 0);
+    }
+    if (group.current) {
+      group.current.rotation.y += 0.0007;
+    }
+  });
+
+  return (
+    <group ref={group} rotation={[Math.PI * 0.32, 0, Math.PI * 0.18]}>
+      <Line
+        points={points}
+        color="#f5d7a1"
+        lineWidth={1.8}
+        dashed
+        dashSize={0.11}
+        gapSize={0.07}
+        dashScale={1}
+        transparent
+        opacity={0.95}
+      />
+      <Line
+        points={points}
+        color="#e8a77f"
+        lineWidth={0.7}
+        transparent
+        opacity={0.35}
+      />
+      <group ref={sat}>
+        <mesh>
+          <boxGeometry args={[0.07, 0.07, 0.11]} />
+          <meshStandardMaterial
+            color="#f5d7a1"
+            emissive="#e8a77f"
+            emissiveIntensity={0.9}
+            metalness={0.7}
+            roughness={0.3}
+          />
+        </mesh>
+        <mesh position={[0.13, 0, 0]}>
+          <boxGeometry args={[0.16, 0.005, 0.05]} />
+          <meshBasicMaterial color="#6fa8d6" transparent opacity={0.85} />
+        </mesh>
+        <mesh position={[-0.13, 0, 0]}>
+          <boxGeometry args={[0.16, 0.005, 0.05]} />
+          <meshBasicMaterial color="#6fa8d6" transparent opacity={0.85} />
+        </mesh>
+        <pointLight color="#f5d7a1" intensity={0.6} distance={0.9} />
+      </group>
+    </group>
+  );
+}
+
 function Moon() {
   const group = useRef<THREE.Group>(null!);
   useFrame((state) => {
@@ -272,6 +342,7 @@ function Scene() {
       <directionalLight position={[5, 2.3, 4]} color="#fff4df" intensity={1.6} />
       <Stars radius={90} depth={40} count={3500} factor={2} fade speed={0.6} />
       <Earth />
+      <SatelliteTrack />
       <Moon />
     </>
   );

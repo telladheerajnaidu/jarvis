@@ -598,23 +598,6 @@ function OrbitalCore() {
             <line x1={size - 24} y1={c} x2={size - 2} y2={c} />
           </g>
 
-          {/* scan arc sweep */}
-          <motion.g
-            style={{ transformOrigin: `${c}px ${c}px` }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          >
-            <path
-              d={`M ${c + R - 8} ${c} A ${R - 8} ${R - 8} 0 0 0 ${c} ${c - R + 8}`}
-              fill="none"
-              stroke="#e8a77f"
-              strokeOpacity="0.85"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <circle cx={c + R - 8} cy={c} r="4" fill="#f5d7a1" />
-          </motion.g>
-
           {/* marker pings — softened so they don't hide the Earth */}
           {[
             { lat: 48, lon: 250 },
