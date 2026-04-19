@@ -26,8 +26,8 @@ export function AnimeCardGrid({ children }: { children: React.ReactNode }) {
         utils.remove(card);
         animate(card, {
           boxShadow: [
-            "0 0 0 rgba(236,72,153,0)",
-            "0 0 32px rgba(236,72,153,0.35)",
+            "0 0 0 rgba(193,122,86,0)",
+            "0 0 32px rgba(193,122,86,0.35)",
           ],
           duration: 600,
           ease: "outQuad",
@@ -36,7 +36,7 @@ export function AnimeCardGrid({ children }: { children: React.ReactNode }) {
       const onLeave = () => {
         utils.remove(card);
         animate(card, {
-          boxShadow: "0 0 0 rgba(236,72,153,0)",
+          boxShadow: "0 0 0 rgba(193,122,86,0)",
           duration: 400,
           ease: "outQuad",
         });

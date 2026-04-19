@@ -30,15 +30,15 @@ function Rune() {
     <group>
       <mesh ref={outer}>
         <icosahedronGeometry args={[2.1, 2]} />
-        <meshBasicMaterial color="#ec4899" wireframe transparent opacity={0.55} />
+        <meshBasicMaterial color="#c17a56" wireframe transparent opacity={0.55} />
       </mesh>
       <mesh ref={inner}>
         <torusKnotGeometry args={[1.15, 0.08, 160, 16, 2, 5]} />
-        <meshBasicMaterial color="#67e8f9" transparent opacity={0.75} />
+        <meshBasicMaterial color="#93c5fd" transparent opacity={0.75} />
       </mesh>
       <mesh ref={core}>
         <sphereGeometry args={[0.6, 48, 48]} />
-        <meshBasicMaterial color="#fde68a" transparent opacity={0.5} />
+        <meshBasicMaterial color="#f5d7a1" transparent opacity={0.5} />
       </mesh>
       <mesh>
         <sphereGeometry args={[2.35, 64, 64]} />
@@ -48,8 +48,8 @@ function Rune() {
           blending={THREE.AdditiveBlending}
           side={THREE.BackSide}
           uniforms={{
-            uA: { value: new THREE.Color("#a855f7") },
-            uB: { value: new THREE.Color("#67e8f9") },
+            uA: { value: new THREE.Color("#7a8b7a") },
+            uB: { value: new THREE.Color("#93c5fd") },
           }}
           vertexShader={`
             varying vec3 vN; varying vec3 vV;
@@ -82,9 +82,9 @@ function OrbitTracers() {
   });
   const ringConfigs = useMemo(
     () => [
-      { r: 3.1, tilt: [0.4, 0, 0] as [number, number, number], c: "#67e8f9" },
-      { r: 3.45, tilt: [-0.55, 0.3, 0] as [number, number, number], c: "#ec4899" },
-      { r: 2.8, tilt: [1.1, 0.2, 0.3] as [number, number, number], c: "#a855f7" },
+      { r: 3.1, tilt: [0.4, 0, 0] as [number, number, number], c: "#93c5fd" },
+      { r: 3.45, tilt: [-0.55, 0.3, 0] as [number, number, number], c: "#c17a56" },
+      { r: 2.8, tilt: [1.1, 0.2, 0.3] as [number, number, number], c: "#7a8b7a" },
     ],
     [],
   );
@@ -104,11 +104,11 @@ function Scene() {
   return (
     <>
       <ambientLight intensity={0.35} />
-      <pointLight position={[5, 3, 5]} color="#ec4899" intensity={1.8} distance={14} />
-      <pointLight position={[-4, -2, 3]} color="#67e8f9" intensity={1.1} distance={14} />
+      <pointLight position={[5, 3, 5]} color="#c17a56" intensity={1.8} distance={14} />
+      <pointLight position={[-4, -2, 3]} color="#93c5fd" intensity={1.1} distance={14} />
       <Rune />
       <OrbitTracers />
-      <Sparkles count={120} size={3} speed={0.3} scale={[9, 9, 9]} color="#c4b5fd" />
+      <Sparkles count={120} size={3} speed={0.3} scale={[9, 9, 9]} color="#cfc0a8" />
     </>
   );
 }

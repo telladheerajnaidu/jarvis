@@ -103,7 +103,7 @@ export default function AdminReset() {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <div className="hud-panel hud-corners p-6 backdrop-blur-md relative overflow-hidden">
-              <BorderBeam colorFrom="#22d3ee" colorTo="#ec4899" size={50} duration={6} />
+              <BorderBeam colorFrom="#60a5fa" colorTo="#c17a56" size={50} duration={6} />
               <div className="flex items-center justify-between mb-4">
                 <div className="text-[10px] tracking-[0.3em] text-jarvis-gold">
                   // PURGE SEQUENCE
@@ -112,7 +112,7 @@ export default function AdminReset() {
                   <HexBadge>COMPLETE</HexBadge>
                 ) : (
                   <span className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-jarvis-cyan/70">
-                    <PulseGlow color="#22d3ee" size={5} />
+                    <PulseGlow color="#60a5fa" size={5} />
                     <span className="ml-1">EXECUTING...</span>
                   </span>
                 )}

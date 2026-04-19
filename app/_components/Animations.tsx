@@ -141,8 +141,8 @@ export function BorderBeam({
   size = 50,
   duration = 6,
   delay = 0,
-  colorFrom = "#22d3ee",
-  colorTo = "#0891b2",
+  colorFrom = "#60a5fa",
+  colorTo = "#a07a48",
   borderWidth = 1,
   className,
 }: {
@@ -186,7 +186,7 @@ export function BorderBeam({
 // ============================================================
 
 export function GlowEffect({
-  colors = ["#22d3ee", "#a855f7", "#0891b2", "#22d3ee"],
+  colors = ["#60a5fa", "#7a8b7a", "#a07a48", "#60a5fa"],
   mode = "rotate",
   blur = "medium",
   duration = 5,
@@ -250,7 +250,7 @@ type Circle = {
 export function Particles({
   className = "",
   quantity = 80,
-  color = "#22d3ee",
+  color = "#60a5fa",
   size = 0.4,
   staticity = 50,
   ease = 50,
@@ -526,7 +526,7 @@ export function StaggerItem({
 // ============================================================
 
 export function PulseGlow({
-  color = "#22d3ee",
+  color = "#60a5fa",
   size = 8,
   className,
 }: {
@@ -557,7 +557,7 @@ export function PulseGlow({
 
 export function Meteors({
   number = 20,
-  color = "#22d3ee",
+  color = "#60a5fa",
   className,
 }: {
   number?: number;
@@ -609,7 +609,7 @@ export function Meteors({
 // ============================================================
 
 export function Spotlight({
-  color = "rgba(34, 211, 238, 0.22)",
+  color = "rgba(96, 165, 250, 0.22)",
   size = 520,
   className,
 }: {
@@ -702,7 +702,7 @@ export function Tilt3D({
   const glareBg = useTransform(
     [gx, gy] as any,
     ([lx, ly]: number[]) =>
-      `radial-gradient(240px circle at ${lx}% ${ly}%, rgba(34,211,238,0.18), transparent 70%)`,
+      `radial-gradient(240px circle at ${lx}% ${ly}%, rgba(96,165,250,0.18), transparent 70%)`,
   );
 
   return (
@@ -782,7 +782,7 @@ export function Magnetic({
 
 export function Ripple({
   count = 5,
-  color = "rgba(34, 211, 238, 0.35)",
+  color = "rgba(96, 165, 250, 0.35)",
   mainSize = 180,
   className,
 }: {
@@ -832,7 +832,7 @@ export function Ripple({
 export function ShineBorder({
   duration = 10,
   borderWidth = 1,
-  colors = ["#22d3ee", "#0891b2", "#22d3ee"],
+  colors = ["#60a5fa", "#a07a48", "#60a5fa"],
   className,
 }: {
   duration?: number;
@@ -876,7 +876,7 @@ export function AuroraBackground({
       <motion.div
         className="absolute -inset-[20%] opacity-80 blur-3xl"
         style={{
-          background: `conic-gradient(from 0deg at 50% 50%, rgba(34,211,238,${a}), rgba(245,158,11,${b}), rgba(8,145,178,${a}), rgba(34,211,238,${a}))`,
+          background: `conic-gradient(from 0deg at 50% 50%, rgba(96,165,250,${a}), rgba(245,158,11,${b}), rgba(8,145,178,${a}), rgba(96,165,250,${a}))`,
         }}
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 40, ease: "linear", repeat: Infinity }}
@@ -884,7 +884,7 @@ export function AuroraBackground({
       <motion.div
         className="absolute -inset-[10%] opacity-60 blur-2xl"
         style={{
-          background: `radial-gradient(closest-side, rgba(34,211,238,${a * 1.2}), transparent 70%), radial-gradient(closest-side, rgba(245,158,11,${b * 1.2}), transparent 70%)`,
+          background: `radial-gradient(closest-side, rgba(96,165,250,${a * 1.2}), transparent 70%), radial-gradient(closest-side, rgba(245,158,11,${b * 1.2}), transparent 70%)`,
         }}
         animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
         transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
@@ -901,7 +901,7 @@ export function ShimmerText({
   children,
   className,
   duration = 3,
-  from = "#22d3ee",
+  from = "#60a5fa",
   mid = "#ffffff",
 }: {
   children: React.ReactNode;
@@ -1000,8 +1000,8 @@ export function ChromaticText({
   children,
   className,
   intensity = 6,
-  rColor = "#ec4899",
-  gColor = "#22d3ee",
+  rColor = "#c17a56",
+  gColor = "#60a5fa",
 }: {
   children: React.ReactNode;
   className?: string;

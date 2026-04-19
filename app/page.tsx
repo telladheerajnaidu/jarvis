@@ -172,12 +172,12 @@ export default function LoginPage() {
         style={{ x: cx, y: cy }}
         viewBox="0 0 46 46"
       >
-        <circle cx="23" cy="23" r="14" fill="none" stroke="#67e8f9" strokeWidth="0.6" strokeOpacity="0.7" />
-        <circle cx="23" cy="23" r="2" fill="#f472b6" />
-        <line x1="23" y1="0" x2="23" y2="6" stroke="#67e8f9" strokeOpacity="0.85" />
-        <line x1="23" y1="40" x2="23" y2="46" stroke="#67e8f9" strokeOpacity="0.85" />
-        <line x1="0" y1="23" x2="6" y2="23" stroke="#67e8f9" strokeOpacity="0.85" />
-        <line x1="40" y1="23" x2="46" y2="23" stroke="#67e8f9" strokeOpacity="0.85" />
+        <circle cx="23" cy="23" r="14" fill="none" stroke="#93c5fd" strokeWidth="0.6" strokeOpacity="0.7" />
+        <circle cx="23" cy="23" r="2" fill="#e8a77f" />
+        <line x1="23" y1="0" x2="23" y2="6" stroke="#93c5fd" strokeOpacity="0.85" />
+        <line x1="23" y1="40" x2="23" y2="46" stroke="#93c5fd" strokeOpacity="0.85" />
+        <line x1="0" y1="23" x2="6" y2="23" stroke="#93c5fd" strokeOpacity="0.85" />
+        <line x1="40" y1="23" x2="46" y2="23" stroke="#93c5fd" strokeOpacity="0.85" />
       </motion.svg>
 
       {/* ============ top chrome ============ */}
@@ -200,7 +200,7 @@ export default function LoginPage() {
           <span className="text-jarvis-ivory/50 tabular-nums">{COORD_CYCLE[coordIdx]}</span>
           <span className="text-jarvis-ivory/30">//</span>
           <span className="flex items-center gap-1.5 text-jarvis-cyan/80">
-            <PulseGlow color="#67e8f9" size={5} />
+            <PulseGlow color="#93c5fd" size={5} />
             <span className="ml-1">LINK</span>
           </span>
         </div>
@@ -266,13 +266,12 @@ export default function LoginPage() {
 
           <div className="mt-4 w-full">
             <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/50 mb-2">WAVEFORM · CH 01</div>
-            <Sparkline seed={0.37} color="#67e8f9" />
+            <Sparkline seed={0.37} color="#93c5fd" />
           </div>
         </motion.aside>
 
         {/* CENTER — orbital core (WebGL globe + SVG chrome overlay) */}
         <div data-boot="orbital" className="col-span-12 lg:col-span-6 flex items-center justify-center min-h-[460px] md:min-h-[520px] relative">
-          <OrbitalCore3D className="absolute inset-0" />
           <OrbitalCore />
         </div>
 
@@ -299,7 +298,7 @@ export default function LoginPage() {
             <div className="glass-primary p-6 pl-7 rounded-sm relative overflow-hidden">
               <div className="flex items-start justify-between mb-1 relative z-10">
                 <div className="flex items-center gap-2 text-[10px] tracking-[0.45em] text-jarvis-cyan">
-                  <PulseGlow color="#67e8f9" size={6} />
+                  <PulseGlow color="#93c5fd" size={6} />
                   <span className="ml-1">AUTHORIZATION</span>
                 </div>
                 <div className="text-[9px] tracking-[0.3em] text-jarvis-crimson flex items-center gap-1.5">
@@ -453,7 +452,7 @@ function HeroRune3D() {
         {stack.map((_, i) => {
           const depth = -(i + 1) * 3;
           const fade = 1 - i * 0.13;
-          const tint = i === 0 ? "#e0e7ff" : i < 3 ? "#c4b5fd" : i < 5 ? "#a855f7" : "#4c1d95";
+          const tint = i === 0 ? "#f5ecd9" : i < 3 ? "#cfc0a8" : i < 5 ? "#7a8b7a" : "#4c1d95";
           return (
             <div
               key={i}
@@ -466,7 +465,7 @@ function HeroRune3D() {
                 color: tint,
                 opacity: fade,
                 transform: `translateZ(${depth}px)`,
-                filter: i === 0 ? "drop-shadow(0 0 18px rgba(103,232,249,0.55))" : "none",
+                filter: i === 0 ? "drop-shadow(0 0 18px rgba(147,197,253,0.55))" : "none",
               }}
             >
               {glyphs.map((g, j) => (
@@ -491,12 +490,12 @@ function HeroRune3D() {
               animate={{ opacity: 1, y: 0, rotateX: 0 }}
               transition={{ delay: 0.12 + i * 0.07, duration: 0.6, ease: "easeOut" }}
               style={{
-                background: "linear-gradient(180deg, #f5f3ff 0%, #67e8f9 55%, #a855f7 100%)",
+                background: "linear-gradient(180deg, #fffaeb 0%, #93c5fd 55%, #7a8b7a 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
-                textShadow: "0 0 1px rgba(103,232,249,0.4)",
-                filter: "drop-shadow(0 0 10px rgba(244, 114, 182, 0.25))",
+                textShadow: "0 0 1px rgba(147,197,253,0.4)",
+                filter: "drop-shadow(0 0 10px rgba(232, 167, 127, 0.25))",
               }}
             >
               {g}
@@ -509,7 +508,7 @@ function HeroRune3D() {
           className="absolute left-0 right-0 h-[2px] pointer-events-none"
           style={{
             top: "50%",
-            background: "linear-gradient(90deg, transparent, rgba(103,232,249,0.85), transparent)",
+            background: "linear-gradient(90deg, transparent, rgba(147,197,253,0.85), transparent)",
             filter: "blur(1px)",
           }}
           animate={{ top: ["-5%", "105%"] }}
@@ -532,6 +531,9 @@ function OrbitalCore() {
 
   return (
     <div className="orbit-stage relative" style={{ width: size, height: size }}>
+      {/* WebGL Earth — fills the 460x460 stage so HUD chrome aligns with the globe */}
+      <OrbitalCore3D className="absolute inset-0" />
+
       {/* ambient base ring glow (softened — WebGL globe provides the bulk of the glow now) */}
       <div
         aria-hidden
@@ -539,8 +541,9 @@ function OrbitalCore() {
         style={{
           inset: "8%",
           background:
-            "radial-gradient(circle at 50% 55%, rgba(103,232,249,0.08), transparent 70%)",
+            "radial-gradient(circle at 50% 55%, rgba(147,197,253,0.08), transparent 70%)",
           filter: "blur(18px)",
+          mixBlendMode: "screen",
         }}
       />
 
@@ -557,25 +560,25 @@ function OrbitalCore() {
         <svg
           viewBox={`0 0 ${size} ${size}`}
           className="absolute inset-0 w-full h-full"
-          style={{ filter: "drop-shadow(0 0 14px rgba(103,232,249,0.35))" }}
+          style={{ filter: "drop-shadow(0 0 14px rgba(147,197,253,0.35))" }}
         >
           <defs>
             <radialGradient id="coreGrad" cx="50%" cy="50%" r="55%">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-              <stop offset="20%" stopColor="#67e8f9" />
-              <stop offset="55%" stopColor="#a855f7" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#08081a" stopOpacity="0" />
+              <stop offset="20%" stopColor="#93c5fd" />
+              <stop offset="55%" stopColor="#7a8b7a" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#0a1118" stopOpacity="0" />
             </radialGradient>
             <linearGradient id="limb" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#67e8f9" stopOpacity="0" />
-              <stop offset="50%" stopColor="#67e8f9" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#f472b6" stopOpacity="0" />
+              <stop offset="0%" stopColor="#93c5fd" stopOpacity="0" />
+              <stop offset="50%" stopColor="#93c5fd" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#e8a77f" stopOpacity="0" />
             </linearGradient>
           </defs>
 
           {/* outer limb — HUD frame around WebGL globe */}
           <circle cx={c} cy={c} r={R + 6} fill="none" stroke="url(#limb)" strokeWidth="1" strokeOpacity="0.55" />
-          <circle cx={c} cy={c} r={R + 14} fill="none" stroke="#67e8f9" strokeOpacity="0.15" />
+          <circle cx={c} cy={c} r={R + 14} fill="none" stroke="#93c5fd" strokeOpacity="0.15" />
 
           {/* tick ring */}
           <g>
@@ -591,7 +594,7 @@ function OrbitalCore() {
                   y1={c + r1 * Math.sin(rad)}
                   x2={c + r2 * Math.cos(rad)}
                   y2={c + r2 * Math.sin(rad)}
-                  stroke={i % 6 === 0 ? "#f472b6" : "#67e8f9"}
+                  stroke={i % 6 === 0 ? "#e8a77f" : "#93c5fd"}
                   strokeOpacity={i % 6 === 0 ? 0.85 : 0.35}
                   strokeWidth={i % 6 === 0 ? 1.2 : 0.6}
                 />
@@ -600,7 +603,7 @@ function OrbitalCore() {
           </g>
 
           {/* crosshair */}
-          <g stroke="#67e8f9" strokeOpacity="0.4" strokeWidth="0.8">
+          <g stroke="#93c5fd" strokeOpacity="0.4" strokeWidth="0.8">
             <line x1={c} y1="2" x2={c} y2="24" />
             <line x1={c} y1={size - 24} x2={c} y2={size - 2} />
             <line x1="2" y1={c} x2="24" y2={c} />
@@ -616,20 +619,18 @@ function OrbitalCore() {
             <path
               d={`M ${c + R - 8} ${c} A ${R - 8} ${R - 8} 0 0 0 ${c} ${c - R + 8}`}
               fill="none"
-              stroke="#f472b6"
+              stroke="#e8a77f"
               strokeOpacity="0.85"
               strokeWidth="2"
               strokeLinecap="round"
             />
-            <circle cx={c + R - 8} cy={c} r="4" fill="#fde68a" />
+            <circle cx={c + R - 8} cy={c} r="4" fill="#f5d7a1" />
           </motion.g>
 
-          {/* marker pings */}
+          {/* marker pings — softened so they don't hide the Earth */}
           {[
-            { lat: 34, lon: 242 },
-            { lat: -18, lon: 60 },
-            { lat: 52, lon: 140 },
-            { lat: -45, lon: 300 },
+            { lat: 48, lon: 250 },
+            { lat: -38, lon: 55 },
           ].map((m, i) => {
             const latR = (m.lat * Math.PI) / 180;
             const lonR = (m.lon * Math.PI) / 180;
@@ -637,12 +638,12 @@ function OrbitalCore() {
             const py = c - R * Math.sin(latR) * 0.55;
             return (
               <g key={i}>
-                <circle cx={px} cy={py} r="2.5" fill="#f472b6">
-                  <animate attributeName="r" values="2;5;2" dur={`${1.8 + i * 0.4}s`} repeatCount="indefinite" />
+                <circle cx={px} cy={py} r="2" fill="#f5d7a1">
+                  <animate attributeName="r" values="1.6;3.4;1.6" dur={`${2.4 + i * 0.4}s`} repeatCount="indefinite" />
                 </circle>
-                <circle cx={px} cy={py} r="7" fill="none" stroke="#f472b6" strokeOpacity="0.7">
-                  <animate attributeName="r" values="3;16;3" dur={`${1.8 + i * 0.4}s`} repeatCount="indefinite" />
-                  <animate attributeName="stroke-opacity" values="0.8;0;0.8" dur={`${1.8 + i * 0.4}s`} repeatCount="indefinite" />
+                <circle cx={px} cy={py} r="6" fill="none" stroke="#f5d7a1" strokeOpacity="0.55">
+                  <animate attributeName="r" values="3;14;3" dur={`${2.4 + i * 0.4}s`} repeatCount="indefinite" />
+                  <animate attributeName="stroke-opacity" values="0.55;0;0.55" dur={`${2.4 + i * 0.4}s`} repeatCount="indefinite" />
                 </circle>
               </g>
             );
@@ -652,21 +653,38 @@ function OrbitalCore() {
 
       {/* orbit rings + satellites now rendered in <OrbitalCore3D /> via WebGL */}
 
-      {/* center readout */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+      {/* readout badge — bottom-left so the globe stays unobstructed */}
+      <div
+        className="absolute pointer-events-none flex flex-col items-start"
+        style={{ left: 8, bottom: 8 }}
+      >
         <div className="text-[9px] tracking-[0.55em] text-jarvis-cyan/70">// CORE</div>
         <div
           className="serif-num leading-none mt-1"
           style={{
-            fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
-            color: "#fde68a",
-            textShadow: "0 0 14px rgba(253,230,138,0.6), 0 0 28px rgba(244,114,182,0.45)",
+            fontSize: "clamp(1.4rem, 2.2vw, 2rem)",
+            color: "#f5d7a1",
+            textShadow:
+              "0 0 10px rgba(245,215,161,0.55), 0 0 22px rgba(232,167,127,0.35)",
           }}
         >
           0<NumberTicker value={7} className="serif-num" />
         </div>
-        <div className="text-[9px] tracking-[0.5em] text-jarvis-ivory/60 mt-2">
+        <div className="text-[9px] tracking-[0.5em] text-jarvis-ivory/60 mt-1">
           HEARTBEAT · <span className="text-jarvis-cyan">NOMINAL</span>
+        </div>
+      </div>
+
+      {/* coordinate callout — top-right */}
+      <div
+        className="absolute pointer-events-none text-right"
+        style={{ right: 8, top: 8 }}
+      >
+        <div className="text-[9px] tracking-[0.5em] text-jarvis-cyan/70">
+          EARTH · MALIBU-01
+        </div>
+        <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/50 mt-1">
+          34°02&apos;N · 118°40&apos;W
         </div>
       </div>
 
@@ -693,7 +711,7 @@ function Corners() {
   const arm = 18;
   return (
     <svg aria-hidden className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <g stroke="#67e8f9" strokeWidth="0.6" fill="none" opacity="0.75">
+      <g stroke="#93c5fd" strokeWidth="0.6" fill="none" opacity="0.75">
         <path d={`M ${pad} ${pad + arm} L ${pad} ${pad} L ${pad + arm} ${pad}`} />
         <path d={`M ${100 - pad - arm} ${pad} L ${100 - pad} ${pad} L ${100 - pad} ${pad + arm}`} />
         <path d={`M ${100 - pad} ${100 - pad - arm} L ${100 - pad} ${100 - pad} L ${100 - pad - arm} ${100 - pad}`} />
@@ -731,8 +749,8 @@ function Readout({
           className="absolute left-0 top-0 bottom-0"
           style={{
             background: invert
-              ? "linear-gradient(90deg, #f472b6, #a855f7)"
-              : "linear-gradient(90deg, #67e8f9, #f472b6)",
+              ? "linear-gradient(90deg, #e8a77f, #7a8b7a)"
+              : "linear-gradient(90deg, #93c5fd, #e8a77f)",
           }}
           animate={{ width: `${pct * 100}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -742,7 +760,7 @@ function Readout({
   );
 }
 
-function Sparkline({ seed, color = "#67e8f9" }: { seed: number; color?: string }) {
+function Sparkline({ seed, color = "#93c5fd" }: { seed: number; color?: string }) {
   const [pts, setPts] = useState<number[]>(() =>
     Array.from({ length: 40 }).map((_, i) => 0.5 + 0.4 * Math.sin(i * 0.35 + seed * 6)),
   );

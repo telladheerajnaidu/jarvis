@@ -10,11 +10,11 @@ type Props = {
 const PALETTES: Record<string, { primary: string; accent: string }> = {
   mk3: { primary: "#9333ea", accent: "#f59e0b" },
   mk7: { primary: "#9333ea", accent: "#f59e0b" },
-  mk42: { primary: "#0891b2", accent: "#22d3ee" },
+  mk42: { primary: "#a07a48", accent: "#60a5fa" },
   mk43: { primary: "#9333ea", accent: "#f59e0b" },
   mk46: { primary: "#9333ea", accent: "#f59e0b" },
-  mk50: { primary: "#ec4899", accent: "#22d3ee" },
-  mk85: { primary: "#6b21a8", accent: "#22d3ee" },
+  mk50: { primary: "#c17a56", accent: "#60a5fa" },
+  mk85: { primary: "#3f5a4a", accent: "#60a5fa" },
 };
 
 export function paletteFor(id: string) {
@@ -41,21 +41,21 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
       <svg viewBox="0 0 300 300" className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id={`glow-${mark}`} cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.35" />
-            <stop offset="60%" stopColor="#a855f7" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
+            <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.35" />
+            <stop offset="60%" stopColor="#7a8b7a" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#7a8b7a" stopOpacity="0" />
           </radialGradient>
           <radialGradient id={`reactor-${mark}`} cx="0.5" cy="0.5" r="0.5">
             <stop offset="0%" stopColor="#ffffff" />
             <stop offset="25%" stopColor="#e0f2fe" />
-            <stop offset="60%" stopColor="#67e8f9" />
-            <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
+            <stop offset="60%" stopColor="#93c5fd" />
+            <stop offset="100%" stopColor="#7a8b7a" stopOpacity="0" />
           </radialGradient>
         </defs>
 
         <circle cx="150" cy="150" r="140" fill={`url(#glow-${mark})`} />
 
-        <g stroke="#ec4899" strokeOpacity="0.25" fill="none">
+        <g stroke="#c17a56" strokeOpacity="0.25" fill="none">
           <circle cx="150" cy="150" r="135" strokeDasharray="2 6" />
           <circle cx="150" cy="150" r="110" strokeDasharray="4 4" />
           <circle cx="150" cy="150" r="85" strokeDasharray="1 3" />
@@ -65,7 +65,7 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
         </g>
 
         {/* crosshair ticks */}
-        <g stroke="#ec4899" strokeOpacity="0.5">
+        <g stroke="#c17a56" strokeOpacity="0.5">
           <line x1="150" y1="10" x2="150" y2="24" />
           <line x1="150" y1="276" x2="150" y2="290" />
           <line x1="10" y1="150" x2="24" y2="150" />
@@ -85,14 +85,14 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
 
         {/* arc reactor core */}
         <g>
-          <circle cx="150" cy="150" r="28" fill="none" stroke="#a855f7" strokeOpacity="0.6" />
-          <circle cx="150" cy="150" r="22" fill="none" stroke="#ec4899" strokeOpacity="0.8" />
+          <circle cx="150" cy="150" r="28" fill="none" stroke="#7a8b7a" strokeOpacity="0.6" />
+          <circle cx="150" cy="150" r="22" fill="none" stroke="#c17a56" strokeOpacity="0.8" />
           <circle cx="150" cy="150" r="16" fill="#06b6d4" fillOpacity="0.25" />
           <circle cx="150" cy="150" r="10" fill="#bef264" fillOpacity="0.9">
             <animate attributeName="r" values="9;11;9" dur="2.4s" repeatCount="indefinite" />
             <animate attributeName="fill-opacity" values="0.85;1;0.85" dur="2.4s" repeatCount="indefinite" />
           </circle>
-          <circle cx="150" cy="150" r="5" fill="#e0e7ff" />
+          <circle cx="150" cy="150" r="5" fill="#f5ecd9" />
           {/* radial coils */}
           {Array.from({ length: 8 }).map((_, i) => {
             const a = (i / 8) * Math.PI * 2;
@@ -127,7 +127,7 @@ export function SuitSilhouette({ mark, primary, accent, codename, status, classN
         {codename && (
           <div
             className="text-[10px] tracking-[0.4em] mt-3 font-mono"
-            style={{ color: "#ec4899", opacity: 0.85 }}
+            style={{ color: "#c17a56", opacity: 0.85 }}
           >
             &quot;{codename.toUpperCase()}&quot;
           </div>

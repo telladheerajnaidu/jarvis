@@ -110,7 +110,7 @@ export default function SuitDetailPage() {
       <HudShell session="ERROR">
         <FadeIn>
           <div className="hud-panel hud-corners p-6 text-jarvis-red bg-jarvis-red/5 max-w-xl relative overflow-hidden">
-            <BorderBeam colorFrom="#ec4899" colorTo="#0891b2" size={40} duration={4} />
+            <BorderBeam colorFrom="#c17a56" colorTo="#a07a48" size={40} duration={4} />
             <div className="tracking-widest text-[10px] mb-2">// SYSTEM ERROR</div>
             <div className="text-sm">{error}</div>
             <Link href="/suits" className="btn-hud inline-block mt-4">&larr; REGISTRY</Link>
@@ -138,7 +138,7 @@ export default function SuitDetailPage() {
   }
 
   const integrityBad = suit.integrity.overall < 50;
-  const integrityColor = integrityBad ? "#ec4899" : suit.integrity.overall < 80 ? "#0891b2" : "#22d3ee";
+  const integrityColor = integrityBad ? "#c17a56" : suit.integrity.overall < 80 ? "#a07a48" : "#60a5fa";
 
   return (
     <HudShell session={`MK ${suit.mark}`}>
@@ -156,7 +156,7 @@ export default function SuitDetailPage() {
               <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan/60">
                 {suit.classification} // {suit.year} // {suit.status.toUpperCase()}
               </div>
-              <ShimmerText className="text-xl sm:text-2xl tracking-[0.3em]" from="#ec4899" mid="#e0e7ff" duration={4}>
+              <ShimmerText className="text-xl sm:text-2xl tracking-[0.3em]" from="#c17a56" mid="#f5ecd9" duration={4}>
                 {suit.name}
               </ShimmerText>
               <div className="text-[11px] italic text-slate-400">&quot;{suit.codename}&quot; HUD</div>
@@ -172,7 +172,7 @@ export default function SuitDetailPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <ShineBorder duration={5} colors={["#22d3ee", "#ec4899", "#22d3ee"]} />
+                <ShineBorder duration={5} colors={["#60a5fa", "#c17a56", "#60a5fa"]} />
                 {downloading ? "TRANSMITTING..." : "DOWNLOAD SPEC SHEET"}
               </motion.button>
             </Magnetic>
@@ -195,7 +195,7 @@ export default function SuitDetailPage() {
           <FadeIn delay={0.1} direction="left">
             <div className="space-y-4">
               <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-                <BorderBeam colorFrom="#22d3ee" colorTo="#a855f7" size={35} duration={10} />
+                <BorderBeam colorFrom="#60a5fa" colorTo="#7a8b7a" size={35} duration={10} />
                 <SectionTitle>SUIT DIAGNOSTICS</SectionTitle>
                 <StaggerGroup stagger={0.06} className="space-y-2 text-[10px] tracking-wider mt-3">
                   <StaggerItem><IntegrityRow label="HELMET" value={suit.integrity.helmet} /></StaggerItem>
@@ -214,7 +214,7 @@ export default function SuitDetailPage() {
                   {suit.battles.map((b) => (
                     <StaggerItem key={b}>
                       <div className="flex items-center gap-2">
-                        <PulseGlow color="#22d3ee" size={4} />
+                        <PulseGlow color="#60a5fa" size={4} />
                         <span className="ml-1">{b}</span>
                       </div>
                     </StaggerItem>
@@ -234,19 +234,19 @@ export default function SuitDetailPage() {
             <SectionTitle>SUIT PROFILE // MK {suit.mark}</SectionTitle>
             <div className="relative flex-1 min-h-[380px] flex items-center justify-center">
               <AuroraBackground intensity={0.35} />
-              <Ripple count={4} mainSize={240} color="rgba(34, 211, 238, 0.2)" />
+              <Ripple count={4} mainSize={240} color="rgba(96, 165, 250, 0.2)" />
               <div className="absolute inset-0 hud-hexpattern opacity-20" />
               <svg className="absolute inset-0 m-auto" width="320" height="320" viewBox="0 0 320 320" style={{ opacity: 0.75 }}>
                 <g className="ring-rotate-slow" style={{ transformOrigin: "160px 160px" }}>
-                  <circle cx="160" cy="160" r="150" fill="none" stroke="#22d3ee" strokeOpacity="0.3" strokeDasharray="4 6" />
+                  <circle cx="160" cy="160" r="150" fill="none" stroke="#60a5fa" strokeOpacity="0.3" strokeDasharray="4 6" />
                 </g>
                 <g className="ring-rotate-mid" style={{ transformOrigin: "160px 160px" }}>
-                  <circle cx="160" cy="160" r="130" fill="none" stroke="#0891b2" strokeOpacity="0.25" strokeDasharray="2 8" />
+                  <circle cx="160" cy="160" r="130" fill="none" stroke="#a07a48" strokeOpacity="0.25" strokeDasharray="2 8" />
                 </g>
-                <line x1="160" y1="5" x2="160" y2="25" stroke="#22d3ee" strokeOpacity="0.5" />
-                <line x1="160" y1="295" x2="160" y2="315" stroke="#22d3ee" strokeOpacity="0.5" />
-                <line x1="5" y1="160" x2="25" y2="160" stroke="#22d3ee" strokeOpacity="0.5" />
-                <line x1="295" y1="160" x2="315" y2="160" stroke="#22d3ee" strokeOpacity="0.5" />
+                <line x1="160" y1="5" x2="160" y2="25" stroke="#60a5fa" strokeOpacity="0.5" />
+                <line x1="160" y1="295" x2="160" y2="315" stroke="#60a5fa" strokeOpacity="0.5" />
+                <line x1="5" y1="160" x2="25" y2="160" stroke="#60a5fa" strokeOpacity="0.5" />
+                <line x1="295" y1="160" x2="315" y2="160" stroke="#60a5fa" strokeOpacity="0.5" />
               </svg>
               <SuitSilhouette
                 mark={suit.mark}
@@ -273,12 +273,12 @@ export default function SuitDetailPage() {
           <FadeIn delay={0.2} direction="right">
             <div className="space-y-4">
               <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-                <BorderBeam colorFrom="#22d3ee" colorTo="#0891b2" size={35} duration={10} delay={2} />
+                <BorderBeam colorFrom="#60a5fa" colorTo="#a07a48" size={35} duration={10} delay={2} />
                 <SectionTitle>LIVE TELEMETRY</SectionTitle>
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <CircularDial label="INTEGRITY" value={suit.integrity.overall} unit="%" color={integrityColor} />
                   <CircularDial label="THRUSTERS" value={suit.thruster_efficiency} unit="%" />
-                  <CircularDial label="REACTOR" value={suit.integrity.reactor} unit="%" color="#0891b2" />
+                  <CircularDial label="REACTOR" value={suit.integrity.reactor} unit="%" color="#a07a48" />
                   <CircularDial label="SHIELDS" value={Math.max(10, suit.integrity.chest)} unit="%" />
                 </div>
               </div>
@@ -314,7 +314,7 @@ export default function SuitDetailPage() {
 
           <FadeIn delay={0.4} direction="up">
             <div className="hud-panel hud-corners p-4 relative overflow-hidden">
-              <BorderBeam colorFrom="#ec4899" colorTo="#0891b2" size={30} duration={12} delay={4} />
+              <BorderBeam colorFrom="#c17a56" colorTo="#a07a48" size={30} duration={12} delay={4} />
               <SectionTitle>WEAPONS LOADOUT</SectionTitle>
               <StaggerGroup stagger={0.1} className="mt-3 space-y-3">
                 {suit.weapons.map((w) => (
@@ -366,7 +366,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <div className="flex items-center justify-between border-b border-jarvis-cyan/20 pb-2">
       <div className="text-[10px] tracking-[0.3em] text-jarvis-cyan/70">// {children}</div>
       <div className="flex gap-1">
-        <PulseGlow color="#22d3ee" size={4} />
+        <PulseGlow color="#60a5fa" size={4} />
         <span className="w-1 h-1 bg-jarvis-cyan/50 rounded-full" />
         <span className="w-1 h-1 bg-jarvis-cyan/30 rounded-full" />
       </div>

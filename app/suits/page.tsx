@@ -159,7 +159,7 @@ export default function SuitsPage() {
             <div className="text-[10px] tracking-[0.4em] text-jarvis-cyan/60">
               // HALL OF ARMOR // MALIBU VAULT
             </div>
-            <ShimmerText className="text-2xl tracking-[0.3em]" from="#ec4899" mid="#e0e7ff" duration={4}>
+            <ShimmerText className="text-2xl tracking-[0.3em]" from="#c17a56" mid="#f5ecd9" duration={4}>
               SUIT REGISTRY
             </ShimmerText>
           </div>
@@ -172,7 +172,7 @@ export default function SuitsPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <ShineBorder duration={6} colors={["#22d3ee", "#ec4899", "#22d3ee"]} />
+                <ShineBorder duration={6} colors={["#60a5fa", "#c17a56", "#60a5fa"]} />
                 RESYNC TELEMETRY
               </motion.button>
             </Magnetic>
@@ -191,7 +191,7 @@ export default function SuitsPage() {
 
         <FadeIn delay={0.15}>
           <div className="hud-panel hud-corners p-3 mb-3 flex flex-wrap items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
-            <BorderBeam colorFrom="#22d3ee" colorTo="#ec4899" size={50} duration={8} />
+            <BorderBeam colorFrom="#60a5fa" colorTo="#c17a56" size={50} duration={8} />
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div>
                 <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">HEARTBEAT</div>
@@ -302,7 +302,7 @@ export default function SuitsPage() {
                   data-anime-card
                   className="hud-panel hud-corners p-4 group hover:bg-jarvis-cyan/5 transition-all block relative overflow-hidden"
                 >
-                  <ShineBorder duration={9} colors={["#ec4899", "#22d3ee", "transparent", "#ec4899"]} />
+                  <ShineBorder duration={9} colors={["#c17a56", "#60a5fa", "transparent", "#c17a56"]} />
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div data-anime-chip className="text-[9px] tracking-[0.3em] text-jarvis-cyan/60">

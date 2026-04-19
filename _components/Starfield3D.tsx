@@ -13,10 +13,10 @@ function Particles({ count = 6000 }: { count?: number }) {
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
     const palette = [
-      new THREE.Color("#ec4899"),
-      new THREE.Color("#22d3ee"),
-      new THREE.Color("#8b5cf6"),
-      new THREE.Color("#f8fafc"),
+      new THREE.Color("#c17a56"),
+      new THREE.Color("#60a5fa"),
+      new THREE.Color("#5f7a6c"),
+      new THREE.Color("#fdf6e3"),
     ];
     for (let i = 0; i < count; i++) {
       const r = 8 + Math.random() * 22;

@@ -18,7 +18,7 @@ export function BarbaBoot() {
         "inset:0",
         "z-index:90",
         "pointer-events:none",
-        "background:radial-gradient(ellipse at 50% 50%,rgba(236,72,153,0.32) 0%,rgba(139,92,246,0.25) 30%,rgba(4,6,20,0.98) 72%)",
+        "background:radial-gradient(ellipse at 50% 50%,rgba(193,122,86,0.32) 0%,rgba(95,122,108,0.25) 30%,rgba(4,6,20,0.98) 72%)",
         "backdrop-filter:blur(18px) saturate(140%)",
         "-webkit-backdrop-filter:blur(18px) saturate(140%)",
         "overflow:hidden",
@@ -29,7 +29,7 @@ export function BarbaBoot() {
       sweep.style.cssText = [
         "position:absolute",
         "inset:-40%",
-        "background:conic-gradient(from 0deg,rgba(103,232,249,0) 0deg,rgba(103,232,249,0.35) 30deg,rgba(236,72,153,0.35) 120deg,rgba(139,92,246,0) 220deg,rgba(103,232,249,0) 360deg)",
+        "background:conic-gradient(from 0deg,rgba(147,197,253,0) 0deg,rgba(147,197,253,0.35) 30deg,rgba(193,122,86,0.35) 120deg,rgba(95,122,108,0) 220deg,rgba(147,197,253,0) 360deg)",
         "filter:blur(40px)",
         "mix-blend-mode:screen",
         "opacity:0",
@@ -63,22 +63,22 @@ export function BarbaBoot() {
       const runeWrap = document.createElement("div");
       runeWrap.style.cssText = "position:relative;width:260px;height:260px;";
       runeWrap.innerHTML = `
-        <svg viewBox="0 0 260 260" width="260" height="260" style="position:absolute;inset:0;filter:drop-shadow(0 0 24px rgba(236,72,153,0.7)) drop-shadow(0 0 8px rgba(103,232,249,0.55));">
+        <svg viewBox="0 0 260 260" width="260" height="260" style="position:absolute;inset:0;filter:drop-shadow(0 0 24px rgba(193,122,86,0.7)) drop-shadow(0 0 8px rgba(147,197,253,0.55));">
           <defs>
             <linearGradient id="runeGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#67e8f9" />
-              <stop offset="55%" stop-color="#f472b6" />
-              <stop offset="100%" stop-color="#a855f7" />
+              <stop offset="0%" stop-color="#93c5fd" />
+              <stop offset="55%" stop-color="#e8a77f" />
+              <stop offset="100%" stop-color="#7a8b7a" />
             </linearGradient>
           </defs>
           <circle id="runeRing" cx="130" cy="130" r="118" fill="none" stroke="url(#runeGrad)" stroke-width="1.2" stroke-opacity="0.85" />
-          <circle id="runeRing2" cx="130" cy="130" r="104" fill="none" stroke="#67e8f9" stroke-opacity="0.35" stroke-width="0.8" stroke-dasharray="3 6" />
+          <circle id="runeRing2" cx="130" cy="130" r="104" fill="none" stroke="#93c5fd" stroke-opacity="0.35" stroke-width="0.8" stroke-dasharray="3 6" />
           <g id="runeGlyph" fill="none" stroke="url(#runeGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
             <path id="runePath1" d="M78 70 L130 130 L78 190" />
             <path id="runePath2" d="M182 70 L130 130 L182 190" />
             <path id="runePath3" d="M130 52 L130 208" />
           </g>
-          <g id="runeTicks" stroke="#67e8f9" stroke-opacity="0.6" stroke-width="1">
+          <g id="runeTicks" stroke="#93c5fd" stroke-opacity="0.6" stroke-width="1">
             ${Array.from({ length: 24 })
               .map((_, i) => {
                 const a = (i * 360) / 24;
@@ -99,8 +99,8 @@ export function BarbaBoot() {
         "font-family:'Cinzel',serif",
         "font-size:13px",
         "letter-spacing:0.85em",
-        "color:#f8fafc",
-        "text-shadow:0 0 18px rgba(236,72,153,0.8),0 0 6px rgba(103,232,249,0.5)",
+        "color:#fdf6e3",
+        "text-shadow:0 0 18px rgba(193,122,86,0.8),0 0 6px rgba(147,197,253,0.5)",
         "opacity:0",
         "padding-left:0.85em",
       ].join(";");
@@ -112,7 +112,7 @@ export function BarbaBoot() {
         "font-family:'JetBrains Mono',monospace",
         "font-size:10px",
         "letter-spacing:0.5em",
-        "color:rgba(103,232,249,0.8)",
+        "color:rgba(147,197,253,0.8)",
         "opacity:0",
       ].join(";");
       sub.textContent = "// QUANTUM HANDSHAKE ◆ AES-1024";
