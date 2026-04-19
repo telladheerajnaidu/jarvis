@@ -521,10 +521,6 @@ function HeroRune3D() {
 
 // ================= OrbitalCore — signature centerpiece =================
 function OrbitalCore() {
-  const { x, y } = useMouseFromCenter(50, 18);
-  const tiltX = useTransform(y, (v) => -v * 10);
-  const tiltY = useTransform(x, (v) => v * 12);
-
   const size = 460;
   const c = size / 2;
   const R = 188;
@@ -547,16 +543,8 @@ function OrbitalCore() {
         }}
       />
 
-      {/* wireframe globe SVG */}
-      <motion.div
-        className="absolute inset-0"
-        style={{
-          rotateX: tiltX,
-          rotateY: tiltY,
-          transformPerspective: 1200,
-          transformStyle: "preserve-3d",
-        }}
-      >
+      {/* HUD chrome — flat, no mouse tilt so it aligns perfectly with the 3D globe */}
+      <div className="absolute inset-0">
         <svg
           viewBox={`0 0 ${size} ${size}`}
           className="absolute inset-0 w-full h-full"
@@ -649,7 +637,7 @@ function OrbitalCore() {
             );
           })}
         </svg>
-      </motion.div>
+      </div>
 
       {/* orbit rings + satellites now rendered in <OrbitalCore3D /> via WebGL */}
 

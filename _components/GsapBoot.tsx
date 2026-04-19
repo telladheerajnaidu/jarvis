@@ -19,7 +19,7 @@ export function GsapBoot({ children }: { children: React.ReactNode }) {
         rotateX: -40,
         duration: 1.4,
       })
-        .from("[data-boot='orbital']", { scale: 0.5, opacity: 0, duration: 1.0 }, "-=1.0")
+        .from("[data-boot='orbital']", { opacity: 0, y: 20, duration: 1.0 }, "-=1.0")
         .from(
           "[data-boot='rail']",
           { x: -30, opacity: 0, duration: 0.6, stagger: 0.08 },

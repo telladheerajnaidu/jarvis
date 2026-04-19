@@ -284,9 +284,10 @@ export function OrbitalCore3D({ className }: { className?: string }) {
       style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
     >
       <Canvas
-        camera={{ position: [0, 0.2, 5.4], fov: 44 }}
+        camera={{ position: [0, 0, 5.6], fov: 44 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         dpr={[1, 1.8]}
+        style={{ width: "100%", height: "100%", display: "block" }}
       >
         <Scene />
       </Canvas>
