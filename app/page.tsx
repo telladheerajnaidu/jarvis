@@ -240,7 +240,7 @@ export default function LoginPage() {
       </div>
 
       {/* ============ main stage: core + side rails ============ */}
-      <div className="relative z-10 grid grid-cols-12 gap-6 px-6 md:px-10 mt-4 md:mt-6">
+      <div className="relative z-10 grid grid-cols-12 gap-6 px-6 md:px-10 mt-4 md:mt-6 items-start">
         {/* LEFT rail */}
         <motion.aside
           initial={{ opacity: 0, x: -16 }}
@@ -384,7 +384,7 @@ export default function LoginPage() {
               <div className="text-[9px] tracking-[0.4em] text-jarvis-ivory/50">SUBSYSTEM LOG</div>
               <div className="text-[9px] tracking-[0.3em] text-jarvis-cyan/80">LIVE</div>
             </div>
-            <div className="font-mono text-[10px] leading-[1.6] text-jarvis-ivory/75 space-y-0.5 min-h-[90px]">
+            <div className="font-mono text-[10px] leading-[1.6] text-jarvis-ivory/75 space-y-0.5 h-[150px] overflow-hidden">
               <AnimatePresence initial={false}>
                 {logLines.map((l, i) => (
                   <motion.div
